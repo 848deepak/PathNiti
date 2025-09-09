@@ -81,7 +81,7 @@ export default function AdminPage() {
     }
 
     // Check if user is admin
-    if (user.user_metadata?.role !== "admin") {
+    if ((user as any)?.user_metadata?.role !== "admin") { // eslint-disable-line @typescript-eslint/no-explicit-any
       router.push("/dashboard")
       return
     }

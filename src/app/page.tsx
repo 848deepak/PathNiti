@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui"
 import { GraduationCap, MapPin, Brain, Calendar, Users, BookOpen, ArrowRight, Star, CheckCircle, Sparkles } from "lucide-react"
 import Link from "next/link"
 

@@ -1,0 +1,76 @@
+
+> @pathniti/web@1.0.0 build
+> next build --turbopack
+
+[1G[0K[33m [33m[1m⚠[22m[39m The config property `experimental.turbo` is deprecated. Move this setting to `config.turbopack` or run `npx @next/codemod@latest next-experimental-turbo-to-turbopack .`[39m
+   [1m[38;2;173;127;168m▲ Next.js 15.5.2[39m[22m (Turbopack)
+   - Experiments (use with caution):
+     · turbo
+
+ [37m[1m [22m[39m Creating an optimized production build ...
+ ✓ Finished writing to disk in 297ms
+ [32m[1m✓[22m[39m Compiled successfully in 3.1s
+[?25l [37m[1m [22m[39m Linting and checking validity of types  [36m.[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m..[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m...[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m.[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m..[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m...[39m[2K[1G [37m[1m [22m[39m Linting and checking validity of types  [36m.[39m[2K[1G[?25h
+./src/app/api/keep-alive/route.ts
+5:27  Warning: 'request' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/auth/login/page.tsx
+46:15  Warning: 'data' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/auth/signup/page.tsx
+82:15  Warning: 'data' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/colleges/page.tsx
+55:6  Warning: React Hook useEffect has a missing dependency: 'filterColleges'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/app/quiz/page.tsx
+41:9  Warning: The 'handleNextQuestion' function makes the dependencies of useEffect Hook (at line 66) change on every render. To fix this, wrap the definition of 'handleNextQuestion' in its own useCallback() Hook.  react-hooks/exhaustive-deps
+
+./src/app/scholarships/page.tsx
+51:9  Warning: The 'filterScholarships' function makes the dependencies of useEffect Hook (at line 83) change on every render. Move it inside the useEffect callback. Alternatively, wrap the definition of 'filterScholarships' in its own useCallback() Hook.  react-hooks/exhaustive-deps
+
+./src/app/timeline/page.tsx
+56:9  Warning: The 'filterItems' function makes the dependencies of useEffect Hook (at line 96) change on every render. Move it inside the useEffect callback. Alternatively, wrap the definition of 'filterItems' in its own useCallback() Hook.  react-hooks/exhaustive-deps
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+[?25l [36m.[39m [2K[1G [36m..[39m [2K[1G [36m...[39m [2K[1G [36m.[39m [2K[1G [36m..[39m [2K[1G [36m...[39m [2K[1G [36m.[39m [2K[1G[?25h    [32m[1m✓[22m[39m Linting and checking validity of types 
+[?25l [37m[1m [22m[39m Collecting page data  [36m.[39m[2K[1G [37m[1m [22m[39m Collecting page data  [36m..[39m[2K[1G[?25h [37m[1m [22m[39m Collecting page data     [32m[1m✓[22m[39m Collecting page data 
+[?25l [37m[1m [22m[39m Generating static pages (0/24)  [36m[    ][39m[2K[1G [37m[1m [22m[39m Generating static pages (0/24)  [36m[=   ][39m[2K[1G [37m[1m [22m[39m Generating static pages (1/24)  [36m[==  ][39m[2K[1G [37m[1m [22m[39m Generating static pages (16/24)  [36m[=== ][39m[2K[1G[?25h [32m[1m✓[22m[39m Generating static pages (24/24)
+[?25l [37m[1m [22m[39m Finalizing page optimization  [36m.[39m[?25l [37m[1m [22m[39m Collecting build traces  [36m.[39m[2K[1G [37m[1m [22m[39m Finalizing page optimization  [36m..[39m[2K[1G [37m[1m [22m[39m Collecting build traces  [36m..[39m[2K[1G [37m[1m [22m[39m Finalizing page optimization  [36m...[39m[2K[1G [37m[1m [22m[39m Collecting build traces  [36m...[39m[2K[1G [37m[1m [22m[39m Finalizing page optimization  [36m.[39m[2K[1G [37m[1m [22m[39m Collecting build traces  [36m.[39m[2K[1G [37m[1m [22m[39m Finalizing page optimization  [36m..[39m[2K[1G [37m[1m [22m[39m Collecting build traces  [36m..[39m[2K[1G [37m[1m [22m[39m Finalizing page optimization  [36m...[39m[2K[1G [37m[1m [22m[39m Collecting build traces  [36m...[39m[2K[1G [37m[1m [22m[39m Finalizing page optimization  [36m.[39m[2K[1G [37m[1m [22m[39m Collecting build traces  [36m.[39m[2K[1G[?25h [37m[1m [22m[39m Collecting build traces     [32m[1m✓[22m[39m Collecting build traces 
+[2K[1G[?25h [37m[1m [22m[39m Finalizing page optimization     [32m[1m✓[22m[39m Finalizing page optimization 
+
+[4mRoute (app)[24m                         [4mSize[24m  [4mFirst Load JS[24m  [4m[24m  [4m[24m
+┌ ○ /                            5.37 kB         [37m[1m161 kB[22m[39m
+├ ○ /_not-found                      0 B         [37m[1m155 kB[22m[39m
+├ ○ /about                       8.68 kB         [37m[1m173 kB[22m[39m
+├ ○ /admin                       10.2 kB         [37m[1m174 kB[22m[39m
+├ ƒ /api/admin/colleges              0 B            [37m[1m0 B[22m[39m
+├ ƒ /api/admin/stats                 0 B            [37m[1m0 B[22m[39m
+├ ƒ /api/admin/users                 0 B            [37m[1m0 B[22m[39m
+├ ƒ /api/keep-alive                  0 B            [37m[1m0 B[22m[39m
+├ ƒ /api/timeline                    0 B            [37m[1m0 B[22m[39m
+├ ○ /auth/callback               3.04 kB         [37m[1m167 kB[22m[39m
+├ ○ /auth/complete-profile        4.9 kB         [37m[1m169 kB[22m[39m
+├ ○ /auth/login                  7.74 kB         [37m[1m172 kB[22m[39m
+├ ○ /auth/signup                 8.34 kB         [37m[1m173 kB[22m[39m
+├ ○ /colleges                    8.88 kB         [37m[1m173 kB[22m[39m
+├ ○ /contact                     9.03 kB         [37m[1m173 kB[22m[39m
+├ ○ /dashboard                   10.5 kB         [37m[1m175 kB[22m[39m
+├ ○ /demo                        9.33 kB         [37m[1m173 kB[22m[39m
+├ ○ /features                    9.43 kB         [37m[1m174 kB[22m[39m
+├ ○ /quiz                        8.48 kB         [37m[1m173 kB[22m[39m
+├ ○ /scholarships                8.97 kB         [37m[1m173 kB[22m[39m
+└ ○ /timeline                    9.32 kB         [37m[1m173 kB[22m[39m
++ First Load JS shared by all     [37m[1m167 kB[22m[39m
+  ├ chunks/1d6739c2f49ade5a.js     13 kB
+  ├ chunks/63dba52cde864d84.js   59.2 kB
+  ├ chunks/771e643b6a8db7fb.js   17.2 kB
+  ├ chunks/ac3fa2d979bd09bc.js   39.6 kB
+  ├ chunks/c965273e5bafa4a8.css  11.2 kB
+  └ other shared chunks (total)  26.5 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+[?25h[1G[0K⠙[1G[0K

@@ -1,152 +1,36 @@
-# PathNiti - One-Stop Personalized Career & Education Advisor
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-PathNiti is a comprehensive platform designed to help Indian students (Class 10/12 and undergraduates) make informed decisions about their education and career paths.
+## Getting Started
 
-## 🎯 Mission
+First, run the development server:
 
-To empower students with personalized career guidance, government college information, and streamlined admission processes through an AI-driven platform.
-
-## ✨ Key Features
-
-- **Personalized Career Guidance**: AI-powered recommendations based on aptitude and interests
-- **Government College Directory**: Comprehensive database of government colleges with location-based search
-- **Aptitude & Interest Assessment**: Comprehensive quiz system to identify suitable career paths
-- **Timeline Tracker**: Never miss important deadlines for admissions and scholarships
-- **Career Pathway Visualizer**: Interactive flowcharts showing degree-to-career progression
-- **Mobile-First Design**: Cross-platform mobile app for accessibility
-- **Offline Support**: PWA capabilities for areas with limited internet connectivity
-
-## 🏗️ Architecture
-
-This project uses a monorepo structure with the following components:
-
-- **Frontend**: Next.js web application
-- **Mobile**: React Native cross-platform app
-- **Backend**: Supabase (PostgreSQL + Auth + Realtime)
-- **AI Engine**: Python FastAPI service
-- **Admin Panel**: Next.js admin dashboard
-- **College Plugin**: Embeddable JavaScript widget
-
-## 🚀 Tech Stack
-
-- **Frontend**: Next.js 14, TypeScript, Tailwind CSS, Shadcn/ui
-- **Mobile**: React Native, Expo
-- **Backend**: Supabase, PostgreSQL
-- **AI/ML**: Python, FastAPI, Scikit-learn
-- **Maps**: Google Maps API
-- **Notifications**: Firebase Cloud Messaging, Twilio
-- **Deployment**: Vercel, Supabase Cloud
-
-## 📁 Project Structure
-
-```
-pathniti/
-├── apps/
-│   ├── web/                 # Next.js web application
-│   ├── mobile/              # React Native mobile app
-│   ├── admin/               # Admin panel
-│   └── ai-engine/           # Python AI service
-├── packages/
-│   ├── ui/                  # Shared UI components
-│   ├── database/            # Database schemas and types
-│   ├── utils/               # Shared utilities
-│   └── plugin/              # College plugin
-└── docs/                    # Documentation
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-## 🛠️ Development Setup
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd pathniti
-   ```
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-3. **Set up environment variables**
-   ```bash
-   cp .env.example .env.local
-   # Fill in your environment variables
-   ```
+## Learn More
 
-4. **Start development servers**
-   ```bash
-   npm run dev
-   ```
+To learn more about Next.js, take a look at the following resources:
 
-## 📱 Getting Started
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-1. **Web Application**: Visit `http://localhost:3000`
-2. **Mobile App**: Run `npm run mobile` in the mobile directory
-3. **Admin Panel**: Visit `http://localhost:3001`
-4. **AI Engine**: Visit `http://localhost:8000`
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## 🎨 Design System
+## Deploy on Vercel
 
-PathNiti follows a modern, accessible design system with:
-- **Colors**: Indian-inspired color palette with accessibility in mind
-- **Typography**: Clear, readable fonts optimized for mobile
-- **Components**: Reusable UI components built with Shadcn/ui
-- **Icons**: Consistent iconography using Lucide React
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-## 🔐 Authentication
-
-- Email/Password authentication
-- Google OAuth integration
-- Phone OTP verification
-- Role-based access control (Student, Admin, Counselor)
-
-## 📊 Data Sources
-
-- Government college databases
-- UGC/AICTE official data
-- Scholarship portals
-- Career guidance resources
-- Industry job market data
-
-## 🌍 Localization
-
-- Primary language: English
-- Regional language support planned
-- Location-based content customization
-
-## 📈 Roadmap
-
-### Phase 1 (MVP - 3 months)
-- [x] Project setup and architecture
-- [ ] User authentication and profiles
-- [ ] Basic aptitude quiz
-- [ ] Government college directory
-- [ ] Timeline tracker
-
-### Phase 2 (6 months)
-- [ ] AI recommendation engine
-- [ ] Mobile application
-- [ ] Notification system
-- [ ] Admin panel
-
-### Phase 3 (1 year)
-- [ ] College plugin
-- [ ] Advanced analytics
-- [ ] Multi-language support
-- [ ] Integration with government portals
-
-## 🤝 Contributing
-
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🆘 Support
-
-For support, email support@eduniti.in or join our community Discord.
-
----
-
-**EduNiti** - Your Path. Your Future. Simplified. 🎓
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

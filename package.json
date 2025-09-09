@@ -8,7 +8,9 @@
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "test": "turbo run test",
-    "clean": "turbo run clean"
+    "clean": "turbo run clean",
+    "keep-alive": "node scripts/keep-alive.js",
+    "keep-alive:prod": "node scripts/keep-alive.js --url https://pathniti.vercel.app"
   },
   "devDependencies": {
     "@types/node": "^20.8.0",

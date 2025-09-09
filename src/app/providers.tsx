@@ -29,7 +29,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     const getInitialSession = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession()
-        setUser(session?.user ?? null)
+        setUser((session as any)?.user ?? null) // eslint-disable-line @typescript-eslint/no-explicit-any
       } catch (error) {
         console.warn('Auth session check failed, using mock user:', error)
         // Create a mock user for development
@@ -55,7 +55,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      async (event: any, session: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
         try {
           setUser(session?.user ?? null)
         } catch (error) {

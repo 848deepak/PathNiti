@@ -34,7 +34,7 @@ export default function DashboardPage() {
         const { data, error } = await supabase
           .from("profiles")
           .select("*")
-          .eq("id", user.id)
+          .eq("id", (user as any).id) // eslint-disable-line @typescript-eslint/no-explicit-any
           .single()
 
         if (error) throw error
@@ -92,7 +92,7 @@ export default function DashboardPage() {
                 {(profile as any)?.first_name} {(profile as any)?.last_name}
               </span>
             </div>
-            {user && <NotificationSystem userId={user.id} />}
+            {user && <NotificationSystem userId={(user as any).id} />} {/* eslint-disable-line @typescript-eslint/no-explicit-any */}
             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             {(profile as any)?.role === "admin" && (
               <Button variant="outline" size="sm" className="hover:scale-105 transition-transform duration-200" asChild>

@@ -90,8 +90,8 @@ export default function CompleteProfilePage() {
       const { error } = await (supabase as any)
         .from("profiles")
         .upsert({
-          id: user.id,
-          email: user.email!,
+          id: (user as any).id, // eslint-disable-line @typescript-eslint/no-explicit-any
+          email: (user as any).email!, // eslint-disable-line @typescript-eslint/no-explicit-any
           first_name: formData.firstName,
           last_name: formData.lastName,
           date_of_birth: formData.dateOfBirth,

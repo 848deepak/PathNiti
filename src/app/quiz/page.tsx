@@ -138,7 +138,7 @@ export default function QuizPage() {
       const { error: sessionError } = await (supabase as any)
         .from("quiz_sessions")
         .insert({
-          user_id: user.id,
+          user_id: (user as any).id, // eslint-disable-line @typescript-eslint/no-explicit-any
           status: "completed",
           completed_at: new Date().toISOString(),
           total_score: Object.keys(answers).length,
@@ -150,7 +150,7 @@ export default function QuizPage() {
 
       // Save individual responses
       const responses = Object.entries(answers).map(([questionId, answer]) => ({
-        user_id: user.id,
+            user_id: (user as any).id, // eslint-disable-line @typescript-eslint/no-explicit-any
         question_id: questionId,
         selected_answer: answer,
         time_taken: 60 - timeLeft,

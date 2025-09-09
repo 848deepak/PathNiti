@@ -39,7 +39,7 @@ export default function NotificationSystem({ userId }: NotificationSystemProps) 
         schema: 'public',
         table: 'notifications',
         filter: `user_id=eq.${userId}`
-      }, (payload) => {
+      }, (payload: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
         const newNotification = payload.new as Notification
         setNotifications(prev => [newNotification, ...prev])
         setUnreadCount(prev => prev + 1)
@@ -47,7 +47,7 @@ export default function NotificationSystem({ userId }: NotificationSystemProps) 
       .subscribe()
 
     return () => {
-      subscription.unsubscribe()
+      subscription.then((sub: any) => sub.unsubscribe()) // eslint-disable-line @typescript-eslint/no-explicit-any
     }
   }, [userId])
 

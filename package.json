@@ -4,8 +4,9 @@
   "private": true,
   "description": "PathNiti - One-Stop Personalized Career & Education Advisor for Indian Students",
   "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev",
+    "build": "cd apps/web && npm run build",
+    "dev": "cd apps/web && npm run dev",
+    "start": "cd apps/web && npm run start",
     "lint": "turbo run lint",
     "test": "turbo run test",
     "clean": "turbo run clean",

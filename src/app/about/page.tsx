@@ -19,7 +19,7 @@ export default function AboutPage() {
     {
       name: "Deepak Pandey",
       role: "Team Leader",
-      description: "Full-stack developer and project lead with expertise in modern web technologies",
+      description: "Founder of CodeUnia and AI/ML specialist with expertise in modern web technologies",
       image: "/api/placeholder/150/150",
       linkedin: "https://linkedin.com/in/848deepak"
     },

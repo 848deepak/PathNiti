@@ -336,7 +336,7 @@ export default function Home() {
           <div className="border-t border-gray-700 mt-12 pt-8">
             <div className="flex flex-col md:flex-row justify-between items-center">
               <p className="text-gray-400 mb-4 md:mb-0">
-                &copy; 2024 PathNiti. All rights reserved. Made with ❤️ for Indian students.
+                &copy; 2025 PathNiti. All rights reserved. Made with ❤️ for Indian students.
               </p>
               <div className="flex space-x-6 text-sm text-gray-400">
                 <Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>

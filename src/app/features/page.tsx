@@ -8,13 +8,14 @@ import {
   BookOpen, 
   Users, 
   GraduationCap,
-  ArrowLeft,
   CheckCircle,
   Star,
   TrendingUp,
   Shield,
   Smartphone,
-  Globe
+  Globe,
+  Sparkles,
+  ArrowRight
 } from "lucide-react"
 import Link from "next/link"
 
@@ -114,18 +115,42 @@ export default function FeaturesPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navigation */}
-      <nav className="bg-white border-b">
+      <nav className="border-b bg-white/90 backdrop-blur-md sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <GraduationCap className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold text-primary">PathNiti</span>
+          <div className="flex items-center space-x-3">
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary to-blue-600 rounded-xl blur-sm opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="relative bg-white p-2 rounded-xl shadow-lg">
+                <GraduationCap className="h-8 w-8 text-primary" />
+                <Sparkles className="h-3 w-3 text-yellow-500 absolute -top-1 -right-1 animate-pulse" />
+              </div>
+            </div>
+            <span className="text-3xl font-black bg-gradient-to-r from-blue-800 via-blue-600 to-purple-600 bg-clip-text text-transparent tracking-tight">
+              PathNiti
+            </span>
           </div>
-          <Button variant="outline" asChild>
-            <Link href="/">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Home
+          <div className="hidden md:flex items-center space-x-8">
+            <Link href="/features" className="text-primary font-semibold transition-all duration-200 hover:scale-105">
+              Features
             </Link>
-          </Button>
+            <Link href="/about" className="text-gray-600 hover:text-primary transition-all duration-200 hover:scale-105">
+              About
+            </Link>
+            <Link href="/contact" className="text-gray-600 hover:text-primary transition-all duration-200 hover:scale-105">
+              Contact
+            </Link>
+          </div>
+          <div className="flex items-center space-x-3">
+            <Button variant="outline" className="hover:scale-105 transition-all duration-200 border-2 hover:border-primary hover:bg-primary/5" asChild>
+              <Link href="/dashboard">Demo Login</Link>
+            </Button>
+            <Button className="relative overflow-hidden bg-gradient-to-r from-primary via-blue-600 to-purple-600 hover:from-purple-600 hover:via-blue-600 hover:to-primary transition-all duration-500 hover:scale-105 shadow-xl hover:shadow-2xl group" asChild>
+              <Link href="/dashboard" className="flex items-center gap-2 relative z-10">
+                <span className="font-semibold">Get Started</span>
+                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
+              </Link>
+            </Button>
+          </div>
         </div>
       </nav>
 
@@ -290,6 +315,81 @@ export default function FeaturesPage() {
           </div>
         </div>
       </div>
+
+      {/* Footer */}
+      <footer className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white py-16">
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-4 gap-12">
+            <div className="md:col-span-1">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="relative">
+                  <GraduationCap className="h-8 w-8 text-primary" />
+                  <Sparkles className="h-3 w-3 text-yellow-500 absolute -top-1 -right-1" />
+                </div>
+                <span className="text-2xl font-bold bg-gradient-to-r from-blue-800 via-blue-600 to-purple-600 bg-clip-text text-transparent">PathNiti</span>
+              </div>
+              <p className="text-gray-400 leading-relaxed mb-6">
+                Empowering students with personalized career guidance and education resources. 
+                Your future starts here.
+              </p>
+              <div className="flex space-x-4">
+                <div className="w-10 h-10 bg-gray-700 rounded-lg flex items-center justify-center hover:bg-primary transition-colors cursor-pointer">
+                  <span className="text-sm font-bold">f</span>
+                </div>
+                <div className="w-10 h-10 bg-gray-700 rounded-lg flex items-center justify-center hover:bg-primary transition-colors cursor-pointer">
+                  <span className="text-sm font-bold">t</span>
+                </div>
+                <div className="w-10 h-10 bg-gray-700 rounded-lg flex items-center justify-center hover:bg-primary transition-colors cursor-pointer">
+                  <span className="text-sm font-bold">in</span>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Features</h3>
+              <ul className="space-y-2 text-gray-400">
+                <li><Link href="/quiz" className="hover:text-primary transition-colors">Aptitude Assessment</Link></li>
+                <li><Link href="/colleges" className="hover:text-primary transition-colors">College Directory</Link></li>
+                <li><Link href="/timeline" className="hover:text-primary transition-colors">Timeline Tracker</Link></li>
+                <li><Link href="/scholarships" className="hover:text-primary transition-colors">Scholarships</Link></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Company</h3>
+              <ul className="space-y-2 text-gray-400">
+                <li><Link href="/about" className="hover:text-primary transition-colors">About Us</Link></li>
+                <li><Link href="/contact" className="hover:text-primary transition-colors">Contact</Link></li>
+                <li><Link href="/demo" className="hover:text-primary transition-colors">Demo</Link></li>
+                <li><Link href="/features" className="hover:text-primary transition-colors">Features</Link></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Support</h3>
+              <ul className="space-y-2 text-gray-400">
+                <li><Link href="/contact" className="hover:text-primary transition-colors">Help Center</Link></li>
+                <li><Link href="/contact" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
+                <li><Link href="/contact" className="hover:text-primary transition-colors">Terms of Service</Link></li>
+                <li><Link href="/contact" className="hover:text-primary transition-colors">Cookie Policy</Link></li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="border-t border-gray-700 mt-12 pt-8">
+            <div className="flex flex-col md:flex-row justify-between items-center">
+              <p className="text-gray-400 mb-4 md:mb-0">
+                &copy; 2025 PathNiti. All rights reserved. Made with ❤️ for Indian students.
+              </p>
+              <div className="flex space-x-6 text-sm text-gray-400">
+                <Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
+                <Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
+                <Link href="/cookies" className="hover:text-primary transition-colors">Cookie Policy</Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }

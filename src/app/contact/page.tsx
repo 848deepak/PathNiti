@@ -347,6 +347,81 @@ export default function ContactPage() {
           </div>
         </div>
       </div>
+
+      {/* Footer */}
+      <footer className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white py-16">
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-4 gap-12">
+            <div className="md:col-span-1">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="relative">
+                  <GraduationCap className="h-8 w-8 text-primary" />
+                  <Sparkles className="h-3 w-3 text-yellow-500 absolute -top-1 -right-1" />
+                </div>
+                <span className="text-2xl font-bold bg-gradient-to-r from-blue-800 via-blue-600 to-purple-600 bg-clip-text text-transparent">PathNiti</span>
+              </div>
+              <p className="text-gray-400 leading-relaxed mb-6">
+                Empowering students with personalized career guidance and education resources. 
+                Your future starts here.
+              </p>
+              <div className="flex space-x-4">
+                <div className="w-10 h-10 bg-gray-700 rounded-lg flex items-center justify-center hover:bg-primary transition-colors cursor-pointer">
+                  <span className="text-sm font-bold">f</span>
+                </div>
+                <div className="w-10 h-10 bg-gray-700 rounded-lg flex items-center justify-center hover:bg-primary transition-colors cursor-pointer">
+                  <span className="text-sm font-bold">t</span>
+                </div>
+                <div className="w-10 h-10 bg-gray-700 rounded-lg flex items-center justify-center hover:bg-primary transition-colors cursor-pointer">
+                  <span className="text-sm font-bold">in</span>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Features</h3>
+              <ul className="space-y-2 text-gray-400">
+                <li><Link href="/quiz" className="hover:text-primary transition-colors">Aptitude Assessment</Link></li>
+                <li><Link href="/colleges" className="hover:text-primary transition-colors">College Directory</Link></li>
+                <li><Link href="/timeline" className="hover:text-primary transition-colors">Timeline Tracker</Link></li>
+                <li><Link href="/scholarships" className="hover:text-primary transition-colors">Scholarships</Link></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Company</h3>
+              <ul className="space-y-2 text-gray-400">
+                <li><Link href="/about" className="hover:text-primary transition-colors">About Us</Link></li>
+                <li><Link href="/contact" className="hover:text-primary transition-colors">Contact</Link></li>
+                <li><Link href="/demo" className="hover:text-primary transition-colors">Demo</Link></li>
+                <li><Link href="/features" className="hover:text-primary transition-colors">Features</Link></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Support</h3>
+              <ul className="space-y-2 text-gray-400">
+                <li><Link href="/contact" className="hover:text-primary transition-colors">Help Center</Link></li>
+                <li><Link href="/contact" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
+                <li><Link href="/contact" className="hover:text-primary transition-colors">Terms of Service</Link></li>
+                <li><Link href="/contact" className="hover:text-primary transition-colors">Cookie Policy</Link></li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="border-t border-gray-700 mt-12 pt-8">
+            <div className="flex flex-col md:flex-row justify-between items-center">
+              <p className="text-gray-400 mb-4 md:mb-0">
+                &copy; 2025 PathNiti. All rights reserved. Made with ❤️ for Indian students.
+              </p>
+              <div className="flex space-x-6 text-sm text-gray-400">
+                <Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
+                <Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
+                <Link href="/cookies" className="hover:text-primary transition-colors">Cookie Policy</Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }

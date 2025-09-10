@@ -27,7 +27,8 @@ export default function AboutPage() {
       name: "Parisha",
       role: "Frontend Developer",
       description: "UI/UX specialist focused on creating intuitive user experiences",
-      image: "/api/placeholder/150/150"
+      image: "/api/placeholder/150/150",
+      linkedin: "https://www.linkedin.com/in/parishasharma93/"
     },
     {
       name: "Lisa",

@@ -97,7 +97,7 @@ export default function FeaturesPage() {
     {
       icon: Smartphone,
       title: "Mobile App",
-      description: "Access EduNiti on the go with our native mobile application"
+      description: "Access PathNiti on the go with our native mobile application"
     },
     {
       icon: Globe,

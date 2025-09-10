@@ -54,7 +54,7 @@ export default function DemoPage() {
     {
       name: "Priya Sharma",
       role: "Class 12 Student",
-      content: "EduNiti helped me discover my passion for computer science. The aptitude test was incredibly accurate!",
+      content: "PathNiti helped me discover my passion for computer science. The aptitude test was incredibly accurate!",
       rating: 5,
       image: "👩‍🎓"
     },
@@ -68,7 +68,7 @@ export default function DemoPage() {
     {
       name: "Anita Singh",
       role: "Scholarship Recipient",
-      content: "I wouldn't have known about the scholarship opportunities without EduNiti. It changed my life!",
+      content: "I wouldn't have known about the scholarship opportunities without PathNiti. It changed my life!",
       rating: 5,
       image: "👩‍💼"
     }
@@ -99,7 +99,7 @@ export default function DemoPage() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <GraduationCap className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold text-primary">EduNiti</span>
+            <span className="text-2xl font-bold text-primary">PathNiti</span>
           </div>
           <Button variant="outline" asChild>
             <Link href="/">
@@ -114,10 +114,10 @@ export default function DemoPage() {
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-            See EduNiti in <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-green-600">Action</span>
+            See PathNiti in <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-green-600">Action</span>
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Watch our interactive demo to see how EduNiti can help you discover your perfect career path 
+            Watch our interactive demo to see how PathNiti can help you discover your perfect career path 
             and find the right educational opportunities.
           </p>
         </div>
@@ -265,7 +265,7 @@ export default function DemoPage() {
                 Ready to Try It Yourself?
               </h2>
               <p className="text-gray-600 mb-6">
-                Experience EduNiti firsthand with our interactive demo. 
+                Experience PathNiti firsthand with our interactive demo. 
                 No signup required - just explore and discover!
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -287,7 +287,7 @@ export default function DemoPage() {
         {/* Features Checklist */}
         <div className="bg-white rounded-lg p-8 mb-16">
           <h2 className="text-3xl font-bold text-center text-gray-900 mb-8">
-            Everything You Get with EduNiti
+            Everything You Get with PathNiti
           </h2>
           <div className="grid md:grid-cols-2 gap-8">
             <div>
@@ -335,7 +335,7 @@ export default function DemoPage() {
             Start Your Journey Today
           </h2>
           <p className="text-xl text-gray-600 mb-8">
-            Join thousands of students who have already discovered their path with EduNiti
+            Join thousands of students who have already discovered their path with PathNiti
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" asChild>

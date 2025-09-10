@@ -252,7 +252,7 @@ export default function AdminPage() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Settings className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold text-primary">EduNiti Admin</span>
+            <span className="text-2xl font-bold text-primary">PathNiti Admin</span>
           </div>
           <div className="flex items-center space-x-4">
             <Button variant="outline" asChild>
@@ -646,7 +646,7 @@ export default function AdminPage() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Platform Name
                     </label>
-                    <Input defaultValue="EduNiti" />
+                    <Input defaultValue="PathNiti" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">

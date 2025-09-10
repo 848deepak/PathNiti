@@ -123,7 +123,7 @@ export default function SignupPage() {
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center space-x-2">
             <GraduationCap className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold text-primary">EduNiti</span>
+            <span className="text-2xl font-bold text-primary">PathNiti</span>
           </Link>
         </div>
 
@@ -131,7 +131,7 @@ export default function SignupPage() {
           <CardHeader className="text-center">
             <CardTitle className="text-2xl">Create Account</CardTitle>
             <CardDescription>
-              Join EduNiti and start your personalized career journey
+              Join PathNiti and start your personalized career journey
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

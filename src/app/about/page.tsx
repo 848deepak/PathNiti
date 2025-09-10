@@ -67,7 +67,7 @@ export default function AboutPage() {
   const milestones = [
     {
       year: "2024",
-      title: "EduNiti Founded",
+      title: "PathNiti Founded",
       description: "Started with a vision to democratize career guidance for Indian students"
     },
     {
@@ -94,7 +94,7 @@ export default function AboutPage() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <GraduationCap className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold text-primary">EduNiti</span>
+            <span className="text-2xl font-bold text-primary">PathNiti</span>
           </div>
           <Button variant="outline" asChild>
             <Link href="/">
@@ -109,7 +109,7 @@ export default function AboutPage() {
         {/* Hero Section */}
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-            About <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-green-600">EduNiti</span>
+            About <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-green-600">PathNiti</span>
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             We&apos;re on a mission to empower every Indian student with personalized career guidance, 
@@ -186,7 +186,7 @@ export default function AboutPage() {
           </h2>
           <div className="max-w-4xl mx-auto">
             <p className="text-lg text-gray-600 mb-6">
-              EduNiti was born from a simple observation: millions of Indian students struggle 
+              PathNiti was born from a simple observation: millions of Indian students struggle 
               to make informed decisions about their education and career paths. With limited 
               access to quality guidance and overwhelming amounts of information, students often 
               make choices that don&apos;t align with their true potential.
@@ -198,7 +198,7 @@ export default function AboutPage() {
               to help them discover their strengths and make informed decisions.
             </p>
             <p className="text-lg text-gray-600">
-              Today, EduNiti serves thousands of students across India, helping them navigate 
+              Today, PathNiti serves thousands of students across India, helping them navigate 
               their educational journey with confidence and clarity.               We&apos;re proud to be part 
               of their success stories and committed to expanding our impact.
             </p>

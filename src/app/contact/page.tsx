@@ -72,24 +72,24 @@ export default function ContactPage() {
 
   const faqs = [
     {
-      question: "How does EduNiti help students choose their career path?",
-      answer: "EduNiti uses AI-powered aptitude assessments and comprehensive data analysis to provide personalized career recommendations based on your interests, strengths, and academic performance."
+      question: "How does PathNiti help students choose their career path?",
+      answer: "PathNiti uses AI-powered aptitude assessments and comprehensive data analysis to provide personalized career recommendations based on your interests, strengths, and academic performance."
     },
     {
-      question: "Is EduNiti free to use?",
-      answer: "Yes, EduNiti offers a free tier with basic features. We also have premium plans with advanced features and personalized guidance."
+      question: "Is PathNiti free to use?",
+      answer: "Yes, PathNiti offers a free tier with basic features. We also have premium plans with advanced features and personalized guidance."
     },
     {
       question: "How accurate are the career recommendations?",
       answer: "Our AI algorithms have a 95% accuracy rate in career path predictions, based on extensive testing with thousands of students across India."
     },
     {
-      question: "Can I use EduNiti on my mobile phone?",
-      answer: "Absolutely! EduNiti is available as a mobile app for both iOS and Android, and our web platform is fully responsive for mobile devices."
+      question: "Can I use PathNiti on my mobile phone?",
+      answer: "Absolutely! PathNiti is available as a mobile app for both iOS and Android, and our web platform is fully responsive for mobile devices."
     },
     {
       question: "Do you provide support for students with disabilities?",
-      answer: "Yes, EduNiti is committed to accessibility. Our platform includes features for students with visual, hearing, and motor impairments."
+      answer: "Yes, PathNiti is committed to accessibility. Our platform includes features for students with visual, hearing, and motor impairments."
     },
     {
       question: "How often is the college and scholarship data updated?",
@@ -104,7 +104,7 @@ export default function ContactPage() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <GraduationCap className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold text-primary">EduNiti</span>
+            <span className="text-2xl font-bold text-primary">PathNiti</span>
           </div>
           <Button variant="outline" asChild>
             <Link href="/">
@@ -122,7 +122,7 @@ export default function ContactPage() {
             Get in <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-green-600">Touch</span>
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Have questions about EduNiti? We&apos;re here to help! Reach out to us and we&apos;ll get back to you as soon as possible.
+            Have questions about PathNiti? We&apos;re here to help! Reach out to us and we&apos;ll get back to you as soon as possible.
           </p>
         </div>
 

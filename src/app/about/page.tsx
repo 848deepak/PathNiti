@@ -9,34 +9,48 @@ import {
   Heart,
   Award,
   Globe,
-  Lightbulb
+  Lightbulb,
+  Linkedin
 } from "lucide-react"
 import Link from "next/link"
 
 export default function AboutPage() {
   const team = [
     {
-      name: "Dr. Rajesh Kumar",
-      role: "Founder & CEO",
-      description: "Former IIT professor with 15+ years in education technology",
+      name: "Deepak Pandey",
+      role: "Team Leader",
+      description: "Full-stack developer and project lead with expertise in modern web technologies",
+      image: "/api/placeholder/150/150",
+      linkedin: "https://linkedin.com/in/848deepak"
+    },
+    {
+      name: "Parisha",
+      role: "Frontend Developer",
+      description: "UI/UX specialist focused on creating intuitive user experiences",
       image: "/api/placeholder/150/150"
     },
     {
-      name: "Priya Sharma",
-      role: "CTO",
-      description: "Tech lead with expertise in AI and machine learning",
+      name: "Lisa",
+      role: "Backend Developer",
+      description: "Backend systems architect with expertise in scalable solutions",
       image: "/api/placeholder/150/150"
     },
     {
-      name: "Amit Patel",
-      role: "Head of Product",
-      description: "Product strategist focused on student experience",
+      name: "Gauranvit",
+      role: "Full-Stack Developer",
+      description: "Versatile developer with skills in both frontend and backend technologies",
       image: "/api/placeholder/150/150"
     },
     {
-      name: "Sneha Reddy",
-      role: "Head of Operations",
-      description: "Operations expert with deep knowledge of Indian education system",
+      name: "Deepika",
+      role: "UI/UX Designer",
+      description: "Creative designer focused on user-centered design and accessibility",
+      image: "/api/placeholder/150/150"
+    },
+    {
+      name: "Ojaswini",
+      role: "Data Analyst",
+      description: "Data specialist with expertise in analytics and insights for student guidance",
       image: "/api/placeholder/150/150"
     }
   ]
@@ -210,7 +224,7 @@ export default function AboutPage() {
           <h2 className="text-3xl font-bold text-center text-gray-900 mb-8">
             Meet Our Team
           </h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {team.map((member, index) => (
               <Card key={index}>
                 <CardContent className="p-6 text-center">
@@ -223,9 +237,20 @@ export default function AboutPage() {
                   <p className="text-primary font-medium mb-2">
                     {member.role}
                   </p>
-                  <p className="text-gray-600 text-sm">
+                  <p className="text-gray-600 text-sm mb-3">
                     {member.description}
                   </p>
+                  {member.linkedin && (
+                    <Link 
+                      href={member.linkedin} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center text-primary hover:text-primary/80 transition-colors"
+                    >
+                      <Linkedin className="h-4 w-4 mr-1" />
+                      LinkedIn
+                    </Link>
+                  )}
                 </CardContent>
               </Card>
             ))}

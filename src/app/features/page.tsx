@@ -118,7 +118,7 @@ export default function FeaturesPage() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <GraduationCap className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold text-primary">EduNiti</span>
+            <span className="text-2xl font-bold text-primary">PathNiti</span>
           </div>
           <Button variant="outline" asChild>
             <Link href="/">
@@ -175,7 +175,7 @@ export default function FeaturesPage() {
         {/* Additional Features */}
         <div className="bg-white rounded-lg p-8 mb-16">
           <h2 className="text-3xl font-bold text-center text-gray-900 mb-8">
-            Why Choose EduNiti?
+            Why Choose PathNiti?
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {additionalFeatures.map((feature, index) => {
@@ -232,7 +232,7 @@ export default function FeaturesPage() {
               {
                 name: "Priya Sharma",
                 role: "Class 12 Student, Delhi",
-                content: "EduNiti helped me discover my passion for computer science. The aptitude test was incredibly accurate!",
+                content: "PathNiti helped me discover my passion for computer science. The aptitude test was incredibly accurate!",
                 rating: 5
               },
               {
@@ -244,7 +244,7 @@ export default function FeaturesPage() {
               {
                 name: "Anita Singh",
                 role: "Scholarship Recipient, Bangalore",
-                content: "I wouldn't have known about the scholarship opportunities without EduNiti. It changed my life!",
+                content: "I wouldn't have known about the scholarship opportunities without PathNiti. It changed my life!",
                 rating: 5
               }
             ].map((testimonial, index) => (
@@ -274,11 +274,11 @@ export default function FeaturesPage() {
             Ready to Start Your Journey?
           </h2>
           <p className="text-xl text-gray-600 mb-8">
-            Join thousands of students who have already discovered their path with EduNiti
+            Join thousands of students who have already discovered their path with PathNiti
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" asChild>
-              <Link href="/auth/signup">
+              <Link href="/dashboard">
                 Get Started Free
               </Link>
             </Button>

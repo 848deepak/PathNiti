@@ -9,11 +9,16 @@ export default function Home() {
       <nav className="border-b bg-white/90 backdrop-blur-md sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="relative">
-              <GraduationCap className="h-8 w-8 text-primary" />
-              <Sparkles className="h-3 w-3 text-yellow-500 absolute -top-1 -right-1" />
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary to-blue-600 rounded-xl blur-sm opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="relative bg-white p-2 rounded-xl shadow-lg">
+                <GraduationCap className="h-8 w-8 text-primary" />
+                <Sparkles className="h-3 w-3 text-yellow-500 absolute -top-1 -right-1 animate-pulse" />
+              </div>
             </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">PathNiti</span>
+            <span className="text-3xl font-black bg-gradient-to-r from-blue-800 via-blue-600 to-purple-600 bg-clip-text text-transparent tracking-tight">
+              PathNiti
+            </span>
           </div>
           <div className="hidden md:flex items-center space-x-8">
             <Link href="/features" className="text-gray-600 hover:text-primary transition-all duration-200 hover:scale-105">
@@ -27,13 +32,13 @@ export default function Home() {
             </Link>
           </div>
           <div className="flex items-center space-x-3">
-            <Button variant="outline" className="hover:scale-105 transition-transform duration-200" asChild>
-              <Link href="/auth/login">Login</Link>
+            <Button variant="outline" className="hover:scale-105 transition-all duration-200 border-2 hover:border-primary hover:bg-primary/5" asChild>
+              <Link href="/dashboard">Demo Login</Link>
             </Button>
-            <Button className="bg-gradient-to-r from-primary to-blue-600 hover:from-blue-600 hover:to-primary transition-all duration-300 hover:scale-105 shadow-lg" asChild>
-              <Link href="/auth/signup" className="flex items-center gap-2">
-                Get Started
-                <ArrowRight className="h-4 w-4" />
+            <Button className="relative overflow-hidden bg-gradient-to-r from-primary via-blue-600 to-purple-600 hover:from-purple-600 hover:via-blue-600 hover:to-primary transition-all duration-500 hover:scale-105 shadow-xl hover:shadow-2xl group" asChild>
+              <Link href="/dashboard" className="flex items-center gap-2 relative z-10">
+                <span className="font-semibold">Get Started</span>
+                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
               </Link>
             </Button>
           </div>
@@ -41,7 +46,7 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-24 text-center relative overflow-hidden bg-white">
+      <section className="container mx-auto px-4 py-24 text-center relative overflow-hidden bg-white animate-fade-in">
         {/* Background decoration */}
         <div className="absolute inset-0 -z-10">
           <div className="absolute top-20 left-10 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
@@ -68,16 +73,16 @@ export default function Home() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-            <Button size="lg" className="text-lg px-10 py-6 bg-gradient-to-r from-primary to-blue-600 hover:from-blue-600 hover:to-primary transition-all duration-300 hover:scale-105 shadow-xl" asChild>
-              <Link href="/auth/signup" className="flex items-center gap-3">
-                Start Your Journey
-                <ArrowRight className="h-5 w-5" />
+            <Button size="xl" className="relative overflow-hidden text-lg px-12 py-8 bg-gradient-to-r from-primary via-blue-600 to-purple-600 hover:from-purple-600 hover:via-blue-600 hover:to-primary transition-all duration-500 hover:scale-110 shadow-2xl hover:shadow-3xl animate-slide-in-left group" asChild>
+              <Link href="/dashboard" className="flex items-center gap-3 relative z-10">
+                <span className="font-bold text-lg">Start Your Journey</span>
+                <ArrowRight className="h-6 w-6 group-hover:translate-x-2 transition-transform duration-300" />
               </Link>
             </Button>
-            <Button size="lg" variant="outline" className="text-lg px-10 py-6 border-2 hover:bg-gray-50 transition-all duration-300 hover:scale-105" asChild>
+            <Button size="xl" variant="outline" className="text-lg px-12 py-8 border-3 border-primary/30 hover:border-primary hover:bg-primary/5 transition-all duration-300 hover:scale-105 animate-slide-in-right group backdrop-blur-sm" asChild>
               <Link href="/demo" className="flex items-center gap-3">
-                <Sparkles className="h-5 w-5" />
-                Watch Demo
+                <Sparkles className="h-6 w-6 group-hover:rotate-12 transition-transform duration-300" />
+                <span className="font-semibold">Watch Demo</span>
               </Link>
             </Button>
           </div>
@@ -120,7 +125,7 @@ export default function Home() {
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="group p-8 rounded-2xl bg-white border border-gray-100 hover:border-primary/20 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+            <Link href="/quiz" className="group p-8 rounded-2xl bg-white border border-gray-100 hover:border-primary/20 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 animate-scale-in cursor-pointer">
               <div className="w-16 h-16 bg-gradient-to-br from-primary/10 to-primary/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                 <Brain className="h-8 w-8 text-primary" />
               </div>
@@ -129,12 +134,12 @@ export default function Home() {
                 Comprehensive quiz to identify your strengths, interests, and suitable career paths with detailed analysis
               </p>
               <div className="flex items-center text-primary font-medium group-hover:translate-x-2 transition-transform duration-300">
-                <span>Learn more</span>
+                <span>Start Assessment</span>
                 <ArrowRight className="h-4 w-4 ml-2" />
               </div>
-            </div>
+            </Link>
 
-            <div className="group p-8 rounded-2xl bg-white border border-gray-100 hover:border-green-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+            <Link href="/colleges" className="group p-8 rounded-2xl bg-white border border-gray-100 hover:border-green-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 animate-scale-in cursor-pointer" style={{animationDelay: '0.1s'}}>
               <div className="w-16 h-16 bg-gradient-to-br from-green-100 to-green-200 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                 <MapPin className="h-8 w-8 text-green-600" />
               </div>
@@ -146,9 +151,9 @@ export default function Home() {
                 <span>Explore colleges</span>
                 <ArrowRight className="h-4 w-4 ml-2" />
               </div>
-            </div>
+            </Link>
 
-            <div className="group p-8 rounded-2xl bg-white border border-gray-100 hover:border-blue-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+            <Link href="/timeline" className="group p-8 rounded-2xl bg-white border border-gray-100 hover:border-blue-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 animate-scale-in cursor-pointer" style={{animationDelay: '0.2s'}}>
               <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                 <Calendar className="h-8 w-8 text-blue-600" />
               </div>
@@ -160,9 +165,9 @@ export default function Home() {
                 <span>Track deadlines</span>
                 <ArrowRight className="h-4 w-4 ml-2" />
               </div>
-            </div>
+            </Link>
 
-            <div className="group p-8 rounded-2xl bg-white border border-gray-100 hover:border-purple-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+            <Link href="/features" className="group p-8 rounded-2xl bg-white border border-gray-100 hover:border-purple-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 animate-scale-in cursor-pointer" style={{animationDelay: '0.3s'}}>
               <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-purple-200 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                 <Users className="h-8 w-8 text-purple-600" />
               </div>
@@ -174,9 +179,9 @@ export default function Home() {
                 <span>View pathways</span>
                 <ArrowRight className="h-4 w-4 ml-2" />
               </div>
-            </div>
+            </Link>
 
-            <div className="group p-8 rounded-2xl bg-white border border-gray-100 hover:border-orange-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+            <Link href="/scholarships" className="group p-8 rounded-2xl bg-white border border-gray-100 hover:border-orange-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 animate-scale-in cursor-pointer" style={{animationDelay: '0.4s'}}>
               <div className="w-16 h-16 bg-gradient-to-br from-orange-100 to-orange-200 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                 <BookOpen className="h-8 w-8 text-orange-600" />
               </div>
@@ -188,9 +193,9 @@ export default function Home() {
                 <span>Find scholarships</span>
                 <ArrowRight className="h-4 w-4 ml-2" />
               </div>
-            </div>
+            </Link>
 
-            <div className="group p-8 rounded-2xl bg-white border border-gray-100 hover:border-red-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+            <Link href="/dashboard" className="group p-8 rounded-2xl bg-white border border-gray-100 hover:border-red-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 animate-scale-in cursor-pointer" style={{animationDelay: '0.5s'}}>
               <div className="w-16 h-16 bg-gradient-to-br from-red-100 to-red-200 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                 <GraduationCap className="h-8 w-8 text-red-600" />
               </div>
@@ -202,7 +207,7 @@ export default function Home() {
                 <span>Get recommendations</span>
                 <ArrowRight className="h-4 w-4 ml-2" />
               </div>
-            </div>
+            </Link>
           </div>
         </div>
       </section>
@@ -235,16 +240,16 @@ export default function Home() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-              <Button size="lg" className="text-lg px-12 py-6 bg-white text-primary hover:bg-gray-100 transition-all duration-300 hover:scale-105 shadow-2xl" asChild>
-                <Link href="/auth/signup" className="flex items-center gap-3">
-                  <Sparkles className="h-5 w-5" />
-                  Get Started Free
+              <Button size="lg" className="relative overflow-hidden text-lg px-16 py-10 bg-white text-blue-800 hover:bg-gray-50 transition-all duration-500 hover:scale-110 shadow-2xl hover:shadow-3xl group border-2 border-white/20" asChild>
+                <Link href="/dashboard" className="flex items-center gap-4 relative z-10">
+                  <Sparkles className="h-7 w-7 text-blue-600 group-hover:rotate-12 transition-transform duration-300" />
+                  <span className="font-bold text-xl text-blue-800">Get Started Free</span>
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" className="text-lg px-12 py-6 border-2 border-white/30 text-white hover:bg-white/10 transition-all duration-300 hover:scale-105" asChild>
-                <Link href="/demo" className="flex items-center gap-3">
-                  <GraduationCap className="h-5 w-5" />
-                  Watch Demo
+              <Button size="lg" className="relative overflow-hidden text-lg px-16 py-10 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-blue-600 hover:to-purple-600 text-white border-2 border-white/30 hover:border-white/50 transition-all duration-500 hover:scale-110 shadow-2xl hover:shadow-3xl group backdrop-blur-sm" asChild>
+                <Link href="/demo" className="flex items-center gap-4 relative z-10">
+                  <GraduationCap className="h-7 w-7 group-hover:scale-110 transition-transform duration-300" />
+                  <span className="font-bold text-xl">Watch Demo</span>
                 </Link>
               </Button>
             </div>
@@ -278,7 +283,7 @@ export default function Home() {
                   <GraduationCap className="h-8 w-8 text-primary" />
                   <Sparkles className="h-3 w-3 text-yellow-500 absolute -top-1 -right-1" />
                 </div>
-                <span className="text-2xl font-bold bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent">PathNiti</span>
+                <span className="text-2xl font-bold bg-gradient-to-r from-blue-800 via-blue-600 to-purple-600 bg-clip-text text-transparent">PathNiti</span>
               </div>
               <p className="text-gray-400 leading-relaxed mb-6">
                 Empowering students with personalized career guidance and education resources. 

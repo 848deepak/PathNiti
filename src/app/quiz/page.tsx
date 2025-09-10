@@ -1,9 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect, useCallback } from "react"
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Progress } from "@/components/ui"
-import { supabase, useAuth } from "@/lib"
 import { Brain, ArrowLeft, ArrowRight, Clock, CheckCircle } from "lucide-react"
 import Link from "next/link"
 
@@ -18,8 +16,6 @@ interface QuizQuestion {
 }
 
 export default function QuizPage() {
-  const { user } = useAuth()
-  const router = useRouter()
   const [questions, setQuestions] = useState<QuizQuestion[]>([])
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null)
@@ -29,16 +25,17 @@ export default function QuizPage() {
   const [quizStarted, setQuizStarted] = useState(false)
   const [quizCompleted, setQuizCompleted] = useState(false)
 
-  useEffect(() => {
-    if (!user) {
-      router.push("/auth/login")
-      return
+  const completeQuiz = useCallback(async () => {
+    try {
+      // Bypass database operations for demo
+      console.log("Quiz completed with answers:", answers)
+      setQuizCompleted(true)
+    } catch (error) {
+      console.error("Error completing quiz:", error)
     }
+  }, [answers])
 
-    fetchQuestions()
-  }, [user, router])
-
-  const handleNextQuestion = () => {
+  const handleNextQuestion = useCallback(() => {
     if (selectedAnswer !== null) {
       const currentQuestion = questions[currentQuestionIndex]
       setAnswers({
@@ -54,7 +51,12 @@ export default function QuizPage() {
     } else {
       completeQuiz()
     }
-  }
+  }, [selectedAnswer, questions, currentQuestionIndex, answers, completeQuiz])
+
+  useEffect(() => {
+    // Bypass authentication for demo purposes
+    fetchQuestions()
+  }, [])
 
   useEffect(() => {
     if (quizStarted && timeLeft > 0) {
@@ -129,46 +131,6 @@ export default function QuizPage() {
     setSelectedAnswer(answerIndex)
   }
 
-  const completeQuiz = async () => {
-    try {
-      if (!user) return
-
-      // Save quiz session
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error: sessionError } = await (supabase as any)
-        .from("quiz_sessions")
-        .insert({
-          user_id: (user as any).id, // eslint-disable-line @typescript-eslint/no-explicit-any
-          status: "completed",
-          completed_at: new Date().toISOString(),
-          total_score: Object.keys(answers).length,
-        })
-        .select()
-        .single()
-
-      if (sessionError) throw sessionError
-
-      // Save individual responses
-      const responses = Object.entries(answers).map(([questionId, answer]) => ({
-            user_id: (user as any).id, // eslint-disable-line @typescript-eslint/no-explicit-any
-        question_id: questionId,
-        selected_answer: answer,
-        time_taken: 60 - timeLeft,
-      }))
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error: responsesError } = await (supabase as any)
-        .from("quiz_responses")
-        .insert(responses)
-
-      if (responsesError) throw responsesError
-
-      setQuizCompleted(true)
-    } catch (error) {
-      console.error("Error completing quiz:", error)
-    }
-  }
-
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
@@ -186,9 +148,7 @@ export default function QuizPage() {
     )
   }
 
-  if (!user) {
-    return null
-  }
+  // Bypass user check for demo
 
   if (quizCompleted) {
     return (
@@ -223,7 +183,7 @@ export default function QuizPage() {
           <div className="container mx-auto px-4 py-4 flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Brain className="h-8 w-8 text-primary" />
-              <span className="text-2xl font-bold text-primary">EduNiti</span>
+              <span className="text-2xl font-bold text-primary">PathNiti</span>
             </div>
             <Button variant="outline" asChild>
               <Link href="/dashboard">
@@ -287,7 +247,7 @@ export default function QuizPage() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Brain className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold text-primary">EduNiti</span>
+            <span className="text-2xl font-bold text-primary">PathNiti</span>
           </div>
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2 text-sm text-gray-600">

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input } from "@/components/ui"
 // import { supabase } from "@/lib" // Removed unused import
 import { 
@@ -38,21 +38,13 @@ interface College {
 }
 
 export default function CollegesPage() {
-  // const { user } = useAuth() // Removed unused variable
+  // Bypass authentication for demo purposes
   const [colleges, setColleges] = useState<College[]>([])
   const [filteredColleges, setFilteredColleges] = useState<College[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedState, setSelectedState] = useState("")
   const [selectedType, setSelectedType] = useState("")
-
-  useEffect(() => {
-    fetchColleges()
-  }, [])
-
-  useEffect(() => {
-    filterColleges()
-  }, [colleges, searchTerm, selectedState, selectedType])
 
   const fetchColleges = async () => {
     try {
@@ -194,7 +186,7 @@ export default function CollegesPage() {
     }
   }
 
-  const filterColleges = () => {
+  const filterColleges = useCallback(() => {
     let filtered = colleges
 
     if (searchTerm) {
@@ -214,7 +206,15 @@ export default function CollegesPage() {
     }
 
     setFilteredColleges(filtered)
-  }
+  }, [colleges, searchTerm, selectedState, selectedType])
+
+  useEffect(() => {
+    fetchColleges()
+  }, [])
+
+  useEffect(() => {
+    filterColleges()
+  }, [filterColleges])
 
   const states = Array.from(new Set(colleges.map(college => college.location.state)))
   const types = Array.from(new Set(colleges.map(college => college.type)))
@@ -237,7 +237,7 @@ export default function CollegesPage() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <GraduationCap className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold text-primary">EduNiti</span>
+            <span className="text-2xl font-bold text-primary">PathNiti</span>
           </div>
           <Button variant="outline" asChild>
             <Link href="/dashboard">

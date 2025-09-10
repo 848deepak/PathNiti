@@ -1,268 +1,225 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Button, Card, CardContent, Input } from "@/components/ui"
-// import { supabase } from "@/lib" // Removed unused import
-import { useAuth } from "@/lib"
+import { useState, useEffect, useCallback } from "react"
+import { Button, Card, CardContent, Badge } from "@/components/ui"
 import { 
   GraduationCap, 
-  Calendar, 
-  Clock, 
-  Bell, 
+  Calendar,
   ArrowLeft,
+  Clock,
   CheckCircle,
-  AlertCircle,
-  XCircle,
   BookOpen,
+  Award,
   MapPin,
-  Filter
+  ExternalLink
 } from "lucide-react"
 import Link from "next/link"
 
-interface TimelineItem {
+interface TimelineEvent {
   id: string
   title: string
   description: string
-  deadline_date: string
-  deadline_type: string
-  college_id?: string
-  program_id?: string
-  stream?: string
-  class_level?: string
-  is_active: boolean
-  created_at: string
-  college?: {
-    name: string
-    location: {
-      city: string
-      state: string
-    }
-  }
+  date: string
+  type: "deadline" | "exam" | "admission" | "scholarship" | "result"
+  status: "upcoming" | "ongoing" | "completed" | "overdue"
+  priority: "high" | "medium" | "low"
+  category: string
+  location?: string
+  website?: string
 }
 
 export default function TimelinePage() {
-  const { user } = useAuth()
-  const router = useRouter()
-  const [timelineItems, setTimelineItems] = useState<TimelineItem[]>([])
-  const [filteredItems, setFilteredItems] = useState<TimelineItem[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState("")
+  const [events, setEvents] = useState<TimelineEvent[]>([])
+  const [filteredEvents, setFilteredEvents] = useState<TimelineEvent[]>([])
   const [selectedType, setSelectedType] = useState("")
-  const [selectedStream, setSelectedStream] = useState("")
-  const [selectedClassLevel, setSelectedClassLevel] = useState("")
-  // const [showAddModal, setShowAddModal] = useState(false) // Removed unused variables
+  const [selectedStatus, setSelectedStatus] = useState("")
 
-  const filterItems = () => {
-    let filtered = timelineItems
-
-    if (searchTerm) {
-      filtered = filtered.filter(item =>
-        item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.college?.name.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    }
-
-    if (selectedType) {
-      filtered = filtered.filter(item => item.deadline_type === selectedType)
-    }
-
-    if (selectedStream) {
-      filtered = filtered.filter(item => item.stream === selectedStream)
-    }
-
-    if (selectedClassLevel) {
-      filtered = filtered.filter(item => item.class_level === selectedClassLevel)
-    }
-
-    // Sort by deadline date
-    filtered.sort((a, b) => new Date(a.deadline_date).getTime() - new Date(b.deadline_date).getTime())
-
-    setFilteredItems(filtered)
-  }
-
-  useEffect(() => {
-    // if (!user) {
-    //   router.push("/auth/login")
-    //   return
-    // }
-
-    fetchTimelineItems()
-  }, [router])
-
-  useEffect(() => {
-    filterItems()
-  }, [timelineItems, searchTerm, selectedType, selectedStream, selectedClassLevel, filterItems])
-
-  const fetchTimelineItems = async () => {
+  const fetchTimelineEvents = async () => {
     try {
-      // For demo purposes, we'll use sample data
-      // In production, this would fetch from the database
-      const sampleItems: TimelineItem[] = [
+      // Mock timeline data for SIH demo
+      const sampleEvents: TimelineEvent[] = [
         {
           id: "1",
-          title: "Delhi University Application Deadline",
-          description: "Last date to submit application for undergraduate programs",
-          deadline_date: "2024-03-31",
-          deadline_type: "application",
-          stream: "arts",
-          class_level: "12",
-          is_active: true,
-          created_at: "2024-01-01T00:00:00Z",
-          college: {
-            name: "Delhi University",
-            location: { city: "New Delhi", state: "Delhi" }
-          }
+          title: "JEE Main 2024 Registration",
+          description: "Registration for JEE Main 2024 examination begins",
+          date: "2024-12-15",
+          type: "exam",
+          status: "upcoming",
+          priority: "high",
+          category: "Engineering",
+          website: "https://jeemain.nta.ac.in"
         },
         {
           id: "2",
-          title: "JEE Main 2024 Exam",
-          description: "Joint Entrance Examination for engineering programs",
-          deadline_date: "2024-04-15",
-          deadline_type: "exam",
-          stream: "engineering",
-          class_level: "12",
-          is_active: true,
-          created_at: "2024-01-01T00:00:00Z"
+          title: "NEET 2024 Application Deadline",
+          description: "Last date to submit NEET 2024 application forms",
+          date: "2024-01-15",
+          type: "deadline",
+          status: "overdue",
+          priority: "high",
+          category: "Medical",
+          website: "https://neet.nta.nic.in"
         },
         {
           id: "3",
-          title: "NEET 2024 Application",
-          description: "National Eligibility cum Entrance Test application deadline",
-          deadline_date: "2024-02-28",
-          deadline_type: "application",
-          stream: "medical",
-          class_level: "12",
-          is_active: true,
-          created_at: "2024-01-01T00:00:00Z"
+          title: "CUET 2024 Registration",
+          description: "Common University Entrance Test registration opens",
+          date: "2024-02-01",
+          type: "exam",
+          status: "upcoming",
+          priority: "high",
+          category: "General",
+          website: "https://cuet.samarth.ac.in"
         },
         {
           id: "4",
-          title: "National Scholarship Portal Application",
-          description: "Apply for government scholarships for undergraduate students",
-          deadline_date: "2024-12-31",
-          deadline_type: "scholarship",
-          class_level: "undergraduate",
-          is_active: true,
-          created_at: "2024-01-01T00:00:00Z"
+          title: "Delhi University Admissions",
+          description: "Delhi University undergraduate admissions begin",
+          date: "2024-05-15",
+          type: "admission",
+          status: "upcoming",
+          priority: "medium",
+          category: "General",
+          location: "New Delhi"
         },
         {
           id: "5",
-          title: "IIT Delhi Counseling",
-          description: "Online counseling for IIT Delhi admissions",
-          deadline_date: "2024-06-15",
-          deadline_type: "counseling",
-          stream: "engineering",
-          class_level: "12",
-          is_active: true,
-          created_at: "2024-01-01T00:00:00Z",
-          college: {
-            name: "IIT Delhi",
-            location: { city: "New Delhi", state: "Delhi" }
-          }
+          title: "National Merit Scholarship Application",
+          description: "Apply for National Merit Scholarship Scheme",
+          date: "2024-03-15",
+          type: "scholarship",
+          status: "upcoming",
+          priority: "medium",
+          category: "Scholarship",
+          website: "https://scholarships.gov.in"
         },
         {
           id: "6",
-          title: "Merit Cum Means Scholarship",
-          description: "Scholarship for minority community students",
-          deadline_date: "2024-11-30",
-          deadline_type: "scholarship",
-          class_level: "undergraduate",
-          is_active: true,
-          created_at: "2024-01-01T00:00:00Z"
+          title: "IIT JEE Advanced 2024",
+          description: "JEE Advanced examination for IIT admissions",
+          date: "2024-06-02",
+          type: "exam",
+          status: "upcoming",
+          priority: "high",
+          category: "Engineering",
+          website: "https://jeeadv.ac.in"
+        },
+        {
+          id: "7",
+          title: "AIIMS MBBS Entrance Exam",
+          description: "All India Institute of Medical Sciences entrance exam",
+          date: "2024-05-26",
+          type: "exam",
+          status: "upcoming",
+          priority: "high",
+          category: "Medical",
+          website: "https://aiimsexams.ac.in"
+        },
+        {
+          id: "8",
+          title: "NIT Admissions Counseling",
+          description: "National Institute of Technology counseling begins",
+          date: "2024-07-01",
+          type: "admission",
+          status: "upcoming",
+          priority: "medium",
+          category: "Engineering"
+        },
+        {
+          id: "9",
+          title: "Post Matric Scholarship Deadline",
+          description: "Last date for SC/ST Post Matric Scholarship applications",
+          date: "2024-04-30",
+          type: "scholarship",
+          status: "upcoming",
+          priority: "medium",
+          category: "Scholarship",
+          website: "https://scholarships.gov.in"
+        },
+        {
+          id: "10",
+          title: "Class 12 Board Results",
+          description: "CBSE Class 12 board examination results declaration",
+          date: "2024-05-13",
+          type: "result",
+          status: "upcoming",
+          priority: "high",
+          category: "General",
+          website: "https://cbse.gov.in"
         }
       ]
 
-      setTimelineItems(sampleItems)
+      setEvents(sampleEvents)
     } catch (error) {
-      console.error("Error fetching timeline items:", error)
-    } finally {
-      setLoading(false)
+      console.error("Error fetching timeline events:", error)
     }
   }
 
-  const getDeadlineStatus = (deadlineDate: string) => {
-    const today = new Date()
-    const deadline = new Date(deadlineDate)
-    const diffTime = deadline.getTime() - today.getTime()
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  const filterEvents = useCallback(() => {
+    let filtered = events
 
-    if (diffDays < 0) {
-      return { status: "expired", color: "text-red-600", bgColor: "bg-red-50", icon: XCircle }
-    } else if (diffDays <= 7) {
-      return { status: "urgent", color: "text-orange-600", bgColor: "bg-orange-50", icon: AlertCircle }
-    } else if (diffDays <= 30) {
-      return { status: "upcoming", color: "text-yellow-600", bgColor: "bg-yellow-50", icon: Clock }
-    } else {
-      return { status: "normal", color: "text-green-600", bgColor: "bg-green-50", icon: CheckCircle }
+    if (selectedType) {
+      filtered = filtered.filter(event => event.type === selectedType)
+    }
+
+    if (selectedStatus) {
+      filtered = filtered.filter(event => event.status === selectedStatus)
+    }
+
+    // Sort by date
+    filtered.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+
+    setFilteredEvents(filtered)
+  }, [events, selectedType, selectedStatus])
+
+  useEffect(() => {
+    fetchTimelineEvents()
+  }, [])
+
+  useEffect(() => {
+    filterEvents()
+  }, [filterEvents])
+
+  const getStatusBadgeVariant = (status: string) => {
+    switch (status) {
+      case "upcoming": return "default"
+      case "ongoing": return "info"
+      case "completed": return "success"
+      case "overdue": return "destructive"
+      default: return "outline"
     }
   }
 
-  const getDeadlineTypeIcon = (type: string) => {
+  const getTypeIcon = (type: string) => {
     switch (type) {
-      case "application":
-        return <BookOpen className="h-4 w-4" />
-      case "exam":
-        return <GraduationCap className="h-4 w-4" />
-      case "counseling":
-        return <Calendar className="h-4 w-4" />
-      case "scholarship":
-        return <Bell className="h-4 w-4" />
-      default:
-        return <Calendar className="h-4 w-4" />
+      case "deadline": return Clock
+      case "exam": return BookOpen
+      case "admission": return GraduationCap
+      case "scholarship": return Award
+      case "result": return CheckCircle
+      default: return Calendar
     }
   }
 
-  const getDeadlineTypeColor = (type: string) => {
-    switch (type) {
-      case "application":
-        return "bg-blue-100 text-blue-800"
-      case "exam":
-        return "bg-purple-100 text-purple-800"
-      case "counseling":
-        return "bg-green-100 text-green-800"
-      case "scholarship":
-        return "bg-orange-100 text-orange-800"
-      default:
-        return "bg-gray-100 text-gray-800"
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case "high": return "text-red-600"
+      case "medium": return "text-yellow-600"
+      case "low": return "text-green-600"
+      default: return "text-gray-600"
     }
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-IN', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-  }
-
-  const getDaysUntilDeadline = (deadlineDate: string) => {
+  const getDaysUntilEvent = (date: string) => {
+    const eventDate = new Date(date)
     const today = new Date()
-    const deadline = new Date(deadlineDate)
-    const diffTime = deadline.getTime() - today.getTime()
+    const diffTime = eventDate.getTime() - today.getTime()
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
     return diffDays
   }
 
-  const deadlineTypes = ["application", "exam", "counseling", "scholarship"]
-  const streams = ["arts", "science", "commerce", "engineering", "medical"]
-  const classLevels = ["10", "12", "undergraduate", "postgraduate"]
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <Calendar className="h-12 w-12 text-primary animate-pulse mx-auto mb-4" />
-          <p className="text-gray-600">Loading timeline...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (!user) {
-    return null
-  }
+  const types = Array.from(new Set(events.map(event => event.type)))
+  const statuses = Array.from(new Set(events.map(event => event.status)))
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -270,8 +227,8 @@ export default function TimelinePage() {
       <nav className="bg-white border-b">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Calendar className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold text-primary">EduNiti</span>
+            <GraduationCap className="h-8 w-8 text-primary" />
+            <span className="text-2xl font-bold text-primary">PathNiti</span>
           </div>
           <Button variant="outline" asChild>
             <Link href="/dashboard">
@@ -286,36 +243,25 @@ export default function TimelinePage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Timeline Tracker
+            Academic Timeline Tracker
           </h1>
           <p className="text-gray-600">
-            Never miss important deadlines for admissions, exams, and scholarships.
+            Never miss important deadlines, exams, and admission dates. Stay on top of your academic journey.
           </p>
         </div>
 
         {/* Filters */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border mb-8">
-          <div className="grid md:grid-cols-5 gap-4">
-            <div className="md:col-span-2">
-              <div className="relative">
-                <Filter className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Search deadlines..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            
+        <div className="bg-white p-6 rounded-xl shadow-sm border mb-8">
+          <div className="grid md:grid-cols-3 gap-4">
             <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Event Type</label>
               <select
                 value={selectedType}
                 onChange={(e) => setSelectedType(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
               >
                 <option value="">All Types</option>
-                {deadlineTypes.map(type => (
+                {types.map(type => (
                   <option key={type} value={type}>
                     {type.charAt(0).toUpperCase() + type.slice(1)}
                   </option>
@@ -324,121 +270,128 @@ export default function TimelinePage() {
             </div>
             
             <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
               <select
-                value={selectedStream}
-                onChange={(e) => setSelectedStream(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md"
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
               >
-                <option value="">All Streams</option>
-                {streams.map(stream => (
-                  <option key={stream} value={stream}>
-                    {stream.charAt(0).toUpperCase() + stream.slice(1)}
+                <option value="">All Status</option>
+                {statuses.map(status => (
+                  <option key={status} value={status}>
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
                   </option>
                 ))}
               </select>
             </div>
-            
-            <div>
-              <select
-                value={selectedClassLevel}
-                onChange={(e) => setSelectedClassLevel(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md"
+
+            <div className="flex items-end">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setSelectedType("")
+                  setSelectedStatus("")
+                }}
+                className="w-full"
               >
-                <option value="">All Levels</option>
-                {classLevels.map(level => (
-                  <option key={level} value={level}>
-                    {level === "10" ? "Class 10" : 
-                     level === "12" ? "Class 12" : 
-                     level.charAt(0).toUpperCase() + level.slice(1)}
-                  </option>
-                ))}
-              </select>
+                Clear Filters
+              </Button>
             </div>
           </div>
         </div>
 
-        {/* Timeline Items */}
-        <div className="space-y-6">
-          {filteredItems.map((item) => {
-            const status = getDeadlineStatus(item.deadline_date)
-            const daysUntil = getDaysUntilDeadline(item.deadline_date)
-            const StatusIcon = status.icon
+        {/* Results */}
+        <div className="mb-4">
+          <p className="text-gray-600">
+            Showing {filteredEvents.length} of {events.length} events
+          </p>
+        </div>
 
+        {/* Timeline Events */}
+        <div className="space-y-4">
+          {filteredEvents.map((event) => {
+            const Icon = getTypeIcon(event.type)
+            const daysUntil = getDaysUntilEvent(event.date)
+            
             return (
-              <Card key={item.id} className="hover:shadow-lg transition-shadow">
+              <Card key={event.id} className="hover:shadow-lg transition-all duration-300">
                 <CardContent className="p-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <div className={`p-2 rounded-lg ${status.bgColor}`}>
-                          <StatusIcon className={`h-5 w-5 ${status.color}`} />
-                        </div>
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-900">
-                            {item.title}
-                          </h3>
-                          <div className="flex items-center space-x-2 mt-1">
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDeadlineTypeColor(item.deadline_type)}`}>
-                              {getDeadlineTypeIcon(item.deadline_type)}
-                              <span className="ml-1">{item.deadline_type.charAt(0).toUpperCase() + item.deadline_type.slice(1)}</span>
-                            </span>
-                            {item.stream && (
-                              <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs">
-                                {item.stream.charAt(0).toUpperCase() + item.stream.slice(1)}
-                              </span>
-                            )}
-                            {item.class_level && (
-                              <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs">
-                                {item.class_level === "10" ? "Class 10" : 
-                                 item.class_level === "12" ? "Class 12" : 
-                                 item.class_level.charAt(0).toUpperCase() + item.class_level.slice(1)}
-                              </span>
-                            )}
-                          </div>
-                        </div>
+                  <div className="flex items-start space-x-4">
+                    <div className="flex-shrink-0">
+                      <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                        event.status === "overdue" ? "bg-red-100" :
+                        event.status === "upcoming" ? "bg-blue-100" :
+                        event.status === "ongoing" ? "bg-yellow-100" :
+                        "bg-green-100"
+                      }`}>
+                        <Icon className={`h-6 w-6 ${
+                          event.status === "overdue" ? "text-red-600" :
+                          event.status === "upcoming" ? "text-blue-600" :
+                          event.status === "ongoing" ? "text-yellow-600" :
+                          "text-green-600"
+                        }`} />
                       </div>
-
-                      <p className="text-gray-600 mb-4">{item.description}</p>
-
-                      {item.college && (
-                        <div className="flex items-center text-sm text-gray-500 mb-4">
-                          <MapPin className="h-4 w-4 mr-1" />
-                          <span>{item.college.name}, {item.college.location.city}, {item.college.location.state}</span>
-                        </div>
-                      )}
-
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                          <div className="flex items-center text-sm">
-                            <Calendar className="h-4 w-4 mr-1 text-gray-400" />
-                            <span className="text-gray-600">Deadline: {formatDate(item.deadline_date)}</span>
+                    </div>
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                            {event.title}
+                          </h3>
+                          <p className="text-gray-600 mb-3">
+                            {event.description}
+                          </p>
+                          
+                          <div className="flex items-center space-x-4 text-sm text-gray-500 mb-3">
+                            <div className="flex items-center">
+                              <Calendar className="h-4 w-4 mr-1" />
+                              {new Date(event.date).toLocaleDateString('en-IN', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                              })}
+                            </div>
+                            
+                            {event.location && (
+                              <div className="flex items-center">
+                                <MapPin className="h-4 w-4 mr-1" />
+                                {event.location}
+                              </div>
+                            )}
+                            
+                            <div className={`font-medium ${getPriorityColor(event.priority)}`}>
+                              {event.priority.toUpperCase()} Priority
+                            </div>
                           </div>
                           
-                          <div className="flex items-center text-sm">
-                            <Clock className="h-4 w-4 mr-1 text-gray-400" />
-                            <span className={`font-medium ${
-                              daysUntil < 0 ? "text-red-600" :
-                              daysUntil <= 7 ? "text-orange-600" :
-                              daysUntil <= 30 ? "text-yellow-600" :
-                              "text-green-600"
-                            }`}>
-                              {daysUntil < 0 ? `Expired ${Math.abs(daysUntil)} days ago` :
-                               daysUntil === 0 ? "Due today" :
-                               daysUntil === 1 ? "Due tomorrow" :
-                               `${daysUntil} days left`}
-                            </span>
+                          <div className="flex items-center space-x-2">
+                            <Badge variant={getStatusBadgeVariant(event.status)}>
+                              {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
+                            </Badge>
+                            
+                            <Badge variant="outline">
+                              {event.category}
+                            </Badge>
+                            
+                            {daysUntil >= 0 && (
+                              <Badge variant={daysUntil <= 7 ? "destructive" : "secondary"}>
+                                {daysUntil === 0 ? "Today" : 
+                                 daysUntil === 1 ? "Tomorrow" : 
+                                 `${daysUntil} days left`}
+                              </Badge>
+                            )}
                           </div>
                         </div>
-
-                        <div className="flex items-center space-x-2">
-                          <Button size="sm" variant="outline">
-                            <Bell className="h-4 w-4 mr-1" />
-                            Set Reminder
+                        
+                        {event.website && (
+                          <Button size="sm" variant="outline" asChild>
+                            <a href={event.website} target="_blank" rel="noopener noreferrer">
+                              <ExternalLink className="h-4 w-4 mr-1" />
+                              Visit
+                            </a>
                           </Button>
-                          <Button size="sm" variant="outline">
-                            View Details
-                          </Button>
-                        </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -448,70 +401,13 @@ export default function TimelinePage() {
           })}
         </div>
 
-        {filteredItems.length === 0 && (
+        {filteredEvents.length === 0 && (
           <div className="text-center py-12">
             <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No deadlines found</h3>
-            <p className="text-gray-600">Try adjusting your search criteria or filters.</p>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No events found</h3>
+            <p className="text-gray-600">Try adjusting your filters or check back later for new events.</p>
           </div>
         )}
-
-        {/* Quick Stats */}
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Card>
-            <CardContent className="p-6 text-center">
-              <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                <XCircle className="h-6 w-6 text-red-600" />
-              </div>
-              <p className="text-2xl font-bold text-gray-900">
-                {filteredItems.filter(item => getDaysUntilDeadline(item.deadline_date) < 0).length}
-              </p>
-              <p className="text-sm text-gray-600">Expired</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6 text-center">
-              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                <AlertCircle className="h-6 w-6 text-orange-600" />
-              </div>
-              <p className="text-2xl font-bold text-gray-900">
-                {filteredItems.filter(item => {
-                  const days = getDaysUntilDeadline(item.deadline_date)
-                  return days >= 0 && days <= 7
-                }).length}
-              </p>
-              <p className="text-sm text-gray-600">Urgent (≤7 days)</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6 text-center">
-              <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                <Clock className="h-6 w-6 text-yellow-600" />
-              </div>
-              <p className="text-2xl font-bold text-gray-900">
-                {filteredItems.filter(item => {
-                  const days = getDaysUntilDeadline(item.deadline_date)
-                  return days > 7 && days <= 30
-                }).length}
-              </p>
-              <p className="text-sm text-gray-600">Upcoming (≤30 days)</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6 text-center">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                <CheckCircle className="h-6 w-6 text-green-600" />
-              </div>
-              <p className="text-2xl font-bold text-gray-900">
-                {filteredItems.filter(item => getDaysUntilDeadline(item.deadline_date) > 30).length}
-              </p>
-              <p className="text-sm text-gray-600">Future (&gt;30 days)</p>
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </div>
   )

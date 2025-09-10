@@ -23,9 +23,9 @@ export default function AuthCallbackPage() {
         if ((data as any).session?.user) { // eslint-disable-line @typescript-eslint/no-explicit-any
           // Check if user has completed profile
           const { data: profile } = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("id", (data as any).session.user.id) // eslint-disable-line @typescript-eslint/no-explicit-any
+            .from()
+            .select()
+            .eq()
             .single()
 
           if (profile) {

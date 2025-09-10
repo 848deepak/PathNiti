@@ -36,3 +36,4 @@ echo "🔧 For production deployment:"
 echo "1. Set up a Supabase project at https://supabase.com"
 echo "2. Update environment variables with real credentials"
 echo "3. Deploy using the instructions in DEPLOYMENT.md"
+

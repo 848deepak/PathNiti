@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui"
-import { supabase, useAuth } from "@/lib"
+import { useAuth } from "@/lib"
 import { 
   GraduationCap, 
   Brain, 
@@ -18,27 +18,28 @@ import Link from "next/link"
 import NotificationSystem from "@/components/NotificationSystem"
 
 export default function DashboardPage() {
-  const { user, signOut } = useAuth()
+  const { signOut } = useAuth()
   const router = useRouter()
   const [profile, setProfile] = useState<Record<string, unknown> | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!user) {
-      router.push("/auth/login")
-      return
-    }
-
+    // Bypass authentication for demo purposes
     const fetchProfile = async () => {
       try {
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", (user as any).id) // eslint-disable-line @typescript-eslint/no-explicit-any
-          .single()
-
-        if (error) throw error
-        setProfile(data)
+        // Mock profile data for demo
+        const mockProfile = {
+          id: "demo-user-123",
+          first_name: "Demo",
+          last_name: "User",
+          email: "demo@pathniti.com",
+          role: "student",
+          location: {
+            city: "New Delhi",
+            state: "Delhi"
+          }
+        }
+        setProfile(mockProfile)
       } catch (error) {
         console.error("Error fetching profile:", error)
       } finally {
@@ -47,7 +48,7 @@ export default function DashboardPage() {
     }
 
     fetchProfile()
-  }, [user, router])
+  }, [])
 
   const handleSignOut = async () => {
     await signOut()
@@ -65,9 +66,7 @@ export default function DashboardPage() {
     )
   }
 
-  if (!user) {
-    return null
-  }
+  // Bypass user check for demo
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
@@ -92,7 +91,7 @@ export default function DashboardPage() {
                 {(profile as any)?.first_name} {(profile as any)?.last_name}
               </span>
             </div>
-            {user && <NotificationSystem userId={(user as any).id} />} {/* eslint-disable-line @typescript-eslint/no-explicit-any */}
+            <NotificationSystem userId="demo-user-123" />
             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             {(profile as any)?.role === "admin" && (
               <Button variant="outline" size="sm" className="hover:scale-105 transition-transform duration-200" asChild>
@@ -159,7 +158,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Quiz Status</p>
-                  <p className="text-2xl font-bold text-gray-900">Not Started</p>
+                  <p className="text-2xl font-bold text-gray-900">Ready</p>
                 </div>
               </div>
             </CardContent>
@@ -172,8 +171,8 @@ export default function DashboardPage() {
                   <MapPin className="h-6 w-6 text-green-600" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Colleges Saved</p>
-                  <p className="text-2xl font-bold text-gray-900">0</p>
+                  <p className="text-sm font-medium text-gray-600">Colleges Available</p>
+                  <p className="text-2xl font-bold text-gray-900">500+</p>
                 </div>
               </div>
             </CardContent>
@@ -187,7 +186,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Upcoming Deadlines</p>
-                  <p className="text-2xl font-bold text-gray-900">3</p>
+                  <p className="text-2xl font-bold text-gray-900">8</p>
                 </div>
               </div>
             </CardContent>
@@ -201,7 +200,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Scholarships</p>
-                  <p className="text-2xl font-bold text-gray-900">5</p>
+                  <p className="text-2xl font-bold text-gray-900">12</p>
                 </div>
               </div>
             </CardContent>
@@ -210,56 +209,62 @@ export default function DashboardPage() {
 
         {/* Main Actions */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Brain className="h-6 w-6 text-primary mr-2" />
-                Aptitude Assessment
-              </CardTitle>
-              <CardDescription>
-                Discover your strengths and interests with our comprehensive quiz
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full" asChild>
-                <Link href="/quiz">Start Assessment</Link>
-              </Button>
-            </CardContent>
-          </Card>
+          <Link href="/quiz" className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+            <Card className="h-full">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Brain className="h-6 w-6 text-primary mr-2" />
+                  Aptitude Assessment
+                </CardTitle>
+                <CardDescription>
+                  Discover your strengths and interests with our comprehensive quiz
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button className="w-full" asChild>
+                  <span>Start Assessment</span>
+                </Button>
+              </CardContent>
+            </Card>
+          </Link>
 
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <MapPin className="h-6 w-6 text-green-600 mr-2" />
-                Find Colleges
-              </CardTitle>
-              <CardDescription>
-                Explore government colleges near you with detailed information
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full" variant="outline" asChild>
-                <Link href="/colleges">Browse Colleges</Link>
-              </Button>
-            </CardContent>
-          </Card>
+          <Link href="/colleges" className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+            <Card className="h-full">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <MapPin className="h-6 w-6 text-green-600 mr-2" />
+                  Find Colleges
+                </CardTitle>
+                <CardDescription>
+                  Explore government colleges near you with detailed information
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button className="w-full" variant="outline" asChild>
+                  <span>Browse Colleges</span>
+                </Button>
+              </CardContent>
+            </Card>
+          </Link>
 
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Calendar className="h-6 w-6 text-blue-600 mr-2" />
-                Timeline Tracker
-              </CardTitle>
-              <CardDescription>
-                Never miss important deadlines for admissions and scholarships
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full" variant="outline" asChild>
-                <Link href="/timeline">View Timeline</Link>
-              </Button>
-            </CardContent>
-          </Card>
+          <Link href="/timeline" className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+            <Card className="h-full">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Calendar className="h-6 w-6 text-blue-600 mr-2" />
+                  Timeline Tracker
+                </CardTitle>
+                <CardDescription>
+                  Never miss important deadlines for admissions and scholarships
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button className="w-full" variant="outline" asChild>
+                  <span>View Timeline</span>
+                </Button>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
 
         {/* Recent Activity */}
@@ -267,7 +272,7 @@ export default function DashboardPage() {
           <Card>
             <CardHeader>
               <CardTitle>Recent Activity</CardTitle>
-              <CardDescription>Your latest actions on EduNiti</CardDescription>
+              <CardDescription>Your latest actions on PathNiti</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">

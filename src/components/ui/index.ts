@@ -1,4 +1,6 @@
-export { Button } from './button'
+export { Button, buttonVariants } from './button'
 export { Card, CardContent, CardDescription, CardHeader, CardTitle } from './card'
 export { Input } from './input'
 export { Progress } from './progress'
+export { Skeleton } from './skeleton'
+export { Badge, badgeVariants } from './badge'

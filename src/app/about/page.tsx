@@ -87,18 +87,18 @@ export default function AboutPage() {
     },
     {
       year: "2024",
-      title: "First 1000 Students",
-      description: "Reached our first milestone of helping 1000 students discover their career paths"
+      title: "Platform Development",
+      description: "Building our comprehensive platform with AI-powered career guidance features"
     },
     {
       year: "2024",
-      title: "AI Integration",
-      description: "Launched our AI-powered recommendation engine for personalized guidance"
+      title: "Team Assembly",
+      description: "Brought together a talented team of developers, designers, and data analysts"
     },
     {
-      year: "2024",
-      title: "Government Partnership",
-      description: "Partnered with state governments to expand access to quality education guidance"
+      year: "2025",
+      title: "Launch Ready",
+      description: "Preparing for launch to help students across India discover their career paths"
     }
   ]
 
@@ -213,9 +213,9 @@ export default function AboutPage() {
               to help them discover their strengths and make informed decisions.
             </p>
             <p className="text-lg text-gray-600">
-              Today, PathNiti serves thousands of students across India, helping them navigate 
-              their educational journey with confidence and clarity.               We&apos;re proud to be part 
-              of their success stories and committed to expanding our impact.
+              Today, PathNiti is being built with the vision to serve students across India, helping them navigate 
+              their educational journey with confidence and clarity. We&apos;re excited to launch and make a meaningful 
+              impact on the future of education in India.
             </p>
           </div>
         </div>
@@ -293,20 +293,20 @@ export default function AboutPage() {
           </h2>
           <div className="grid md:grid-cols-4 gap-8 text-center">
             <div>
-              <div className="text-4xl font-bold mb-2">10,000+</div>
-              <div className="text-lg opacity-90">Students Helped</div>
+              <div className="text-4xl font-bold mb-2">Coming Soon</div>
+              <div className="text-lg opacity-90">Students to Help</div>
             </div>
             <div>
-              <div className="text-4xl font-bold mb-2">500+</div>
-              <div className="text-lg opacity-90">Colleges Listed</div>
+              <div className="text-4xl font-bold mb-2">1000+</div>
+              <div className="text-lg opacity-90">Colleges in Database</div>
             </div>
             <div>
-              <div className="text-4xl font-bold mb-2">95%</div>
-              <div className="text-lg opacity-90">Success Rate</div>
+              <div className="text-4xl font-bold mb-2">AI-Powered</div>
+              <div className="text-lg opacity-90">Recommendations</div>
             </div>
             <div>
-              <div className="text-4xl font-bold mb-2">15+</div>
-              <div className="text-lg opacity-90">States Covered</div>
+              <div className="text-4xl font-bold mb-2">All India</div>
+              <div className="text-lg opacity-90">Coverage Planned</div>
             </div>
           </div>
         </div>

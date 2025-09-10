@@ -10,7 +10,9 @@ import {
   Award,
   Globe,
   Lightbulb,
-  Linkedin
+  Linkedin,
+  Sparkles,
+  ArrowRight
 } from "lucide-react"
 import Link from "next/link"
 
@@ -105,18 +107,42 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navigation */}
-      <nav className="bg-white border-b">
+      <nav className="border-b bg-white/90 backdrop-blur-md sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <GraduationCap className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold text-primary">PathNiti</span>
+          <div className="flex items-center space-x-3">
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary to-blue-600 rounded-xl blur-sm opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="relative bg-white p-2 rounded-xl shadow-lg">
+                <GraduationCap className="h-8 w-8 text-primary" />
+                <Sparkles className="h-3 w-3 text-yellow-500 absolute -top-1 -right-1 animate-pulse" />
+              </div>
+            </div>
+            <span className="text-3xl font-black bg-gradient-to-r from-blue-800 via-blue-600 to-purple-600 bg-clip-text text-transparent tracking-tight">
+              PathNiti
+            </span>
           </div>
-          <Button variant="outline" asChild>
-            <Link href="/">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Home
+          <div className="hidden md:flex items-center space-x-8">
+            <Link href="/features" className="text-gray-600 hover:text-primary transition-all duration-200 hover:scale-105">
+              Features
             </Link>
-          </Button>
+            <Link href="/about" className="text-primary font-semibold transition-all duration-200 hover:scale-105">
+              About
+            </Link>
+            <Link href="/contact" className="text-gray-600 hover:text-primary transition-all duration-200 hover:scale-105">
+              Contact
+            </Link>
+          </div>
+          <div className="flex items-center space-x-3">
+            <Button variant="outline" className="hover:scale-105 transition-all duration-200 border-2 hover:border-primary hover:bg-primary/5" asChild>
+              <Link href="/dashboard">Demo Login</Link>
+            </Button>
+            <Button className="relative overflow-hidden bg-gradient-to-r from-primary via-blue-600 to-purple-600 hover:from-purple-600 hover:via-blue-600 hover:to-primary transition-all duration-500 hover:scale-105 shadow-xl hover:shadow-2xl group" asChild>
+              <Link href="/dashboard" className="flex items-center gap-2 relative z-10">
+                <span className="font-semibold">Get Started</span>
+                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
+              </Link>
+            </Button>
+          </div>
         </div>
       </nav>
 

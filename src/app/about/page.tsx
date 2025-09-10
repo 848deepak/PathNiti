@@ -124,7 +124,7 @@ export default function AboutPage() {
         {/* Hero Section */}
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-            About <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-green-600">PathNiti</span>
+            About <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-800 via-blue-600 to-purple-600">PathNiti</span>
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             We&apos;re on a mission to empower every Indian student with personalized career guidance, 

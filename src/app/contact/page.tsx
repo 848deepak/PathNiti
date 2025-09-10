@@ -4,7 +4,6 @@ import { useState } from "react"
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input } from "@/components/ui"
 import { 
   GraduationCap, 
-  ArrowLeft,
   Mail,
   Phone,
   MapPin,

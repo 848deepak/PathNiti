@@ -3,7 +3,6 @@
 import { Button, Card, CardContent, CardHeader, CardTitle } from "@/components/ui"
 import { 
   GraduationCap, 
-  ArrowLeft,
   Users,
   Target,
   Heart,

@@ -19,14 +19,14 @@ export default function AboutPage() {
     {
       name: "Deepak Pandey",
       role: "Team Leader",
-      description: "Founder of CodeUnia and AI/ML specialist with expertise in modern web technologies",
+      description: "Founder of Codeunia and AI/ML specialist with expertise in modern web technologies",
       image: "/api/placeholder/150/150",
       linkedin: "https://linkedin.com/in/848deepak"
     },
     {
       name: "Parisha",
-      role: "Frontend Developer",
-      description: "UI/UX specialist focused on creating intuitive user experiences",
+      role: "Full-Stack Developer",
+      description: "Co-founder of Codeunia and full-stack specialist focused on creating intuitive user experiences",
       image: "/api/placeholder/150/150",
       linkedin: "https://www.linkedin.com/in/parishasharma93/"
     },

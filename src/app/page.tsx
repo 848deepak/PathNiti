@@ -79,12 +79,6 @@ export default function Home() {
                 <ArrowRight className="h-6 w-6 group-hover:translate-x-2 transition-transform duration-300" />
               </Link>
             </Button>
-            <Button size="xl" variant="outline" className="text-lg px-12 py-8 border-3 border-primary/30 hover:border-primary hover:bg-primary/5 transition-all duration-300 hover:scale-105 animate-slide-in-right group backdrop-blur-sm" asChild>
-              <Link href="/demo" className="flex items-center gap-3">
-                <Sparkles className="h-6 w-6 group-hover:rotate-12 transition-transform duration-300" />
-                <span className="font-semibold">Watch Demo</span>
-              </Link>
-            </Button>
           </div>
           
           {/* Trust indicators */}
@@ -244,12 +238,6 @@ export default function Home() {
                 <Link href="/dashboard" className="flex items-center gap-4 relative z-10">
                   <Sparkles className="h-7 w-7 text-blue-600 group-hover:rotate-12 transition-transform duration-300" />
                   <span className="font-bold text-xl text-blue-800">Get Started Free</span>
-                </Link>
-              </Button>
-              <Button size="lg" className="relative overflow-hidden text-lg px-16 py-10 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-blue-600 hover:to-purple-600 text-white border-2 border-white/30 hover:border-white/50 transition-all duration-500 hover:scale-110 shadow-2xl hover:shadow-3xl group backdrop-blur-sm" asChild>
-                <Link href="/demo" className="flex items-center gap-4 relative z-10">
-                  <GraduationCap className="h-7 w-7 group-hover:scale-110 transition-transform duration-300" />
-                  <span className="font-bold text-xl">Watch Demo</span>
                 </Link>
               </Button>
             </div>

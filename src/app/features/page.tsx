@@ -307,11 +307,6 @@ export default function FeaturesPage() {
                 Get Started Free
               </Link>
             </Button>
-            <Button size="lg" variant="outline" asChild>
-              <Link href="/demo">
-                Watch Demo
-              </Link>
-            </Button>
           </div>
         </div>
       </div>

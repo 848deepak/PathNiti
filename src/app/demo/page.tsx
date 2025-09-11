@@ -1,16 +1,9 @@
 "use client"
 
-import { useState } from "react"
 import { Button, Card, CardContent } from "@/components/ui"
 import { 
   GraduationCap, 
   ArrowLeft,
-  Play,
-  Pause,
-  RotateCcw,
-  Volume2,
-  VolumeX,
-  Maximize,
   CheckCircle,
   Star,
   Users,
@@ -20,8 +13,6 @@ import {
 import Link from "next/link"
 
 export default function DemoPage() {
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [isMuted, setIsMuted] = useState(false)
 
   const features = [
     {
@@ -122,64 +113,6 @@ export default function DemoPage() {
           </p>
         </div>
 
-        {/* Video Demo */}
-        <div className="mb-16">
-          <Card className="overflow-hidden">
-            <div className="relative bg-gradient-to-br from-primary/10 to-green-600/10 p-8">
-              <div className="max-w-4xl mx-auto">
-                <div className="aspect-video bg-gray-900 rounded-lg flex items-center justify-center relative">
-                  {/* Placeholder for video */}
-                  <div className="text-center text-white">
-                    <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Play className="h-8 w-8 ml-1" />
-                    </div>
-                    <h3 className="text-xl font-semibold mb-2">Interactive Demo</h3>
-                    <p className="text-gray-300">Click to start the demo</p>
-                  </div>
-                  
-                  {/* Video Controls */}
-                  <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between bg-black/50 rounded-lg p-3">
-                    <div className="flex items-center space-x-3">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => setIsPlaying(!isPlaying)}
-                        className="text-white hover:bg-white/20"
-                      >
-                        {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => setIsMuted(!isMuted)}
-                        className="text-white hover:bg-white/20"
-                      >
-                        {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-                      </Button>
-                      <span className="text-white text-sm">0:00 / 8:30</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-white hover:bg-white/20"
-                      >
-                        <RotateCcw className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-white hover:bg-white/20"
-                      >
-                        <Maximize className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Card>
-        </div>
 
         {/* Demo Features */}
         <div className="mb-16">

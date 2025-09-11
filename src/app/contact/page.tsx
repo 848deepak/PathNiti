@@ -288,9 +288,6 @@ export default function ContactPage() {
                   <Link href="/auth/signup" className="block text-primary hover:underline">
                     Get Started
                   </Link>
-                  <Link href="/demo" className="block text-primary hover:underline">
-                    Watch Demo
-                  </Link>
                 </div>
               </CardContent>
             </Card>

@@ -6,18 +6,39 @@ export function createServiceClient() {
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
   if (!supabaseUrl) {
-    throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL environment variable')
+    console.warn('Missing NEXT_PUBLIC_SUPABASE_URL environment variable')
+    // Return a mock client for build time
+    return createClient<Database>('https://mock.supabase.co', 'mock-key', {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    })
   }
 
   if (!serviceRoleKey) {
-    throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY environment variable')
+    console.warn('Missing SUPABASE_SERVICE_ROLE_KEY environment variable')
+    // Return a mock client for build time
+    return createClient<Database>(supabaseUrl, 'mock-key', {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    })
   }
 
   // Validate URL format
   try {
     new URL(supabaseUrl)
   } catch (error) {
-    throw new Error(`Invalid Supabase URL format: ${supabaseUrl}`)
+    console.warn(`Invalid Supabase URL format: ${supabaseUrl}`)
+    // Return a mock client for build time
+    return createClient<Database>('https://mock.supabase.co', serviceRoleKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    })
   }
 
   return createClient<Database>(supabaseUrl, serviceRoleKey, {

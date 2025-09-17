@@ -35,7 +35,7 @@ export default function Home() {
             <Button variant="outline" className="hover:scale-105 transition-all duration-200 border-2 hover:border-primary hover:bg-primary/5" asChild>
               <Link href="/dashboard">Demo Login</Link>
             </Button>
-            <Button className="relative overflow-hidden bg-gradient-to-r from-primary via-blue-600 to-purple-600 hover:from-purple-600 hover:via-blue-600 hover:to-primary transition-all duration-500 hover:scale-105 shadow-xl hover:shadow-2xl group" asChild>
+            <Button className="relative overflow-hidden bg-gradient-to-r from-blue-700 via-blue-600 to-purple-600 hover:from-purple-600 hover:via-blue-600 hover:to-blue-700 transition-all duration-500 hover:scale-105 shadow-xl hover:shadow-2xl group" asChild>
               <Link href="/dashboard" className="flex items-center gap-2 relative z-10">
                 <span className="font-semibold">Get Started</span>
                 <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
@@ -62,7 +62,7 @@ export default function Home() {
           
           <h1 className="text-6xl md:text-7xl font-bold text-gray-900 mb-8 leading-tight">
             Your Path. Your Future.{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-blue-600 to-purple-600">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-800 via-blue-600 to-purple-600 drop-shadow-[0_2px_8px_rgba(30,64,175,0.15)]">
               Simplified.
             </span>
           </h1>
@@ -73,7 +73,7 @@ export default function Home() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-            <Button size="xl" className="relative overflow-hidden text-lg px-12 py-8 bg-gradient-to-r from-primary via-blue-600 to-purple-600 hover:from-purple-600 hover:via-blue-600 hover:to-primary transition-all duration-500 hover:scale-110 shadow-2xl hover:shadow-3xl animate-slide-in-left group" asChild>
+            <Button size="xl" className="relative overflow-hidden text-lg px-12 py-8 bg-gradient-to-r from-blue-700 via-blue-600 to-purple-600 hover:from-purple-600 hover:via-blue-600 hover:to-blue-700 transition-all duration-500 hover:scale-110 shadow-2xl hover:shadow-3xl animate-slide-in-left group" asChild>
               <Link href="/dashboard" className="flex items-center gap-3 relative z-10">
                 <span className="font-bold text-lg">Start Your Journey</span>
                 <ArrowRight className="h-6 w-6 group-hover:translate-x-2 transition-transform duration-300" />
@@ -109,7 +109,7 @@ export default function Home() {
             </div>
             <h2 className="text-5xl font-bold text-gray-900 mb-6">
               Everything You Need for Your{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-600">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 via-blue-600 to-purple-600">
                 Career Journey
               </span>
             </h2>

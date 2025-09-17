@@ -15,10 +15,8 @@ if (!supabaseAnonKey) {
   throw new Error('Missing NEXT_PUBLIC_SUPABASE_ANON_KEY environment variable')
 }
 
-// Validate URL format
-try {
-  new URL(supabaseUrl)
-} catch (error) {
+// Validate URL format - more lenient for build time
+if (!supabaseUrl.startsWith('https://') || !supabaseUrl.includes('.supabase.co')) {
   console.error('Invalid Supabase URL format:', supabaseUrl)
   throw new Error(`Invalid Supabase URL format: ${supabaseUrl}`)
 }
@@ -54,7 +52,13 @@ try {
 } catch (error) {
   console.error('Failed to initialize Supabase client:', error)
   // Create a fallback client that will throw errors when used
-  supabase = createClient('https://invalid.supabase.co', 'invalid-key')
+  // Use a valid format to avoid URL validation issues
+  supabase = createClient('https://fallback.supabase.co', 'fallback-key', {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  })
 }
 export { supabase }
 

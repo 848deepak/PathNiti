@@ -89,3 +89,4 @@ class UsageMonitor {
 
 // Export singleton instance
 export const usageMonitor = new UsageMonitor();
+

@@ -55,3 +55,4 @@ curl "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=28.6
 
 The feature is now robust and won't break even with API issues! 🎉
 
+

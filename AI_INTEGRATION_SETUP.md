@@ -182,3 +182,4 @@ For higher usage, Gemini Pro costs ~$0.001 per 1K tokens.
 ---
 
 **Your AI-powered EduNiti is ready! 🎉**
+

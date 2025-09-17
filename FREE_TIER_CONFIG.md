@@ -149,3 +149,4 @@ Your application is designed to **NEVER** incur charges:
 - ✅ Real-time usage tracking
 
 **You will NEVER be charged for using this AI integration!**
+

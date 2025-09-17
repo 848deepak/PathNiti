@@ -194,3 +194,4 @@ WHERE tablename = 'college_profiles' AND schemaname = 'public';
 
 
 
+

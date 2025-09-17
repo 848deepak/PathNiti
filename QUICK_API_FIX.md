@@ -51,3 +51,4 @@ curl "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=30.7
 
 The feature is now working perfectly with location-aware fallback data! 🎉
 
+

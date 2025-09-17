@@ -260,3 +260,4 @@ async function populateScholarships() {
 
 // Run the script
 populateScholarships();
+

@@ -678,3 +678,4 @@ if __name__ == "__main__":
     ml_models.save_models()
     
     print("ML models training completed!")
+

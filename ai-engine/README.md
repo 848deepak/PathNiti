@@ -79,3 +79,4 @@ The AI engine can be deployed to:
 ## Integration
 
 The AI engine integrates with the main EduNiti frontend through REST APIs. Make sure to configure CORS origins in the environment variables.
+

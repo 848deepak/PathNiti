@@ -1,7 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // External packages for server components
-  serverExternalPackages: ['@supabase/ssr'],
   images: {
     domains: ['localhost'],
   },

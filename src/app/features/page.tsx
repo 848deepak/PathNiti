@@ -130,6 +130,9 @@ export default function FeaturesPage() {
             </span>
           </div>
           <div className="hidden md:flex items-center space-x-8">
+            <Link href="/" className="text-gray-600 hover:text-primary transition-all duration-200 hover:scale-105">
+              Home
+            </Link>
             <Link href="/features" className="text-primary font-semibold transition-all duration-200 hover:scale-105">
               Features
             </Link>
@@ -159,7 +162,7 @@ export default function FeaturesPage() {
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
             Powerful Features for Your
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-green-600"> Career Journey</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 via-blue-600 to-purple-600"> Career Journey</span>
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Everything you need to make informed decisions about your education and career path, 
@@ -223,26 +226,30 @@ export default function FeaturesPage() {
         </div>
 
         {/* Statistics */}
-        <div className="bg-gradient-to-r from-primary to-green-600 rounded-lg p-8 text-white mb-16">
-          <h2 className="text-3xl font-bold text-center mb-8">
-            Trusted by Students Across India
-          </h2>
-          <div className="grid md:grid-cols-4 gap-8 text-center">
-            <div>
-              <div className="text-4xl font-bold mb-2">10,000+</div>
-              <div className="text-lg opacity-90">Active Students</div>
-            </div>
-            <div>
-              <div className="text-4xl font-bold mb-2">500+</div>
-              <div className="text-lg opacity-90">Government Colleges</div>
-            </div>
-            <div>
-              <div className="text-4xl font-bold mb-2">95%</div>
-              <div className="text-lg opacity-90">Success Rate</div>
-            </div>
-            <div>
-              <div className="text-4xl font-bold mb-2">24/7</div>
-              <div className="text-lg opacity-90">Support Available</div>
+        <div className="relative rounded-lg mb-16 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-green-300 via-green-500 to-green-700" />
+          <div className="absolute left-0 top-0 h-full w-1/3 bg-gradient-to-r from-white/70 to-transparent" />
+          <div className="relative p-8 z-10 text-white">
+            <h2 className="text-3xl font-bold text-center mb-8 drop-shadow-[0_2px_8px_rgba(16,185,129,0.15)]">
+              Trusted by Students Across India
+            </h2>
+            <div className="grid md:grid-cols-4 gap-8 text-center">
+              <div>
+                <div className="text-4xl font-bold mb-2 drop-shadow-[0_2px_8px_rgba(16,185,129,0.15)]">10,000+</div>
+                <div className="text-lg opacity-90">Active Students</div>
+              </div>
+              <div>
+                <div className="text-4xl font-bold mb-2 drop-shadow-[0_2px_8px_rgba(16,185,129,0.15)]">500+</div>
+                <div className="text-lg opacity-90">Government Colleges</div>
+              </div>
+              <div>
+                <div className="text-4xl font-bold mb-2 drop-shadow-[0_2px_8px_rgba(16,185,129,0.15)]">95%</div>
+                <div className="text-lg opacity-90">Success Rate</div>
+              </div>
+              <div>
+                <div className="text-4xl font-bold mb-2 drop-shadow-[0_2px_8px_rgba(16,185,129,0.15)]">24/7</div>
+                <div className="text-lg opacity-90">Support Available</div>
+              </div>
             </div>
           </div>
         </div>

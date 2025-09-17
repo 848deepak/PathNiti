@@ -45,21 +45,21 @@ export default function ContactPage() {
       icon: Mail,
       title: "Email Us",
       description: "Send us an email and we'll respond within 24 hours",
-      contact: "support@pathniti.in",
-      action: "mailto:support@pathniti.in"
+      contact: "team.pathniti@gmail.com",
+      action: "mailto:team.pathniti@gmail.com"
     },
     {
       icon: Phone,
       title: "Call Us",
       description: "Speak with our support team during business hours",
-      contact: "+91 98765 43210",
-      action: "tel:+919876543210"
+      contact: "+91 8699025107",
+      action: "tel:+918699025107"
     },
     {
       icon: MapPin,
       title: "Visit Us",
-      description: "Our office is located in the heart of New Delhi",
-      contact: "New Delhi, India",
+      description: "Our office is located in Mohali, Punjab",
+      contact: "Mohali, Punjab",
       action: "#"
     },
     {

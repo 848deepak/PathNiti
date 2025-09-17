@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createServiceClient } from '@/lib/supabase/service';
 import { aiEngine, UserProfile } from '@/lib/ai-engine';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,6 +9,9 @@ export async function POST(request: NextRequest) {
     if (!user_id) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
     }
+
+    // Create Supabase service client for elevated permissions
+    const supabase = createServiceClient();
 
     // Fetch user profile and quiz data
     const { data: profile, error: profileError } = await supabase

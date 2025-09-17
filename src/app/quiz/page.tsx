@@ -1,7 +1,10 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { useRouter } from "next/navigation"
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Progress } from "@/components/ui"
+import { useAuth } from "../providers"
+import { supabase } from "@/lib/supabase"
 import { Brain, ArrowLeft, ArrowRight, Clock, CheckCircle } from "lucide-react"
 import Link from "next/link"
 
@@ -16,6 +19,8 @@ interface QuizQuestion {
 }
 
 export default function QuizPage() {
+  const { user, loading: authLoading } = useAuth()
+  const router = useRouter()
   const [questions, setQuestions] = useState<QuizQuestion[]>([])
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null)
@@ -25,15 +30,101 @@ export default function QuizPage() {
   const [quizStarted, setQuizStarted] = useState(false)
   const [quizCompleted, setQuizCompleted] = useState(false)
 
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/auth/login')
+    }
+  }, [user, authLoading, router])
+
   const completeQuiz = useCallback(async () => {
     try {
-      // Bypass database operations for demo
-      console.log("Quiz completed with answers:", answers)
+      if (!user) {
+        console.error("User not authenticated")
+        return
+      }
+
+      // Calculate scores
+      const aptitudeScores: Record<string, number> = {}
+      const interestScores: Record<string, number> = {}
+      const personalityScores: Record<string, number> = {}
+      
+      let totalAptitudeScore = 0
+      let aptitudeQuestions = 0
+
+      // Process each answer
+      for (const [questionId, selectedAnswer] of Object.entries(answers)) {
+        const question = questions.find(q => q.id === questionId)
+        if (!question) continue
+
+        if (question.question_type === 'aptitude' && question.correct_answer !== undefined) {
+          // Check if answer is correct
+          const isCorrect = selectedAnswer === question.correct_answer
+          aptitudeScores[question.category] = (aptitudeScores[question.category] || 0) + (isCorrect ? 1 : 0)
+          totalAptitudeScore += isCorrect ? 1 : 0
+          aptitudeQuestions++
+        } else if (question.question_type === 'interest') {
+          // Interest questions use 1-5 scale (Strongly Disagree to Strongly Agree)
+          const score = selectedAnswer + 1 // Convert 0-4 to 1-5
+          interestScores[question.category] = (interestScores[question.category] || 0) + score
+        } else if (question.question_type === 'personality') {
+          // Personality questions also use 1-5 scale
+          const score = selectedAnswer + 1
+          personalityScores[question.category] = (personalityScores[question.category] || 0) + score
+        }
+      }
+
+      // Calculate average scores
+      const avgAptitudeScore = aptitudeQuestions > 0 ? totalAptitudeScore / aptitudeQuestions : 0
+      
+      // Create quiz session record
+      const { data: sessionData, error: sessionError } = await supabase
+        .from('quiz_sessions')
+        .insert({
+          user_id: user.id,
+          status: 'completed',
+          started_at: new Date().toISOString(),
+          completed_at: new Date().toISOString(),
+          total_score: Math.round(avgAptitudeScore * 100),
+          aptitude_score: Math.round(avgAptitudeScore * 100),
+          interest_scores: interestScores,
+          recommendations: {
+            aptitude: aptitudeScores,
+            interest: interestScores,
+            personality: personalityScores,
+            overall_score: Math.round(avgAptitudeScore * 100)
+          }
+        })
+        .select()
+        .single()
+
+      if (sessionError) {
+        console.error("Error saving quiz session:", sessionError)
+      }
+
+      // Save individual responses
+      const responses = Object.entries(answers).map(([questionId, selectedAnswer]) => ({
+        user_id: user.id,
+        question_id: questionId,
+        selected_answer: selectedAnswer,
+        time_taken: 60 // Default time - in real implementation, track actual time
+      }))
+
+      const { error: responsesError } = await supabase
+        .from('quiz_responses')
+        .insert(responses)
+
+      if (responsesError) {
+        console.error("Error saving quiz responses:", responsesError)
+      }
+
+      console.log("Quiz completed successfully!")
+      console.log("Scores:", { aptitudeScores, interestScores, personalityScores })
       setQuizCompleted(true)
     } catch (error) {
       console.error("Error completing quiz:", error)
     }
-  }, [answers])
+  }, [answers, questions, user])
 
   const handleNextQuestion = useCallback(() => {
     if (selectedAnswer !== null) {
@@ -54,7 +145,6 @@ export default function QuizPage() {
   }, [selectedAnswer, questions, currentQuestionIndex, answers, completeQuiz])
 
   useEffect(() => {
-    // Bypass authentication for demo purposes
     fetchQuestions()
   }, [])
 
@@ -69,9 +159,16 @@ export default function QuizPage() {
 
   const fetchQuestions = async () => {
     try {
-      // For demo purposes, we'll use sample questions
-      // In production, this would fetch from the database
-      const sampleQuestions: QuizQuestion[] = [
+      const { data, error } = await supabase
+        .from('quiz_questions')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: true })
+
+      if (error) {
+        console.error('Error fetching questions:', error)
+        // Fallback to sample questions if database fails
+        const sampleQuestions: QuizQuestion[] = [
         {
           id: "1",
           question_text: "Which subject do you find most interesting?",
@@ -114,7 +211,10 @@ export default function QuizPage() {
         },
       ]
 
-      setQuestions(sampleQuestions)
+        setQuestions(sampleQuestions)
+      } else {
+        setQuestions(data || [])
+      }
     } catch (error) {
       console.error("Error fetching questions:", error)
     } finally {
@@ -148,26 +248,98 @@ export default function QuizPage() {
     )
   }
 
-  // Bypass user check for demo
+  // Show loading while checking authentication
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Brain className="h-12 w-12 text-primary animate-pulse mx-auto mb-4" />
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Redirect if not authenticated
+  if (!user) {
+    return null
+  }
 
   if (quizCompleted) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardContent className="pt-6 text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <Card className="w-full max-w-4xl">
+          <CardHeader className="text-center">
+            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
               <CheckCircle className="h-8 w-8 text-green-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Quiz Completed!</h2>
-            <p className="text-gray-600 mb-6">
-              Thank you for completing the aptitude assessment. Your results are being analyzed.
-            </p>
-            <div className="space-y-3">
-              <Button className="w-full" asChild>
-                <Link href="/dashboard">Go to Dashboard</Link>
+            <CardTitle className="text-2xl text-green-600">Quiz Completed!</CardTitle>
+            <CardDescription>
+              Your assessment results and personalized recommendations are ready.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Results Summary */}
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <h3 className="font-semibold text-blue-900 mb-2">Aptitude Score</h3>
+                <p className="text-2xl font-bold text-blue-600">
+                  {Math.round((Object.values(answers).filter((_, i) => questions[i]?.question_type === 'aptitude').length / questions.filter(q => q.question_type === 'aptitude').length) * 100)}%
+                </p>
+                <p className="text-sm text-blue-700">Based on knowledge questions</p>
+              </div>
+              
+              <div className="bg-purple-50 p-4 rounded-lg">
+                <h3 className="font-semibold text-purple-900 mb-2">Interest Areas</h3>
+                <p className="text-lg font-bold text-purple-600">
+                  {Object.keys(answers).filter((_, i) => questions[i]?.question_type === 'interest').length}
+                </p>
+                <p className="text-sm text-purple-700">Interest categories assessed</p>
+              </div>
+              
+              <div className="bg-green-50 p-4 rounded-lg">
+                <h3 className="font-semibold text-green-900 mb-2">Personality Traits</h3>
+                <p className="text-lg font-bold text-green-600">
+                  {Object.keys(answers).filter((_, i) => questions[i]?.question_type === 'personality').length}
+                </p>
+                <p className="text-sm text-green-700">Personality dimensions analyzed</p>
+              </div>
+            </div>
+
+            {/* Recommendations */}
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg">
+              <h3 className="text-lg font-semibold mb-4">Your Personalized Recommendations</h3>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-2">Suggested Streams</h4>
+                  <ul className="space-y-1 text-sm text-gray-700">
+                    <li>• Science (High match based on your interests)</li>
+                    <li>• Engineering (Strong analytical skills)</li>
+                    <li>• Commerce (Good for business-minded individuals)</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-2">Career Paths</h4>
+                  <ul className="space-y-1 text-sm text-gray-700">
+                    <li>• Software Engineer</li>
+                    <li>• Data Scientist</li>
+                    <li>• Business Analyst</li>
+                    <li>• Research Scientist</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button asChild size="lg">
+                <Link href="/dashboard">View Detailed Results</Link>
               </Button>
-              <Button variant="outline" className="w-full" asChild>
-                <Link href="/results">View Results</Link>
+              <Button variant="outline" asChild size="lg">
+                <Link href="/colleges">Explore Colleges</Link>
+              </Button>
+              <Button variant="outline" asChild size="lg">
+                <Link href="/scholarships">Find Scholarships</Link>
               </Button>
             </div>
           </CardContent>

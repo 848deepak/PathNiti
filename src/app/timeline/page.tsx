@@ -36,7 +36,8 @@ export default function TimelinePage() {
 
   const fetchTimelineEvents = async () => {
     try {
-      // Mock timeline data for SIH demo
+      // TODO: Implement real database fetch
+      // For now, using sample data until database is populated
       const sampleEvents: TimelineEvent[] = [
         {
           id: "1",

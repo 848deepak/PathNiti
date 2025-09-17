@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input } from "@/components/ui"
+import NearbyColleges from "@/components/NearbyColleges"
 // import { supabase } from "@/lib" // Removed unused import
 import { 
   GraduationCap, 
@@ -12,7 +13,8 @@ import {
   Search,
   ArrowLeft,
   Heart,
-  ExternalLink
+  ExternalLink,
+  Navigation
 } from "lucide-react"
 import Link from "next/link"
 
@@ -38,18 +40,29 @@ interface College {
 }
 
 export default function CollegesPage() {
-  // Bypass authentication for demo purposes
   const [colleges, setColleges] = useState<College[]>([])
   const [filteredColleges, setFilteredColleges] = useState<College[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedState, setSelectedState] = useState("")
   const [selectedType, setSelectedType] = useState("")
+  const [activeTab, setActiveTab] = useState<'directory' | 'nearby'>('directory')
+
+  // Check URL params for tab selection
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search)
+      const tab = urlParams.get('tab')
+      if (tab === 'nearby') {
+        setActiveTab('nearby')
+      }
+    }
+  }, [])
 
   const fetchColleges = async () => {
     try {
-      // For demo purposes, we'll use sample data
-      // In production, this would fetch from the database
+      // TODO: Implement real database fetch
+      // For now, using sample data until database is populated
       const sampleColleges: College[] = [
         {
           id: "1",
@@ -259,162 +272,206 @@ export default function CollegesPage() {
           </p>
         </div>
 
-        {/* Search and Filters */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border mb-8">
-          <div className="grid md:grid-cols-4 gap-4">
-            <div className="md:col-span-2">
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Search colleges, cities, or states..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
+        {/* Tab Navigation */}
+        <div className="mb-8">
+          <div className="border-b border-gray-200">
+            <nav className="-mb-px flex space-x-8">
+              <button
+                onClick={() => setActiveTab('directory')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'directory'
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <GraduationCap className="h-4 w-4 inline mr-2" />
+                College Directory
+              </button>
+              <button
+                onClick={() => setActiveTab('nearby')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'nearby'
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <Navigation className="h-4 w-4 inline mr-2" />
+                Find Nearby Colleges
+              </button>
+            </nav>
+          </div>
+        </div>
+
+        {/* Tab Content */}
+        {activeTab === 'directory' && (
+          <>
+            {/* Search and Filters */}
+            <div className="bg-white p-6 rounded-lg shadow-sm border mb-8">
+              <div className="grid md:grid-cols-4 gap-4">
+                <div className="md:col-span-2">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Search colleges, cities, or states..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <select
+                    value={selectedState}
+                    onChange={(e) => setSelectedState(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                  >
+                    <option value="">All States</option>
+                    {states.map(state => (
+                      <option key={state} value={state}>{state}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div>
+                  <select
+                    value={selectedType}
+                    onChange={(e) => setSelectedType(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                  >
+                    <option value="">All Types</option>
+                    {types.map(type => (
+                      <option key={type} value={type}>
+                        {type.charAt(0).toUpperCase() + type.slice(1).replace('_', ' ')}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
-            
-            <div>
-              <select
-                value={selectedState}
-                onChange={(e) => setSelectedState(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md"
-              >
-                <option value="">All States</option>
-                {states.map(state => (
-                  <option key={state} value={state}>{state}</option>
-                ))}
-              </select>
+          </>
+        )}
+
+        {activeTab === 'nearby' && (
+          <NearbyColleges />
+        )}
+
+        {/* Directory Results */}
+        {activeTab === 'directory' && (
+          <>
+            {/* Results */}
+            <div className="mb-4">
+              <p className="text-gray-600">
+                Showing {filteredColleges.length} of {colleges.length} colleges
+              </p>
             </div>
-            
-            <div>
-              <select
-                value={selectedType}
-                onChange={(e) => setSelectedType(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md"
-              >
-                <option value="">All Types</option>
-                {types.map(type => (
-                  <option key={type} value={type}>
-                    {type.charAt(0).toUpperCase() + type.slice(1).replace('_', ' ')}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
 
-        {/* Results */}
-        <div className="mb-4">
-          <p className="text-gray-600">
-            Showing {filteredColleges.length} of {colleges.length} colleges
-          </p>
-        </div>
-
-        {/* Colleges Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredColleges.map((college) => (
-            <Card key={college.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="text-lg mb-1">{college.name}</CardTitle>
-                    <CardDescription className="flex items-center">
-                      <MapPin className="h-4 w-4 mr-1" />
-                      {college.location.city}, {college.location.state}
-                    </CardDescription>
-                  </div>
-                  {college.is_verified && (
-                    <div className="flex items-center text-green-600">
-                      <Star className="h-4 w-4 fill-current" />
-                    </div>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex items-center text-sm text-gray-600">
-                    <span className="font-medium">Established:</span>
-                    <span className="ml-2">{college.established_year}</span>
-                  </div>
-                  
-                  <div className="flex items-center text-sm text-gray-600">
-                    <span className="font-medium">Type:</span>
-                    <span className="ml-2 capitalize">{college.type.replace('_', ' ')}</span>
-                  </div>
-
-                  {college.accreditation && (
-                    <div className="flex items-center text-sm text-gray-600">
-                      <span className="font-medium">Accreditation:</span>
-                      <span className="ml-2">{college.accreditation.join(", ")}</span>
-                    </div>
-                  )}
-                </div>
-
-                {college.programs && (
-                  <div>
-                    <p className="text-sm font-medium text-gray-700 mb-1">Programs:</p>
-                    <div className="flex flex-wrap gap-1">
-                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                      {(college.programs as any)?.available?.slice(0, 3).map((program: string, index: number) => (
-                        <span
-                          key={index}
-                          className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
-                        >
-                          {program}
-                        </span>
-                      ))}
-                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                      {(college.programs as any)?.available?.length > 3 && (
-                        <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
-                          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                          +{(college.programs as any)?.available?.length - 3} more
-                        </span>
+            {/* Colleges Grid */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredColleges.map((college) => (
+                <Card key={college.id} className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <CardTitle className="text-lg mb-1">{college.name}</CardTitle>
+                        <CardDescription className="flex items-center">
+                          <MapPin className="h-4 w-4 mr-1" />
+                          {college.location.city}, {college.location.state}
+                        </CardDescription>
+                      </div>
+                      {college.is_verified && (
+                        <div className="flex items-center text-green-600">
+                          <Star className="h-4 w-4 fill-current" />
+                        </div>
                       )}
                     </div>
-                  </div>
-                )}
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center text-sm text-gray-600">
+                        <span className="font-medium">Established:</span>
+                        <span className="ml-2">{college.established_year}</span>
+                      </div>
+                      
+                      <div className="flex items-center text-sm text-gray-600">
+                        <span className="font-medium">Type:</span>
+                        <span className="ml-2 capitalize">{college.type.replace('_', ' ')}</span>
+                      </div>
 
-                <div className="flex items-center justify-between pt-2">
-                  <div className="flex space-x-2">
-                    {college.website && (
-                      <Button size="sm" variant="outline" asChild>
-                        <a href={college.website} target="_blank" rel="noopener noreferrer">
-                          <Globe className="h-4 w-4" />
-                        </a>
-                      </Button>
+                      {college.accreditation && (
+                        <div className="flex items-center text-sm text-gray-600">
+                          <span className="font-medium">Accreditation:</span>
+                          <span className="ml-2">{college.accreditation.join(", ")}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {college.programs && (
+                      <div>
+                        <p className="text-sm font-medium text-gray-700 mb-1">Programs:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                          {(college.programs as any)?.available?.slice(0, 3).map((program: string, index: number) => (
+                            <span
+                              key={index}
+                              className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                            >
+                              {program}
+                            </span>
+                          ))}
+                          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                          {(college.programs as any)?.available?.length > 3 && (
+                            <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                              +{(college.programs as any)?.available?.length - 3} more
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     )}
-                    {college.phone && (
-                      <Button size="sm" variant="outline" asChild>
-                        <a href={`tel:${college.phone}`}>
-                          <Phone className="h-4 w-4" />
-                        </a>
+
+                    <div className="flex items-center justify-between pt-2">
+                      <div className="flex space-x-2">
+                        {college.website && (
+                          <Button size="sm" variant="outline" asChild>
+                            <a href={college.website} target="_blank" rel="noopener noreferrer">
+                              <Globe className="h-4 w-4" />
+                            </a>
+                          </Button>
+                        )}
+                        {college.phone && (
+                          <Button size="sm" variant="outline" asChild>
+                            <a href={`tel:${college.phone}`}>
+                              <Phone className="h-4 w-4" />
+                            </a>
+                          </Button>
+                        )}
+                      </div>
+                      
+                      <Button size="sm" variant="outline">
+                        <Heart className="h-4 w-4" />
                       </Button>
-                    )}
-                  </div>
-                  
-                  <Button size="sm" variant="outline">
-                    <Heart className="h-4 w-4" />
-                  </Button>
-                </div>
+                    </div>
 
-                <Button className="w-full" asChild>
-                  <Link href={`/colleges/${college.id}`}>
-                    View Details
-                    <ExternalLink className="h-4 w-4 ml-2" />
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                    <Button className="w-full" asChild>
+                      <Link href={`/colleges/${college.id}`}>
+                        View Details
+                        <ExternalLink className="h-4 w-4 ml-2" />
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
 
-        {filteredColleges.length === 0 && (
-          <div className="text-center py-12">
-            <GraduationCap className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No colleges found</h3>
-            <p className="text-gray-600">Try adjusting your search criteria or filters.</p>
-          </div>
+            {filteredColleges.length === 0 && (
+              <div className="text-center py-12">
+                <GraduationCap className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No colleges found</h3>
+                <p className="text-gray-600">Try adjusting your search criteria or filters.</p>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

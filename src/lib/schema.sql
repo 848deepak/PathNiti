@@ -6,7 +6,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "postgis";
 
 -- Create custom types
-CREATE TYPE user_role AS ENUM ('student', 'admin', 'counselor', 'college_admin');
+CREATE TYPE user_role AS ENUM ('student', 'admin', 'college');
 CREATE TYPE stream_type AS ENUM ('arts', 'science', 'commerce', 'vocational', 'engineering', 'medical');
 CREATE TYPE class_level AS ENUM ('10', '12', 'undergraduate', 'postgraduate');
 CREATE TYPE gender AS ENUM ('male', 'female', 'other', 'prefer_not_to_say');
@@ -212,6 +212,18 @@ CREATE TABLE public.college_plugin_data (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- College user profiles (for college administrators)
+CREATE TABLE public.college_profiles (
+    id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
+    college_id UUID REFERENCES public.colleges(id) ON DELETE CASCADE,
+    contact_person TEXT NOT NULL,
+    designation TEXT,
+    phone TEXT,
+    is_verified BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Create indexes for better performance
 CREATE INDEX idx_profiles_email ON public.profiles(email);
 CREATE INDEX idx_profiles_location ON public.profiles USING GIST((location->>'coordinates'));
@@ -224,6 +236,7 @@ CREATE INDEX idx_quiz_sessions_user_id ON public.quiz_sessions(user_id);
 CREATE INDEX idx_admission_deadlines_date ON public.admission_deadlines(deadline_date);
 CREATE INDEX idx_notifications_user_id ON public.notifications(user_id);
 CREATE INDEX idx_user_favorites_user_id ON public.user_favorites(user_id);
+CREATE INDEX idx_college_profiles_college_id ON public.college_profiles(college_id);
 
 -- Row Level Security (RLS) policies
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
@@ -232,6 +245,7 @@ ALTER TABLE public.quiz_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_favorites ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_timeline ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.college_profiles ENABLE ROW LEVEL SECURITY;
 
 -- Policies for profiles
 CREATE POLICY "Users can view own profile" ON public.profiles
@@ -242,6 +256,10 @@ CREATE POLICY "Users can update own profile" ON public.profiles
 
 CREATE POLICY "Users can insert own profile" ON public.profiles
     FOR INSERT WITH CHECK (auth.uid() = id);
+
+-- Allow authenticated users to insert profiles (needed for signup)
+CREATE POLICY "Authenticated users can insert profiles" ON public.profiles
+    FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
 -- Policies for quiz data
 CREATE POLICY "Users can view own quiz responses" ON public.quiz_responses
@@ -279,6 +297,53 @@ CREATE POLICY "Users can view own timeline" ON public.user_timeline
 
 CREATE POLICY "Users can insert own timeline" ON public.user_timeline
     FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- Role-based policies for profiles
+CREATE POLICY "Admins can view all profiles" ON public.profiles
+    FOR SELECT USING (
+        EXISTS (
+            SELECT 1 FROM public.profiles 
+            WHERE id = auth.uid() AND role = 'admin'
+        )
+    );
+
+CREATE POLICY "Admins can update all profiles" ON public.profiles
+    FOR UPDATE USING (
+        EXISTS (
+            SELECT 1 FROM public.profiles 
+            WHERE id = auth.uid() AND role = 'admin'
+        )
+    );
+
+-- Policies for college profiles
+CREATE POLICY "College users can view own profile" ON public.college_profiles
+    FOR SELECT USING (auth.uid() = id);
+
+CREATE POLICY "College users can update own profile" ON public.college_profiles
+    FOR UPDATE USING (auth.uid() = id);
+
+CREATE POLICY "College users can insert own profile" ON public.college_profiles
+    FOR INSERT WITH CHECK (auth.uid() = id);
+
+-- Allow authenticated users to insert college profiles (needed for signup)
+CREATE POLICY "Authenticated users can insert college profiles" ON public.college_profiles
+    FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+
+CREATE POLICY "Admins can view all college profiles" ON public.college_profiles
+    FOR SELECT USING (
+        EXISTS (
+            SELECT 1 FROM public.profiles 
+            WHERE id = auth.uid() AND role = 'admin'
+        )
+    );
+
+CREATE POLICY "Admins can update all college profiles" ON public.college_profiles
+    FOR UPDATE USING (
+        EXISTS (
+            SELECT 1 FROM public.profiles 
+            WHERE id = auth.uid() AND role = 'admin'
+        )
+    );
 
 -- Public read access for colleges, programs, scholarships, etc.
 CREATE POLICY "Anyone can view colleges" ON public.colleges
@@ -334,4 +399,7 @@ CREATE TRIGGER update_quiz_questions_updated_at BEFORE UPDATE ON public.quiz_que
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_college_plugin_data_updated_at BEFORE UPDATE ON public.college_plugin_data
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_college_profiles_updated_at BEFORE UPDATE ON public.college_profiles
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

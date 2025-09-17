@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui"
-import { supabase } from "@/lib"
+import { supabase } from "@/lib/supabase"
 import { Bell, X, CheckCircle, AlertCircle, Calendar } from "lucide-react"
 
 interface Notification {
@@ -47,67 +47,26 @@ export default function NotificationSystem({ userId }: NotificationSystemProps) 
       .subscribe()
 
     return () => {
-      subscription.then((sub: any) => sub.unsubscribe()) // eslint-disable-line @typescript-eslint/no-explicit-any
+      subscription.unsubscribe()
     }
   }, [userId])
 
   const fetchNotifications = async () => {
     try {
-      // For demo purposes, we'll use sample data
-      // In production, this would fetch from the database
-      const sampleNotifications: Notification[] = [
-        {
-          id: "1",
-          title: "Delhi University Application Deadline",
-          message: "Application deadline for Delhi University is approaching. Submit your application before March 31, 2024.",
-          type: "admission_deadline",
-          is_read: false,
-          sent_at: "2024-01-15T10:00:00Z",
-          created_at: "2024-01-15T10:00:00Z",
-          data: {
-            deadline_date: "2024-03-31",
-            college_name: "Delhi University"
-          }
-        },
-        {
-          id: "2",
-          title: "Scholarship Opportunity",
-          message: "New scholarship available for undergraduate students. Check eligibility and apply now.",
-          type: "scholarship",
-          is_read: false,
-          sent_at: "2024-01-14T14:30:00Z",
-          created_at: "2024-01-14T14:30:00Z",
-          data: {
-            scholarship_name: "National Scholarship Portal",
-            deadline: "2024-12-31"
-          }
-        },
-        {
-          id: "3",
-          title: "JEE Main 2024 Reminder",
-          message: "JEE Main 2024 exam is scheduled for April 15, 2024. Don't forget to download your admit card.",
-          type: "exam_reminder",
-          is_read: true,
-          sent_at: "2024-01-13T09:00:00Z",
-          created_at: "2024-01-13T09:00:00Z",
-          data: {
-            exam_date: "2024-04-15",
-            exam_name: "JEE Main 2024"
-          }
-        },
-        {
-          id: "4",
-          title: "Profile Update Required",
-          message: "Please complete your profile to get personalized recommendations.",
-          type: "general",
-          is_read: true,
-          sent_at: "2024-01-12T16:45:00Z",
-          created_at: "2024-01-12T16:45:00Z"
-        }
-      ]
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(50)
 
-      setNotifications(sampleNotifications)
-      setUnreadCount(sampleNotifications.filter(n => !n.is_read).length)
+      if (error) {
+        console.error('Error fetching notifications:', error)
+        return
+      }
+
+      setNotifications(data || [])
+      setUnreadCount(data?.filter(n => !n.is_read).length || 0)
     } catch (error) {
       console.error("Error fetching notifications:", error)
     } finally {
@@ -117,7 +76,16 @@ export default function NotificationSystem({ userId }: NotificationSystemProps) 
 
   const markAsRead = async (notificationId: string) => {
     try {
-      // In production, this would update the database
+      const { error } = await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('id', notificationId)
+
+      if (error) {
+        console.error("Error marking notification as read:", error)
+        return
+      }
+
       setNotifications(prev => prev.map(notification =>
         notification.id === notificationId
           ? { ...notification, is_read: true }
@@ -131,7 +99,16 @@ export default function NotificationSystem({ userId }: NotificationSystemProps) 
 
   const markAllAsRead = async () => {
     try {
-      // In production, this would update the database
+      const { error } = await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('user_id', userId)
+
+      if (error) {
+        console.error("Error marking all notifications as read:", error)
+        return
+      }
+
       setNotifications(prev => prev.map(notification => ({
         ...notification,
         is_read: true
@@ -144,7 +121,16 @@ export default function NotificationSystem({ userId }: NotificationSystemProps) 
 
   const deleteNotification = async (notificationId: string) => {
     try {
-      // In production, this would delete from the database
+      const { error } = await supabase
+        .from('notifications')
+        .delete()
+        .eq('id', notificationId)
+
+      if (error) {
+        console.error("Error deleting notification:", error)
+        return
+      }
+
       setNotifications(prev => {
         const notification = prev.find(n => n.id === notificationId)
         if (notification && !notification.is_read) {

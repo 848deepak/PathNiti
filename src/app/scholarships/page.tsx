@@ -13,6 +13,7 @@ import {
   ExternalLink
 } from "lucide-react"
 import Link from "next/link"
+import { supabase } from "@/lib/supabase"
 
 interface Scholarship {
   id: string
@@ -33,11 +34,22 @@ export default function ScholarshipsPage() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("")
+  const [selectedProvider, setSelectedProvider] = useState("")
+  const [sortBy, setSortBy] = useState("deadline")
 
   const fetchScholarships = async () => {
     try {
-      // Mock data for SIH demo
-      const sampleScholarships: Scholarship[] = [
+      // Try to fetch from database first
+      const { data: dbScholarships, error } = await supabase
+        .from('scholarships')
+        .select('*')
+        .eq('is_active', true)
+        .order('application_deadline', { ascending: true })
+
+      if (error) {
+        console.error('Error fetching scholarships from database:', error)
+        // Fallback to sample data
+        const sampleScholarships: Scholarship[] = [
         {
           id: "1",
           name: "National Merit Scholarship",
@@ -112,7 +124,25 @@ export default function ScholarshipsPage() {
         }
       ]
 
-      setScholarships(sampleScholarships)
+        setScholarships(sampleScholarships)
+      } else {
+        // Use database data
+        const formattedScholarships: Scholarship[] = dbScholarships.map(scholarship => ({
+          id: scholarship.id,
+          name: scholarship.name,
+          provider: scholarship.provider,
+          amount: scholarship.amount?.min && scholarship.amount?.max 
+            ? `₹${scholarship.amount.min/100000}L - ₹${scholarship.amount.max/100000}L`
+            : 'Amount varies',
+          deadline: scholarship.application_deadline,
+          eligibility: scholarship.eligibility || [],
+          category: scholarship.provider.toLowerCase().includes('government') ? 'government' : 'private',
+          description: scholarship.description || '',
+          is_verified: true,
+          application_link: scholarship.website
+        }))
+        setScholarships(formattedScholarships)
+      }
     } catch (error) {
       console.error("Error fetching scholarships:", error)
     } finally {
@@ -135,8 +165,31 @@ export default function ScholarshipsPage() {
       filtered = filtered.filter(scholarship => scholarship.category === selectedCategory)
     }
 
+    if (selectedProvider) {
+      filtered = filtered.filter(scholarship => 
+        scholarship.provider.toLowerCase().includes(selectedProvider.toLowerCase())
+      )
+    }
+
+    // Sort scholarships
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'deadline':
+          return new Date(a.deadline).getTime() - new Date(b.deadline).getTime()
+        case 'amount':
+          // Extract numeric value from amount string for sorting
+          const amountA = parseInt(a.amount.replace(/[^\d]/g, '')) || 0
+          const amountB = parseInt(b.amount.replace(/[^\d]/g, '')) || 0
+          return amountB - amountA
+        case 'name':
+          return a.name.localeCompare(b.name)
+        default:
+          return 0
+      }
+    })
+
     setFilteredScholarships(filtered)
-  }, [scholarships, searchTerm, selectedCategory])
+  }, [scholarships, searchTerm, selectedCategory, selectedProvider, sortBy])
 
   useEffect(() => {
     fetchScholarships()
@@ -212,8 +265,8 @@ export default function ScholarshipsPage() {
 
         {/* Search and Filters */}
         <div className="bg-white p-6 rounded-xl shadow-sm border mb-8">
-          <div className="grid md:grid-cols-3 gap-4">
-            <div className="md:col-span-2">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="lg:col-span-2">
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
@@ -239,6 +292,49 @@ export default function ScholarshipsPage() {
                 ))}
               </select>
             </div>
+
+            <div>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+              >
+                <option value="deadline">Sort by Deadline</option>
+                <option value="amount">Sort by Amount</option>
+                <option value="name">Sort by Name</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Quick Filter Chips */}
+          <div className="mt-4 flex flex-wrap gap-2">
+            <span className="text-sm text-gray-600 mr-2">Quick filters:</span>
+            <button
+              onClick={() => setSelectedProvider("Government")}
+              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                selectedProvider === "Government" 
+                  ? "bg-blue-100 text-blue-800" 
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              Government
+            </button>
+            <button
+              onClick={() => setSelectedProvider("Ministry")}
+              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                selectedProvider === "Ministry" 
+                  ? "bg-green-100 text-green-800" 
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              Ministry
+            </button>
+            <button
+              onClick={() => setSelectedProvider("")}
+              className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+            >
+              Clear filters
+            </button>
           </div>
         </div>
 

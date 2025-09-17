@@ -3,12 +3,14 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button, Input, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui"
-import { supabase, useAuth } from "@/lib"
+import { useAuth } from "../../providers"
+import { supabase } from "@/lib/supabase"
 import { GraduationCap, MapPin, User } from "lucide-react"
 
 export default function CompleteProfilePage() {
   const { user } = useAuth()
   const router = useRouter()
+  // supabase client is imported directly
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   
@@ -86,12 +88,11 @@ export default function CompleteProfilePage() {
     }
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("profiles")
         .upsert({
-          id: (user as any).id, // eslint-disable-line @typescript-eslint/no-explicit-any
-          email: (user as any).email!, // eslint-disable-line @typescript-eslint/no-explicit-any
+          id: user.id,
+          email: user.email!,
           first_name: formData.firstName,
           last_name: formData.lastName,
           date_of_birth: formData.dateOfBirth,
@@ -108,7 +109,7 @@ export default function CompleteProfilePage() {
 
       if (error) throw error
 
-      router.push("/dashboard")
+      router.push("/")
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : 'An error occurred')
     } finally {

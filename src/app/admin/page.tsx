@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input } from "@/components/ui"
-import { useAuth } from "@/lib"
+import { useAuth } from "../providers"
 import { 
   GraduationCap, 
   Users, 
@@ -58,7 +58,7 @@ interface User {
 }
 
 export default function AdminPage() {
-  const { user } = useAuth()
+  const { user, profile, isAdmin } = useAuth()
   const router = useRouter()
   const [stats, setStats] = useState<AdminStats>({
     totalUsers: 0,
@@ -80,14 +80,14 @@ export default function AdminPage() {
       return
     }
 
-    // Check if user is admin
-    if ((user as any)?.user_metadata?.role !== "admin") { // eslint-disable-line @typescript-eslint/no-explicit-any
+    // Check if user is admin using the new role system
+    if (!isAdmin()) {
       router.push("/dashboard")
       return
     }
 
     fetchAdminData()
-  }, [user, router])
+  }, [user, profile, isAdmin, router])
 
   const fetchAdminData = async () => {
     try {

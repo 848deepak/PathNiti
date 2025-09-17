@@ -1,12 +1,7 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
+import { ServiceWorkerProvider } from "@/components/ServiceWorkerProvider";
 
 export const metadata: Metadata = {
   title: "PathNiti - Your Path. Your Future. Simplified.",
@@ -45,6 +40,25 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "PathNiti",
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "default",
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: "#1E40AF",
 };
 
 export default function RootLayout({
@@ -53,10 +67,25 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet" />
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="icon" href="/icons/favicon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.svg" />
+        <meta name="theme-color" content="#1E40AF" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="PathNiti" />
+        <meta name="mobile-web-app-capable" content="yes" />
+      </head>
       <body className="min-h-screen bg-background font-sans antialiased">
         <Providers>
-          {children}
+          <ServiceWorkerProvider>
+            {children}
+          </ServiceWorkerProvider>
         </Providers>
       </body>
     </html>

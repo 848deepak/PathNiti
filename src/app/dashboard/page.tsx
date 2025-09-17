@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui"
-import { useAuth } from "@/lib"
+import { useAuth } from "../providers"
+import { supabase } from "@/lib/supabase"
 import { 
   GraduationCap, 
   Brain, 
@@ -12,61 +13,99 @@ import {
   BookOpen, 
   LogOut,
   User,
-  Settings
+  Settings,
+  Navigation,
+  Search
 } from "lucide-react"
 import Link from "next/link"
 import NotificationSystem from "@/components/NotificationSystem"
+import AIChat from "@/components/AIChat"
 
 export default function DashboardPage() {
-  const { signOut } = useAuth()
+  const { user, signOut } = useAuth()
   const router = useRouter()
+  // supabase client is imported directly
   const [profile, setProfile] = useState<Record<string, unknown> | null>(null)
   const [loading, setLoading] = useState(true)
+  const [redirecting, setRedirecting] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
+  // Ensure component is mounted before any operations
   useEffect(() => {
-    // Bypass authentication for demo purposes
-    const fetchProfile = async () => {
-      try {
-        // Mock profile data for demo
-        const mockProfile = {
-          id: "demo-user-123",
-          first_name: "Demo",
-          last_name: "User",
-          email: "demo@pathniti.com",
-          role: "student",
-          location: {
-            city: "New Delhi",
-            state: "Delhi"
+    setMounted(true)
+  }, [])
+
+  // Handle profile fetching and redirects in a single effect to avoid race conditions
+  useEffect(() => {
+    if (!mounted) return
+
+    const handleAuthAndProfile = async () => {
+      // If no user, redirect to login
+      if (!user) {
+        setRedirecting(true)
+        router.push('/auth/login')
+        return
+      }
+
+      // If user exists but no profile loaded yet, fetch profile
+      if (user && profile === null && loading) {
+        try {
+          // Fetch real profile data from Supabase
+          const { data: profileData, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single()
+
+          if (error) {
+            console.error("Error fetching profile:", error)
+            setProfile(null)
+            setLoading(false)
+            return
           }
+
+          setProfile(profileData)
+          setLoading(false)
+        } catch (error) {
+          console.error("Error fetching profile:", error)
+          setProfile(null)
+          setLoading(false)
         }
-        setProfile(mockProfile)
-      } catch (error) {
-        console.error("Error fetching profile:", error)
-      } finally {
-        setLoading(false)
+      }
+
+      // If user exists, profile is loaded, and profile is null, redirect to complete profile
+      if (user && profile === null && !loading) {
+        setRedirecting(true)
+        router.push('/auth/complete-profile')
+        return
       }
     }
 
-    fetchProfile()
-  }, [])
+    handleAuthAndProfile()
+  }, [mounted, user, profile, loading, router])
 
   const handleSignOut = async () => {
     await signOut()
     router.push("/")
   }
 
-  if (loading) {
+  // Don't render anything until component is mounted
+  if (!mounted) {
+    return null
+  }
+
+  if (loading || redirecting) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <GraduationCap className="h-12 w-12 text-primary animate-pulse mx-auto mb-4" />
-          <p className="text-gray-600">Loading your dashboard...</p>
+          <p className="text-gray-600">
+            {redirecting ? 'Redirecting...' : 'Loading your dashboard...'}
+          </p>
         </div>
       </div>
     )
   }
-
-  // Bypass user check for demo
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
@@ -91,7 +130,7 @@ export default function DashboardPage() {
                 {(profile as any)?.first_name} {(profile as any)?.last_name}
               </span>
             </div>
-            <NotificationSystem userId="demo-user-123" />
+            <NotificationSystem userId={user?.id || ""} />
             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             {(profile as any)?.role === "admin" && (
               <Button variant="outline" size="sm" className="hover:scale-105 transition-transform duration-200" asChild>
@@ -208,7 +247,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Main Actions */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Link href="/quiz" className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
             <Card className="h-full">
               <CardHeader>
@@ -236,12 +275,34 @@ export default function DashboardPage() {
                   Find Colleges
                 </CardTitle>
                 <CardDescription>
-                  Explore government colleges near you with detailed information
+                  Explore government colleges near you with detailed information and interactive maps
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Button className="w-full" variant="outline" asChild>
                   <span>Browse Colleges</span>
+                </Button>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link href="/colleges?tab=nearby" className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+            <Card className="h-full border-2 border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Navigation className="h-6 w-6 text-green-600 mr-2" />
+                  <span className="text-green-800">Nearby Colleges</span>
+                  <div className="ml-auto bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-medium">
+                    NEW
+                  </div>
+                </CardTitle>
+                <CardDescription className="text-green-700">
+                  Find colleges near your location using Google Maps with real-time data
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button className="w-full bg-green-600 hover:bg-green-700 text-white" asChild>
+                  <span>Find Nearby</span>
                 </Button>
               </CardContent>
             </Card>
@@ -267,48 +328,57 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        {/* Recent Activity */}
-        <div className="grid md:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-              <CardDescription>Your latest actions on PathNiti</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-primary rounded-full"></div>
-                  <div>
-                    <p className="text-sm font-medium">Profile completed</p>
-                    <p className="text-xs text-gray-500">Just now</p>
+        {/* AI Chat and Recent Activity */}
+        <div className="grid lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent Activity</CardTitle>
+                <CardDescription>Your latest actions on PathNiti</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-2 bg-primary rounded-full"></div>
+                    <div>
+                      <p className="text-sm font-medium">Profile completed</p>
+                      <p className="text-xs text-gray-500">Just now</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
+                    <div>
+                      <p className="text-sm font-medium">Account created</p>
+                      <p className="text-xs text-gray-500">Today</p>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
-                  <div>
-                    <p className="text-sm font-medium">Account created</p>
-                    <p className="text-xs text-gray-500">Today</p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
 
+          <div className="lg:col-span-1">
+            <AIChat userProfile={profile} />
+          </div>
+        </div>
+
+        {/* Quick Recommendations */}
+        <div className="mt-6">
           <Card>
             <CardHeader>
               <CardTitle>Quick Recommendations</CardTitle>
               <CardDescription>Based on your profile</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
                 <div className="p-3 bg-blue-50 rounded-lg">
                   <p className="text-sm font-medium text-blue-900">Complete your aptitude assessment</p>
                   <p className="text-xs text-blue-700">Get personalized career recommendations</p>
                 </div>
                 <div className="p-3 bg-green-50 rounded-lg">
                   {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                  <p className="text-sm font-medium text-green-900">Explore colleges in {(profile as any)?.location?.city}</p>
-                  <p className="text-xs text-green-700">Find government colleges near you</p>
+                  <p className="text-sm font-medium text-green-900">Find nearby colleges with Google Maps</p>
+                  <p className="text-xs text-green-700">Discover colleges near your location with real-time data</p>
                 </div>
               </div>
             </CardContent>

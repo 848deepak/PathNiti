@@ -2,9 +2,9 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { supabase } from "@/lib"
 import { Card, CardContent } from "@/components/ui"
 import { GraduationCap } from "lucide-react"
+import { supabase } from "@/lib/supabase"
 
 export default function AuthCallbackPage() {
   const router = useRouter()
@@ -12,28 +12,80 @@ export default function AuthCallbackPage() {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        const { data, error } = await supabase.auth.getSession()
+        // Use getUser() to force fetch fresh user data after email verification
+        const { data: { user }, error: userError } = await supabase.auth.getUser()
         
-        if (error) {
-          console.error("Auth callback error:", error)
+        if (userError) {
+          console.error("Auth callback error:", userError)
           router.push("/auth/login?error=callback_error")
           return
         }
 
-        if ((data as any).session?.user) { // eslint-disable-line @typescript-eslint/no-explicit-any
+        if (user) {
+          console.log("User authenticated:", user.id, user.email)
+          
           // Check if user has completed profile
-          const { data: profile } = await supabase
-            .from()
-            .select()
-            .eq()
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
             .single()
 
+          if (profileError && profileError.code !== 'PGRST116') {
+            // PGRST116 is "not found" error, which is expected for new users
+            console.error("Error checking profile:", profileError)
+            router.push("/auth/login?error=profile_check_error")
+            return
+          }
+
           if (profile) {
-            router.push("/dashboard")
+            console.log("Profile found, redirecting to dashboard")
+            router.push("/")
           } else {
-            router.push("/auth/complete-profile")
+            // Profile doesn't exist, try to create it automatically
+            console.log("Profile not found, attempting to create profile for user:", user.id)
+            
+            try {
+              // Get user metadata from signup
+              const userData = user.user_metadata || {}
+              
+              // Determine role from metadata or default to student
+              const role = userData.role || 'student'
+              
+              const profileData = {
+                id: user.id,
+                email: user.email!,
+                first_name: userData.first_name || '',
+                last_name: userData.last_name || '',
+                phone: userData.phone || null,
+                role: role
+              }
+
+              console.log('Creating profile for authenticated user:', user.id, 'with role:', role)
+              
+              const { data: newProfile, error: createError } = await supabase
+                .from('profiles')
+                .insert(profileData)
+                .select()
+                .single()
+
+              if (createError) {
+                console.error('Error creating profile:', createError)
+                // Still redirect to complete-profile page so user can manually complete
+                router.push("/auth/complete-profile")
+                return
+              }
+
+              console.log('Profile created successfully:', newProfile)
+              router.push("/")
+            } catch (createError) {
+              console.error('Error in profile creation:', createError)
+              // Still redirect to complete-profile page so user can manually complete
+              router.push("/auth/complete-profile")
+            }
           }
         } else {
+          console.log("No user found, redirecting to login")
           router.push("/auth/login")
         }
       } catch (error) {
@@ -43,7 +95,7 @@ export default function AuthCallbackPage() {
     }
 
     handleAuthCallback()
-  }, [router])
+  }, [router, supabase])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">

@@ -32,6 +32,15 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+.env.local
+.env.production
+.env.development
+
+# Security: Never commit files with API keys or secrets
+*_SETUP.md
+*_CONFIG.md
+*_KEYS.md
+*_SECRETS.md
 
 # vercel
 .vercel

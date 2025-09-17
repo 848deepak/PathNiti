@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createServerClient } from '@/lib/supabase/server'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
     const supabase = createServerClient()
-    const { searchParams } = new URL(request.url)
+    const { searchParams } = request.nextUrl
     
     // Get query parameters
     const state = searchParams.get('state')

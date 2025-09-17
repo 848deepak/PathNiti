@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
+
 // Fallback data for when Google Maps API is not working
 function getFallbackColleges(lat: number, lng: number) {
   // Determine region based on coordinates

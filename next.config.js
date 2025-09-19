@@ -1,3 +1,6 @@
+import fs from 'fs';
+import path from 'path';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // For Next.js 15, serverComponentsExternalPackages moved to root level
@@ -24,8 +27,6 @@ const nextConfig = {
   webpack: (config, { isServer }) => {
     // Create missing CSS file during build to prevent ENOENT errors
     if (isServer) {
-      const fs = require('fs');
-      const path = require('path');
       
       // Create CSS file in all possible locations
       const locations = [
@@ -51,4 +52,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+export default nextConfig;

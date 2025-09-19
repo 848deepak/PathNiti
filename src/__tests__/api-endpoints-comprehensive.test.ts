@@ -3,20 +3,19 @@
  * Tests all API routes with various scenarios including error cases
  */
 
-import { createMocks } from 'node-mocks-http'
 import { NextRequest } from 'next/server'
 
 // Import API route handlers
-import { GET as getCollegeBySlug, PUT as updateCollegeProfile } from '@/app/api/colleges/[slug]/route'
+import { GET as getCollegeBySlug } from '@/app/api/colleges/[slug]/route'
 import { POST as applyToCollege } from '@/app/api/colleges/[slug]/apply/route'
 import { POST as registerCollege } from '@/app/api/colleges/register/route'
 import { GET as getCollegeApplications } from '@/app/api/colleges/admin/applications/route'
 import { PUT as updateApplicationStatus } from '@/app/api/colleges/admin/applications/[id]/status/route'
-import { GET as getStudentApplications, POST as createStudentApplication } from '@/app/api/student/applications/route'
+import { GET as getStudentApplications } from '@/app/api/student/applications/route'
 import { PUT as updateStudentDocuments } from '@/app/api/student/applications/[id]/documents/route'
-import { GET as getCollegeCourses, POST as createCollegeCourse } from '@/app/api/colleges/admin/courses/route'
+import { POST as createCollegeCourse } from '@/app/api/colleges/admin/courses/route'
 import { PUT as updateCollegeCourse, DELETE as deleteCollegeCourse } from '@/app/api/colleges/admin/courses/[id]/route'
-import { GET as getCollegeNotices, POST as createCollegeNotice } from '@/app/api/colleges/admin/notices/route'
+import { POST as createCollegeNotice } from '@/app/api/colleges/admin/notices/route'
 
 // Mock Supabase client
 jest.mock('@/lib/supabase/server', () => ({

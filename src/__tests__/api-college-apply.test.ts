@@ -1,6 +1,8 @@
 import { NextRequest } from 'next/server'
 import { POST } from '@/app/api/colleges/[slug]/apply/route'
 import { jest } from '@jest/globals'
+import { createClient } from '@/lib/supabase/server'
+import { collegeProfileService } from '@/lib/services/college-profile-service'
 
 // Mock Supabase server client
 jest.mock('@/lib/supabase/server', () => ({
@@ -34,7 +36,7 @@ jest.mock('@/lib/services/college-profile-service', () => ({
 }))
 
 describe('/api/colleges/[slug]/apply', () => {
-  const mockRequest = (body: any) => {
+  const mockRequest = (body: Record<string, unknown>) => {
     return {
       json: () => Promise.resolve(body)
     } as NextRequest
@@ -47,7 +49,6 @@ describe('/api/colleges/[slug]/apply', () => {
   })
 
   it('returns 401 when user is not authenticated', async () => {
-    const { createClient } = require('@/lib/supabase/server')
     const mockSupabase = createClient()
     mockSupabase.auth.getUser.mockResolvedValue({
       data: { user: null },
@@ -74,8 +75,8 @@ describe('/api/colleges/[slug]/apply', () => {
   })
 
   it('returns 404 when college is not found', async () => {
-    const { createClient } = require('@/lib/supabase/server')
-    const { collegeProfileService } = require('@/lib/services/college-profile-service')
+    const mockSupabase = createClient()
+    // collegeProfileService is now imported
     
     const mockSupabase = createClient()
     mockSupabase.auth.getUser.mockResolvedValue({
@@ -108,8 +109,8 @@ describe('/api/colleges/[slug]/apply', () => {
   })
 
   it('returns 400 when required fields are missing', async () => {
-    const { createClient } = require('@/lib/supabase/server')
-    const { collegeProfileService } = require('@/lib/services/college-profile-service')
+    const mockSupabase = createClient()
+    // collegeProfileService is now imported
     
     const mockSupabase = createClient()
     mockSupabase.auth.getUser.mockResolvedValue({
@@ -142,8 +143,8 @@ describe('/api/colleges/[slug]/apply', () => {
   })
 
   it('returns 400 when documents are missing', async () => {
-    const { createClient } = require('@/lib/supabase/server')
-    const { collegeProfileService } = require('@/lib/services/college-profile-service')
+    const mockSupabase = createClient()
+    // collegeProfileService is now imported
     
     const mockSupabase = createClient()
     mockSupabase.auth.getUser.mockResolvedValue({
@@ -176,8 +177,8 @@ describe('/api/colleges/[slug]/apply', () => {
   })
 
   it('returns 400 for invalid email format', async () => {
-    const { createClient } = require('@/lib/supabase/server')
-    const { collegeProfileService } = require('@/lib/services/college-profile-service')
+    const mockSupabase = createClient()
+    // collegeProfileService is now imported
     
     const mockSupabase = createClient()
     mockSupabase.auth.getUser.mockResolvedValue({
@@ -210,8 +211,8 @@ describe('/api/colleges/[slug]/apply', () => {
   })
 
   it('returns 400 for invalid phone format', async () => {
-    const { createClient } = require('@/lib/supabase/server')
-    const { collegeProfileService } = require('@/lib/services/college-profile-service')
+    const mockSupabase = createClient()
+    // collegeProfileService is now imported
     
     const mockSupabase = createClient()
     mockSupabase.auth.getUser.mockResolvedValue({
@@ -244,8 +245,8 @@ describe('/api/colleges/[slug]/apply', () => {
   })
 
   it('successfully creates application with valid data', async () => {
-    const { createClient } = require('@/lib/supabase/server')
-    const { collegeProfileService } = require('@/lib/services/college-profile-service')
+    const mockSupabase = createClient()
+    // collegeProfileService is now imported
     
     const mockSupabase = createClient()
     mockSupabase.auth.getUser.mockResolvedValue({

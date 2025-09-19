@@ -1,7 +1,6 @@
 // PathNiti Service Worker
 // Version 1.0.0
 
-const CACHE_NAME = 'pathniti-v1.0.0';
 const STATIC_CACHE = 'pathniti-static-v1.0.0';
 const DYNAMIC_CACHE = 'pathniti-dynamic-v1.0.0';
 
@@ -23,12 +22,12 @@ const STATIC_FILES = [
 ];
 
 // API routes that should be cached
-const API_CACHE_PATTERNS = [
-  '/api/colleges',
-  '/api/scholarships',
-  '/api/timeline',
-  '/api/quiz',
-];
+// const API_CACHE_PATTERNS = [
+//   '/api/colleges',
+//   '/api/scholarships',
+//   '/api/timeline',
+//   '/api/quiz',
+// ];
 
 // Install event - cache static files
 self.addEventListener('install', (event) => {

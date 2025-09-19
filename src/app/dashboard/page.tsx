@@ -1,10 +1,9 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui"
 import { useAuth } from "../providers"
-import { supabase } from "@/lib/supabase"
 import { 
   GraduationCap, 
   Brain, 
@@ -14,94 +13,54 @@ import {
   LogOut,
   User,
   Settings,
-  Navigation,
-  Search
+  Navigation
 } from "lucide-react"
 import Link from "next/link"
 import NotificationSystem from "@/components/NotificationSystem"
 import AIChat from "@/components/AIChat"
+import AuthDebug from "@/components/AuthDebug"
 
 export default function DashboardPage() {
-  const { user, signOut } = useAuth()
+  const { user, profile, loading, signOut, requireAuth } = useAuth()
   const router = useRouter()
-  // supabase client is imported directly
-  const [profile, setProfile] = useState<Record<string, unknown> | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [redirecting, setRedirecting] = useState(false)
-  const [mounted, setMounted] = useState(false)
 
-  // Ensure component is mounted before any operations
+  // Use centralized authentication enforcement and redirect to role-specific dashboard
   useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  // Handle profile fetching and redirects in a single effect to avoid race conditions
-  useEffect(() => {
-    if (!mounted) return
-
-    const handleAuthAndProfile = async () => {
-      // If no user, redirect to login
-      if (!user) {
-        setRedirecting(true)
-        router.push('/auth/login')
-        return
-      }
-
-      // If user exists but no profile loaded yet, fetch profile
-      if (user && profile === null && loading) {
-        try {
-          // Fetch real profile data from Supabase
-          const { data: profileData, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', user.id)
-            .single()
-
-          if (error) {
-            console.error("Error fetching profile:", error)
-            setProfile(null)
-            setLoading(false)
-            return
-          }
-
-          setProfile(profileData)
-          setLoading(false)
-        } catch (error) {
-          console.error("Error fetching profile:", error)
-          setProfile(null)
-          setLoading(false)
+    const checkAuthAndRedirect = async () => {
+      const isAuthenticated = await requireAuth()
+      if (isAuthenticated && profile) {
+        // Redirect to role-specific dashboard
+        switch (profile.role) {
+          case 'admin':
+            router.push('/dashboard/admin')
+            break
+          case 'college':
+            router.push('/dashboard/college')
+            break
+          case 'student':
+            router.push('/dashboard/student')
+            break
+          default:
+            // Stay on general dashboard if role is not recognized
+            break
         }
       }
-
-      // If user exists, profile is loaded, and profile is null, redirect to complete profile
-      if (user && profile === null && !loading) {
-        setRedirecting(true)
-        router.push('/auth/complete-profile')
-        return
-      }
     }
-
-    handleAuthAndProfile()
-  }, [mounted, user, profile, loading, router])
+    checkAuthAndRedirect()
+  }, [requireAuth, profile, router])
 
   const handleSignOut = async () => {
     await signOut()
     router.push("/")
   }
 
-  // Don't render anything until component is mounted
-  if (!mounted) {
-    return null
-  }
-
-  if (loading || redirecting) {
+  // Use central loading state from useAuth
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <GraduationCap className="h-12 w-12 text-primary animate-pulse mx-auto mb-4" />
-          <p className="text-gray-600">
-            {redirecting ? 'Redirecting...' : 'Loading your dashboard...'}
-          </p>
+          <p className="text-gray-600">Loading your dashboard...</p>
         </div>
       </div>
     )
@@ -112,13 +71,13 @@ export default function DashboardPage() {
       {/* Navigation */}
       <nav className="bg-white/90 backdrop-blur-md border-b border-gray-200 shadow-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
+          <Link href="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity duration-200">
             <div className="relative">
               <GraduationCap className="h-8 w-8 text-primary" />
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
             </div>
             <span className="text-2xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">PathNiti</span>
-          </div>
+          </Link>
           
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-3 bg-gray-50 rounded-full px-4 py-2">
@@ -126,13 +85,11 @@ export default function DashboardPage() {
                 <User className="h-4 w-4 text-white" />
               </div>
               <span className="text-sm font-medium text-gray-700">
-                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                {(profile as any)?.first_name} {(profile as any)?.last_name}
+                {profile?.first_name} {profile?.last_name}
               </span>
             </div>
             <NotificationSystem userId={user?.id || ""} />
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            {(profile as any)?.role === "admin" && (
+            {profile?.role === "admin" && (
               <Button variant="outline" size="sm" className="hover:scale-105 transition-transform duration-200" asChild>
                 <Link href="/admin">
                   <Settings className="h-4 w-4 mr-2" />
@@ -155,14 +112,14 @@ export default function DashboardPage() {
       </nav>
 
       <div className="container mx-auto px-4 py-8">
+        <AuthDebug />
         {/* Welcome Section */}
         <div className="mb-12">
           <div className="bg-gradient-to-r from-primary/10 via-blue-50 to-purple-50 rounded-3xl p-8 border border-primary/20">
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-4xl font-bold text-gray-900 mb-3">
-                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                  Welcome back, {(profile as any)?.first_name}! 👋
+                  Welcome back, {profile?.first_name}! 👋
                 </h1>
                 <p className="text-lg text-gray-600 mb-6">
                   Ready to continue your career journey? Let&apos;s explore what&apos;s next for you.
@@ -376,7 +333,6 @@ export default function DashboardPage() {
                   <p className="text-xs text-blue-700">Get personalized career recommendations</p>
                 </div>
                 <div className="p-3 bg-green-50 rounded-lg">
-                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                   <p className="text-sm font-medium text-green-900">Find nearby colleges with Google Maps</p>
                   <p className="text-xs text-green-700">Discover colleges near your location with real-time data</p>
                 </div>

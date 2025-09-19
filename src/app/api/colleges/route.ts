@@ -1,45 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createServerClient } from '@/lib/supabase/server'
+import { collegeProfileServiceEnhanced } from '@/lib/services/college-profile-service'
+import { normalizePaginationParams } from '@/lib/utils/pagination'
 
-// Force this route to be dynamic
-export const dynamic = 'force-dynamic'
+// Enable caching for this route
+export const revalidate = 180 // 3 minutes
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createServerClient()
     const { searchParams } = request.nextUrl
     
-    // Get query parameters
+    // Get and normalize query parameters
     const state = searchParams.get('state')
     const type = searchParams.get('type')
     const search = searchParams.get('search')
-    const limit = parseInt(searchParams.get('limit') || '50')
-    const offset = parseInt(searchParams.get('offset') || '0')
+    const { page, limit, offset } = normalizePaginationParams(
+      searchParams.get('page'),
+      searchParams.get('limit'),
+      50 // max limit
+    )
 
-    // Build query
-    let query = supabase
-      .from('colleges')
-      .select('*')
-      .eq('is_active', true)
-      .order('name')
-
-    // Apply filters
-    if (state) {
-      query = query.eq('location->>state', state)
-    }
-    
-    if (type) {
-      query = query.eq('type', type)
-    }
-    
-    if (search) {
-      query = query.or(`name.ilike.%${search}%,address.ilike.%${search}%`)
-    }
-
-    // Apply pagination
-    query = query.range(offset, offset + limit - 1)
-
-    const { data: colleges, error, count } = await query
+    // Use optimized service with caching
+    const { data: result, error } = await collegeProfileServiceEnhanced.getCollegesPaginated({
+      state: state || undefined,
+      type: type || undefined,
+      search: search || undefined,
+      limit,
+      offset
+    })
 
     if (error) {
       console.error('Error fetching colleges:', error)
@@ -49,12 +37,11 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    return NextResponse.json({
-      colleges,
-      total: count,
-      limit,
-      offset
-    })
+    // Add cache headers for better performance
+    const response = NextResponse.json(result)
+    response.headers.set('Cache-Control', 'public, s-maxage=180, stale-while-revalidate=360')
+    
+    return response
 
   } catch (error) {
     console.error('API error:', error)

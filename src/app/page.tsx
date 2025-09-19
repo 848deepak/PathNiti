@@ -1,14 +1,15 @@
 "use client"
 
 import { Button } from "@/components/ui"
-import { GraduationCap, MapPin, Brain, Calendar, Users, BookOpen, ArrowRight, Star, CheckCircle, Sparkles, User, LogOut, Navigation } from "lucide-react"
+import { GraduationCap, MapPin, Brain, Calendar, Users, BookOpen, ArrowRight, Star, CheckCircle, Sparkles, User, LogOut, Navigation, MessageSquare } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "./providers"
 import { useState, useEffect } from "react"
+import { DynamicHeader } from "@/components/DynamicHeader"
 
 export default function Home() {
-  const { user, signOut } = useAuth()
   const [mounted, setMounted] = useState(false)
+  const { user, profile, signOut } = useAuth()
 
   useEffect(() => {
     setMounted(true)
@@ -20,73 +21,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       {/* Navigation */}
-      <nav className="border-b bg-white/90 backdrop-blur-md sticky top-0 z-50 shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary to-blue-600 rounded-xl blur-sm opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="relative bg-white p-2 rounded-xl shadow-lg">
-                <GraduationCap className="h-8 w-8 text-primary" />
-                <Sparkles className="h-3 w-3 text-yellow-500 absolute -top-1 -right-1 animate-pulse" />
-              </div>
-            </div>
-            <span className="text-3xl font-black bg-gradient-to-r from-blue-800 via-blue-600 to-purple-600 bg-clip-text text-transparent tracking-tight">
-              PathNiti
-            </span>
-          </div>
-          <div className="hidden md:flex items-center space-x-8">
-            <Link href="/features" className="text-gray-600 hover:text-primary transition-all duration-200 hover:scale-105">
-              Features
-            </Link>
-            <Link href="/career-pathways" className="text-gray-600 hover:text-primary transition-all duration-200 hover:scale-105">
-              Career Paths
-            </Link>
-            <Link href="/about" className="text-gray-600 hover:text-primary transition-all duration-200 hover:scale-105">
-              About
-            </Link>
-            <Link href="/contact" className="text-gray-600 hover:text-primary transition-all duration-200 hover:scale-105">
-              Contact
-            </Link>
-          </div>
-          <div className="flex items-center space-x-3">
-            {user ? (
-              <>
-                <div className="flex items-center space-x-3 bg-gray-50 rounded-full px-4 py-2">
-                  <div className="w-8 h-8 bg-gradient-to-br from-primary to-blue-600 rounded-full flex items-center justify-center">
-                    <User className="h-4 w-4 text-white" />
-                  </div>
-                  <span className="text-sm font-medium text-gray-700">
-                    {user.email?.split('@')[0]}
-                  </span>
-                </div>
-                <Button variant="outline" className="hover:scale-105 transition-all duration-200 border-2 hover:border-primary hover:bg-primary/5" asChild>
-                  <Link href="/dashboard">Dashboard</Link>
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={signOut}
-                  className="hover:scale-105 transition-all duration-200 hover:bg-red-50 hover:border-red-200 hover:text-red-600"
-                >
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sign Out
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button variant="outline" className="hover:scale-105 transition-all duration-200 border-2 hover:border-primary hover:bg-primary/5" asChild>
-                  <Link href="/auth/login">Login</Link>
-                </Button>
-                <Button className="relative overflow-hidden bg-gradient-to-r from-primary via-blue-600 to-purple-600 hover:from-purple-600 hover:via-blue-600 hover:to-primary transition-all duration-500 hover:scale-105 shadow-xl hover:shadow-2xl group" asChild>
-                  <Link href="/auth/signup" className="flex items-center gap-2 relative z-10">
-                    <span className="font-semibold">Get Started</span>
-                    <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
-                  </Link>
-                </Button>
-              </>
-            )}
-          </div>
-        </div>
-      </nav>
+      <DynamicHeader variant="default" />
 
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-24 text-center relative overflow-hidden bg-white animate-fade-in">
@@ -137,7 +72,7 @@ export default function Home() {
             {user ? (
               <>
                 <Button size="xl" className="relative overflow-hidden text-lg px-12 py-8 bg-gradient-to-r from-primary via-blue-600 to-purple-600 hover:from-purple-600 hover:via-blue-600 hover:to-primary transition-all duration-500 hover:scale-110 shadow-2xl hover:shadow-3xl animate-slide-in-left group" asChild>
-                  <Link href="/dashboard" className="flex items-center gap-3 relative z-10">
+                  <Link href={`/dashboard/${profile?.role || 'student'}`} className="flex items-center gap-3 relative z-10">
                     <span className="font-bold text-lg">Go to Dashboard</span>
                     <ArrowRight className="h-6 w-6 group-hover:translate-x-2 transition-transform duration-300" />
                   </Link>
@@ -494,13 +429,12 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-4 gap-12">
             <div className="md:col-span-1">
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="relative">
-                  <GraduationCap className="h-8 w-8 text-primary" />
-                  <Sparkles className="h-3 w-3 text-yellow-500 absolute -top-1 -right-1" />
-                </div>
-                <span className="text-2xl font-bold bg-gradient-to-r from-blue-800 via-blue-600 to-purple-600 bg-clip-text text-transparent">PathNiti</span>
-              </div>
+              <Link href="/" className="flex items-center mb-6 hover:opacity-80 transition-opacity duration-200">
+                <span className="text-2xl font-bold bg-gradient-to-r from-blue-800 via-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  <span className="font-bold text-blue-800">Path</span>
+                  <span className="font-normal text-gray-600">Niti</span>
+                </span>
+              </Link>
               <p className="text-gray-400 leading-relaxed mb-6">
                 Empowering students with personalized career guidance and education resources. 
                 Your future starts here.

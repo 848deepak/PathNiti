@@ -1,6 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextRequest, NextResponse } from 'next/server'
-import type { Database } from './client'
+import type { Database } from './types'
 
 export function createClient(request: NextRequest) {
   let response = NextResponse.next({
@@ -27,6 +27,11 @@ export function createClient(request: NextRequest) {
           )
         },
       },
+      auth: {
+        autoRefreshToken: false, // Don't auto-refresh in middleware
+        persistSession: false,   // Don't persist in middleware
+        detectSessionInUrl: false, // Don't detect session in URL in middleware
+      }
     }
   )
 

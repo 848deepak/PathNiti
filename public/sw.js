@@ -83,6 +83,18 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Skip requests to external domains to avoid CORS issues
+  if (url.origin !== location.origin) {
+    return;
+  }
+
+  // Skip requests that are likely to fail (like hot reload requests)
+  if (url.pathname.includes('hot-reloader') || 
+      url.pathname.includes('webpack') ||
+      url.pathname.includes('_next/static/webpack')) {
+    return;
+  }
+
   // Handle different types of requests
   if (isStaticFile(request)) {
     // Static files - cache first strategy
@@ -114,7 +126,10 @@ async function cacheFirst(request) {
     }
     return networkResponse;
   } catch (error) {
-    console.error('Cache first strategy failed:', error);
+    // Only log errors for important resources, not for hot reload or webpack files
+    if (!request.url.includes('hot-reloader') && !request.url.includes('webpack')) {
+      console.error('Cache first strategy failed:', error);
+    }
     return new Response('Offline - Static file not available', { status: 503 });
   }
 }
@@ -131,7 +146,10 @@ async function networkFirst(request) {
     
     return networkResponse;
   } catch (error) {
-    console.log('Network failed, trying cache:', error);
+    // Only log errors for important resources, not for hot reload or webpack files
+    if (!request.url.includes('hot-reloader') && !request.url.includes('webpack')) {
+      console.log('Network failed, trying cache:', error);
+    }
     const cachedResponse = await caches.match(request);
     
     if (cachedResponse) {
@@ -152,7 +170,11 @@ async function networkFirst(request) {
       );
     }
     
-    throw error;
+    // For non-API requests, return a basic response instead of throwing
+    return new Response('Resource not available offline', { 
+      status: 503,
+      headers: { 'Content-Type': 'text/plain' }
+    });
   }
 }
 
@@ -168,7 +190,10 @@ async function networkFirstWithOfflineFallback(request) {
     
     return networkResponse;
   } catch (error) {
-    console.log('Network failed, trying cache:', error);
+    // Only log errors for important resources, not for hot reload or webpack files
+    if (!request.url.includes('hot-reloader') && !request.url.includes('webpack')) {
+      console.log('Network failed, trying cache:', error);
+    }
     const cachedResponse = await caches.match(request);
     
     if (cachedResponse) {

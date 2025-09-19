@@ -227,10 +227,10 @@ export default function TimelinePage() {
       {/* Navigation */}
       <nav className="bg-white border-b">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
+          <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity duration-200">
             <GraduationCap className="h-8 w-8 text-primary" />
             <span className="text-2xl font-bold text-primary">PathNiti</span>
-          </div>
+          </Link>
           <Button variant="outline" asChild>
             <Link href="/dashboard">
               <ArrowLeft className="h-4 w-4 mr-2" />

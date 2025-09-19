@@ -38,10 +38,10 @@ export function ServiceWorkerProvider({ children }: ServiceWorkerProviderProps) 
   }, [])
 
   useEffect(() => {
-    // Register service worker
-    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-      registerServiceWorker()
-    }
+    // Temporarily disable service worker registration for development
+    // if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+    //   registerServiceWorker()
+    // }
 
     // Handle online/offline status
     const handleOnline = () => setIsOnline(true)
@@ -51,7 +51,7 @@ export function ServiceWorkerProvider({ children }: ServiceWorkerProviderProps) 
     window.addEventListener('offline', handleOffline)
 
     // Set initial online status
-    setIsOnline(navigator.onLine)
+    setIsOnline(typeof window !== 'undefined' ? navigator.onLine : true)
 
     return () => {
       window.removeEventListener('online', handleOnline)

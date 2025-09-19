@@ -6,6 +6,7 @@ import Link from "next/link"
 import { Button, Input, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui"
 import { GraduationCap, Mail, Lock, Eye, EyeOff, User, ArrowLeft } from "lucide-react"
 import { useAuth } from "../../../providers"
+import { DynamicHeader } from "@/components/DynamicHeader"
 
 export default function StudentSignupPage() {
   const [formData, setFormData] = useState({
@@ -21,6 +22,26 @@ export default function StudentSignupPage() {
   const [success, setSuccess] = useState(false)
   const router = useRouter()
   const { signUpStudent, signInWithOAuth, loading } = useAuth()
+
+  // Password validation function
+  const validatePassword = (password: string): string | null => {
+    if (password.length < 8) {
+      return "Password must be at least 8 characters long"
+    }
+    if (!/(?=.*[a-z])/.test(password)) {
+      return "Password must contain at least one lowercase letter"
+    }
+    if (!/(?=.*[A-Z])/.test(password)) {
+      return "Password must contain at least one uppercase letter"
+    }
+    if (!/(?=.*\d)/.test(password)) {
+      return "Password must contain at least one number"
+    }
+    if (!/(?=.*[@$!%*?&])/.test(password)) {
+      return "Password must contain at least one special character (@$!%*?&)"
+    }
+    return null
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -46,8 +67,10 @@ export default function StudentSignupPage() {
       return
     }
 
-    if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters")
+    // Enhanced password validation
+    const passwordError = validatePassword(formData.password)
+    if (passwordError) {
+      setError(passwordError)
       return
     }
 
@@ -130,15 +153,12 @@ export default function StudentSignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center space-x-2">
-            <GraduationCap className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold text-primary">PathNiti</span>
-          </Link>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+      {/* Header */}
+      <DynamicHeader showNavigation={false} showUserActions={false} />
+      
+      <div className="flex items-center justify-center p-4 pt-8">
+        <div className="w-full max-w-md">
 
         {/* Back Button */}
         <div className="mb-6">
@@ -332,9 +352,6 @@ export default function StudentSignupPage() {
         </div>
       </div>
     </div>
+    </div>
   )
 }
-
-
-
-

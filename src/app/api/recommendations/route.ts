@@ -25,9 +25,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
     }
 
-    // Fetch latest quiz session
-    const { data: quizSession, error: quizError } = await supabase
-      .from('quiz_sessions')
+    // Fetch latest assessment session instead of quiz_sessions
+    const { data: assessmentSession, error: assessmentError } = await supabase
+      .from('assessment_sessions')
       .select('*')
       .eq('user_id', user_id)
       .eq('status', 'completed')
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       stream: profile.stream,
       interests: profile.interests || [],
       location: profile.location,
-      quiz_scores: quizSession?.interest_scores || {},
+      quiz_scores: assessmentSession?.riasec_scores || {},
       personality_traits: profile.personality_traits,
       family_income: profile.family_income,
       parent_education: profile.parent_education

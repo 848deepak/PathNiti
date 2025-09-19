@@ -9,6 +9,82 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
+// Enhanced student assessment types
+export interface AptitudeScores {
+  logical_reasoning: number
+  quantitative_skills: number
+  language_verbal_skills: number
+  spatial_visual_skills: number
+  memory_attention: number
+}
+
+export interface RIASECScores {
+  realistic: number
+  investigative: number
+  artistic: number
+  social: number
+  enterprising: number
+  conventional: number
+}
+
+export interface PersonalityScores {
+  introvert_extrovert: number
+  risk_taking_vs_risk_averse: number
+  structured_vs_flexible: number
+  leadership_vs_supportive: number
+}
+
+export interface SubjectPerformance {
+  math: { accuracy: number; speed: number }
+  science: { accuracy: number; speed: number }
+  social_science: { accuracy: number; speed: number }
+  english: { accuracy: number; speed: number }
+  general_knowledge: { accuracy: number; speed: number }
+}
+
+export interface PracticalConstraints {
+  location: string
+  financial_background: string
+  parental_expectation: string
+}
+
+export interface StreamRecommendation {
+  stream: string
+  reasoning: string
+  time_to_earn: string
+  average_salary: string
+  job_demand_trend: string
+  confidence_score: number
+}
+
+export interface CollegeRecommendation {
+  college_id: string
+  college_name: string
+  address: string
+  stream_offered: string
+  admission_criteria: string
+  fee_structure: string
+  admission_open_date: string
+  admission_close_date: string
+  match_score: number
+  reasons: string[]
+}
+
+export interface ScholarshipRecommendation {
+  scholarship_id: string
+  name: string
+  eligibility: string
+  benefit: string
+  application_deadline: string
+  match_score: number
+}
+
+export interface BackupOption {
+  course: string
+  why_considered: string
+  alternate_path?: string
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -473,6 +549,144 @@ export interface Database {
           created_at?: string
         }
       }
+      assessment_sessions: {
+        Row: {
+          id: string
+          user_id: string
+          status: 'not_started' | 'in_progress' | 'completed'
+          started_at: string | null
+          completed_at: string | null
+          aptitude_scores: Json | null
+          riasec_scores: Json | null
+          personality_scores: Json | null
+          subject_performance: Json | null
+          practical_constraints: Json | null
+          total_score: number
+          assessment_type: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          status?: 'not_started' | 'in_progress' | 'completed'
+          started_at?: string | null
+          completed_at?: string | null
+          aptitude_scores?: Json | null
+          riasec_scores?: Json | null
+          personality_scores?: Json | null
+          subject_performance?: Json | null
+          practical_constraints?: Json | null
+          total_score?: number
+          assessment_type?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          status?: 'not_started' | 'in_progress' | 'completed'
+          started_at?: string | null
+          completed_at?: string | null
+          aptitude_scores?: Json | null
+          riasec_scores?: Json | null
+          personality_scores?: Json | null
+          subject_performance?: Json | null
+          practical_constraints?: Json | null
+          total_score?: number
+          assessment_type?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      assessment_responses: {
+        Row: {
+          id: string
+          user_id: string
+          session_id: string
+          question_id: string
+          selected_answer: number
+          time_taken: number | null
+          is_correct: boolean | null
+          raw_score: number | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          session_id: string
+          question_id: string
+          selected_answer: number
+          time_taken?: number | null
+          is_correct?: boolean | null
+          raw_score?: number | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          session_id?: string
+          question_id?: string
+          selected_answer?: number
+          time_taken?: number | null
+          is_correct?: boolean | null
+          raw_score?: number | null
+          created_at?: string
+        }
+      }
+      student_recommendations: {
+        Row: {
+          id: string
+          user_id: string
+          session_id: string
+          primary_recommendations: Json | null
+          secondary_recommendations: Json | null
+          backup_options: Json | null
+          recommended_colleges: Json | null
+          relevant_scholarships: Json | null
+          overall_reasoning: string | null
+          recommendation_confidence: number | null
+          ai_model_used: string | null
+          generated_at: string
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          session_id: string
+          primary_recommendations?: Json | null
+          secondary_recommendations?: Json | null
+          backup_options?: Json | null
+          recommended_colleges?: Json | null
+          relevant_scholarships?: Json | null
+          overall_reasoning?: string | null
+          recommendation_confidence?: number | null
+          ai_model_used?: string | null
+          generated_at?: string
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          session_id?: string
+          primary_recommendations?: Json | null
+          secondary_recommendations?: Json | null
+          backup_options?: Json | null
+          recommended_colleges?: Json | null
+          relevant_scholarships?: Json | null
+          overall_reasoning?: string | null
+          recommendation_confidence?: number | null
+          ai_model_used?: string | null
+          generated_at?: string
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
@@ -501,6 +715,9 @@ export type College = Database['public']['Tables']['colleges']['Row']
 export type Program = Database['public']['Tables']['programs']['Row']
 export type QuizQuestion = Database['public']['Tables']['quiz_questions']['Row']
 export type QuizSession = Database['public']['Tables']['quiz_sessions']['Row']
+export type AssessmentSession = Database['public']['Tables']['assessment_sessions']['Row']
+export type AssessmentResponse = Database['public']['Tables']['assessment_responses']['Row']
+export type StudentRecommendation = Database['public']['Tables']['student_recommendations']['Row']
 export type Scholarship = Database['public']['Tables']['scholarships']['Row']
 export type AdmissionDeadline = Database['public']['Tables']['admission_deadlines']['Row']
 export type CareerPathway = Database['public']['Tables']['career_pathways']['Row']
@@ -513,6 +730,9 @@ export type CollegeInsert = Database['public']['Tables']['colleges']['Insert']
 export type ProgramInsert = Database['public']['Tables']['programs']['Insert']
 export type QuizQuestionInsert = Database['public']['Tables']['quiz_questions']['Insert']
 export type QuizSessionInsert = Database['public']['Tables']['quiz_sessions']['Insert']
+export type AssessmentSessionInsert = Database['public']['Tables']['assessment_sessions']['Insert']
+export type AssessmentResponseInsert = Database['public']['Tables']['assessment_responses']['Insert']
+export type StudentRecommendationInsert = Database['public']['Tables']['student_recommendations']['Insert']
 export type ScholarshipInsert = Database['public']['Tables']['scholarships']['Insert']
 export type AdmissionDeadlineInsert = Database['public']['Tables']['admission_deadlines']['Insert']
 export type CareerPathwayInsert = Database['public']['Tables']['career_pathways']['Insert']
@@ -525,6 +745,9 @@ export type CollegeUpdate = Database['public']['Tables']['colleges']['Update']
 export type ProgramUpdate = Database['public']['Tables']['programs']['Update']
 export type QuizQuestionUpdate = Database['public']['Tables']['quiz_questions']['Update']
 export type QuizSessionUpdate = Database['public']['Tables']['quiz_sessions']['Update']
+export type AssessmentSessionUpdate = Database['public']['Tables']['assessment_sessions']['Update']
+export type AssessmentResponseUpdate = Database['public']['Tables']['assessment_responses']['Update']
+export type StudentRecommendationUpdate = Database['public']['Tables']['student_recommendations']['Update']
 export type ScholarshipUpdate = Database['public']['Tables']['scholarships']['Update']
 export type AdmissionDeadlineUpdate = Database['public']['Tables']['admission_deadlines']['Update']
 export type CareerPathwayUpdate = Database['public']['Tables']['career_pathways']['Update']

@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from "react"
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input } from "@/components/ui"
 import NearbyColleges from "@/components/NearbyColleges"
-// import { supabase } from "@/lib" // Removed unused import
+import { collegeProfileService } from "@/lib/services/college-profile-service"
+import type { CollegeProfileData } from "@/lib/types/college-profile"
 import { 
   GraduationCap, 
   MapPin, 
@@ -14,40 +15,30 @@ import {
   ArrowLeft,
   Heart,
   ExternalLink,
-  Navigation
+  Navigation,
+  Sparkles,
+  Filter,
+  Building2,
+  Award,
+  Users,
+  Calendar,
+  CheckCircle,
+  X,
+  AlertCircle,
+  RefreshCw
 } from "lucide-react"
 import Link from "next/link"
 
-interface College {
-  id: string
-  name: string
-  type: string
-  location: {
-    state: string
-    city: string
-    district: string
-    pincode: string
-  }
-  address: string
-  website?: string
-  phone?: string
-  email?: string
-  established_year?: number
-  accreditation?: string[]
-  facilities?: Record<string, unknown>
-  programs?: Record<string, unknown>
-  is_verified: boolean
-}
-
 export default function CollegesPage() {
-  const [colleges, setColleges] = useState<College[]>([])
-  const [filteredColleges, setFilteredColleges] = useState<College[]>([])
+  const [colleges, setColleges] = useState<CollegeProfileData[]>([])
+  const [filteredColleges, setFilteredColleges] = useState<CollegeProfileData[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedState, setSelectedState] = useState("")
   const [selectedType, setSelectedType] = useState("")
   const [activeTab, setActiveTab] = useState<'directory' | 'nearby'>('directory')
-
+  
   // Check URL params for tab selection
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -61,152 +52,56 @@ export default function CollegesPage() {
 
   const fetchColleges = async () => {
     try {
-      // TODO: Implement real database fetch
-      // For now, using sample data until database is populated
-      const sampleColleges: College[] = [
-        {
-          id: "1",
-          name: "Delhi University",
-          type: "government",
-          location: {
-            state: "Delhi",
-            city: "New Delhi",
-            district: "North Delhi",
-            pincode: "110007"
-          },
-          address: "University of Delhi, Delhi, 110007",
-          website: "https://du.ac.in",
-          phone: "+91-11-27667011",
-          email: "info@du.ac.in",
-          established_year: 1922,
-          accreditation: ["NAAC A++", "UGC"],
-          facilities: {
-            hostel: true,
-            library: true,
-            sports: true,
-            labs: true
-          },
-          programs: { available: ["Arts", "Science", "Commerce", "Engineering"] },
-          is_verified: true
-        },
-        {
-          id: "2",
-          name: "Jawaharlal Nehru University",
-          type: "government",
-          location: {
-            state: "Delhi",
-            city: "New Delhi",
-            district: "South Delhi",
-            pincode: "110067"
-          },
-          address: "JNU, New Delhi, 110067",
-          website: "https://jnu.ac.in",
-          phone: "+91-11-26704000",
-          email: "info@jnu.ac.in",
-          established_year: 1969,
-          accreditation: ["NAAC A++", "UGC"],
-          facilities: {
-            hostel: true,
-            library: true,
-            sports: true,
-            labs: true
-          },
-          programs: { available: ["Arts", "Science", "Social Sciences", "Languages"] },
-          is_verified: true
-        },
-        {
-          id: "3",
-          name: "University of Mumbai",
-          type: "government",
-          location: {
-            state: "Maharashtra",
-            city: "Mumbai",
-            district: "Mumbai",
-            pincode: "400001"
-          },
-          address: "University of Mumbai, Mumbai, 400001",
-          website: "https://mu.ac.in",
-          phone: "+91-22-26526000",
-          email: "info@mu.ac.in",
-          established_year: 1857,
-          accreditation: ["NAAC A++", "UGC"],
-          facilities: {
-            hostel: true,
-            library: true,
-            sports: true,
-            labs: true
-          },
-          programs: { available: ["Arts", "Science", "Commerce", "Engineering", "Medicine"] },
-          is_verified: true
-        },
-        {
-          id: "4",
-          name: "University of Calcutta",
-          type: "government",
-          location: {
-            state: "West Bengal",
-            city: "Kolkata",
-            district: "Kolkata",
-            pincode: "700073"
-          },
-          address: "University of Calcutta, Kolkata, 700073",
-          website: "https://caluniv.ac.in",
-          phone: "+91-33-22410071",
-          email: "info@caluniv.ac.in",
-          established_year: 1857,
-          accreditation: ["NAAC A++", "UGC"],
-          facilities: {
-            hostel: true,
-            library: true,
-            sports: true,
-            labs: true
-          },
-          programs: { available: ["Arts", "Science", "Commerce", "Engineering"] },
-          is_verified: true
-        },
-        {
-          id: "5",
-          name: "Anna University",
-          type: "government",
-          location: {
-            state: "Tamil Nadu",
-            city: "Chennai",
-            district: "Chennai",
-            pincode: "600025"
-          },
-          address: "Anna University, Chennai, 600025",
-          website: "https://annauniv.edu",
-          phone: "+91-44-22350000",
-          email: "info@annauniv.edu",
-          established_year: 1978,
-          accreditation: ["NAAC A++", "UGC", "NBA"],
-          facilities: {
-            hostel: true,
-            library: true,
-            sports: true,
-            labs: true
-          },
-          programs: { available: ["Engineering", "Technology", "Architecture"] },
-          is_verified: true
-        }
-      ]
+      setLoading(true)
+      setError(null)
+      
+      // Fetch colleges from database using the college profile service
+      const { data: collegeData, error: fetchError } = await collegeProfileService.getAllProfiles()
 
-      setColleges(sampleColleges)
-    } catch (error) {
-      console.error("Error fetching colleges:", error)
+      if (fetchError) {
+        console.error("Error fetching colleges:", fetchError)
+        setError(fetchError)
+        setColleges([])
+        return
+      }
+
+      if (!collegeData || collegeData.length === 0) {
+        console.log("No colleges found in database")
+        setColleges([])
+        return
+      }
+
+      // Filter only active colleges and sort by name
+      const activeColleges = collegeData
+        .filter(college => college.is_active)
+        .sort((a, b) => a.name.localeCompare(b.name))
+
+      setColleges(activeColleges)
+      
+    } catch (err) {
+      console.error("Unexpected error fetching colleges:", err)
+      setError("Failed to load colleges. Please try again.")
+      setColleges([])
     } finally {
       setLoading(false)
     }
+  }
+
+  const refreshColleges = async () => {
+    await fetchColleges()
   }
 
   const filterColleges = useCallback(() => {
     let filtered = colleges
 
     if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase()
       filtered = filtered.filter(college =>
-        college.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        college.location.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        college.location.state.toLowerCase().includes(searchTerm.toLowerCase())
+        college.name.toLowerCase().includes(searchLower) ||
+        college.location.city.toLowerCase().includes(searchLower) ||
+        college.location.state.toLowerCase().includes(searchLower) ||
+        college.address.toLowerCase().includes(searchLower) ||
+        (college.about && college.about.toLowerCase().includes(searchLower))
       )
     }
 
@@ -229,6 +124,128 @@ export default function CollegesPage() {
     filterColleges()
   }, [filterColleges])
 
+  // Set up real-time subscription for college updates
+  useEffect(() => {
+    const setupRealtimeSubscription = async () => {
+      const { createClient } = await import('@/lib/supabase/client')
+      const supabase = createClient()
+      
+      const subscription = supabase
+        .channel('colleges-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'colleges'
+          },
+          async (payload) => {
+            console.log('College data changed:', payload)
+            
+            // Refresh colleges when data changes
+            fetchColleges()
+            
+            // Send email notification for college changes
+            try {
+              const { eventType, new: newRecord, old: oldRecord } = payload
+              
+              if (eventType === 'INSERT' && newRecord) {
+                // New college added
+                await fetch('/api/colleges/notifications', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    type: 'created',
+                    college: newRecord
+                  })
+                })
+              } else if (eventType === 'UPDATE' && newRecord && oldRecord) {
+                // College updated
+                const changes = getCollegeChanges(oldRecord, newRecord)
+                if (changes.length > 0) {
+                  await fetch('/api/colleges/notifications', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      type: 'updated',
+                      college: newRecord,
+                      changes
+                    })
+                  })
+                }
+              } else if (eventType === 'DELETE' && oldRecord) {
+                // College deleted
+                await fetch('/api/colleges/notifications', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    type: 'deleted',
+                    college: oldRecord
+                  })
+                })
+              }
+            } catch (error) {
+              console.error('Failed to send email notification:', error)
+            }
+          }
+        )
+        .subscribe()
+
+      return () => {
+        subscription.unsubscribe()
+      }
+    }
+
+    const cleanup = setupRealtimeSubscription()
+    
+    return () => {
+      cleanup.then(fn => fn && fn())
+    }
+  }, [])
+
+  // Helper function to detect changes between old and new college records
+  const getCollegeChanges = (oldRecord: any, newRecord: any): string[] => {
+    const changes: string[] = []
+    
+    if (oldRecord.name !== newRecord.name) {
+      changes.push(`Name changed from "${oldRecord.name}" to "${newRecord.name}"`)
+    }
+    
+    if (oldRecord.type !== newRecord.type) {
+      changes.push(`Type changed from "${oldRecord.type}" to "${newRecord.type}"`)
+    }
+    
+    if (JSON.stringify(oldRecord.location) !== JSON.stringify(newRecord.location)) {
+      changes.push('Location information updated')
+    }
+    
+    if (oldRecord.website !== newRecord.website) {
+      changes.push('Website information updated')
+    }
+    
+    if (oldRecord.phone !== newRecord.phone) {
+      changes.push('Contact information updated')
+    }
+    
+    if (oldRecord.about !== newRecord.about) {
+      changes.push('Description updated')
+    }
+    
+    if (JSON.stringify(oldRecord.accreditation) !== JSON.stringify(newRecord.accreditation)) {
+      changes.push('Accreditation information updated')
+    }
+    
+    if (oldRecord.is_verified !== newRecord.is_verified) {
+      changes.push(newRecord.is_verified ? 'College verified' : 'Verification status changed')
+    }
+    
+    if (oldRecord.is_active !== newRecord.is_active) {
+      changes.push(newRecord.is_active ? 'College reactivated' : 'College deactivated')
+    }
+    
+    return changes
+  }
+
   const states = Array.from(new Set(colleges.map(college => college.location.state)))
   const types = Array.from(new Set(colleges.map(college => college.type)))
 
@@ -244,58 +261,111 @@ export default function CollegesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       {/* Navigation */}
-      <nav className="bg-white border-b">
+      <nav className="border-b bg-white/90 backdrop-blur-md sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <GraduationCap className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold text-primary">PathNiti</span>
+          <Link href="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity duration-200">
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary to-blue-600 rounded-xl blur-sm opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="relative bg-white p-2 rounded-xl shadow-lg">
+                <GraduationCap className="h-8 w-8 text-primary" />
+                <Sparkles className="h-3 w-3 text-yellow-500 absolute -top-1 -right-1 animate-pulse" />
+              </div>
+            </div>
+            <span className="text-3xl font-black bg-gradient-to-r from-blue-800 via-blue-600 to-purple-600 bg-clip-text text-transparent tracking-tight">
+              PathNiti
+            </span>
+          </Link>
+          <div className="flex items-center space-x-3">
+            <Button variant="outline" className="hover:scale-105 transition-all duration-200 border-2 hover:border-primary hover:bg-primary/5" asChild>
+              <Link href="/career-pathways" className="flex items-center gap-2">
+                <Building2 className="h-4 w-4" />
+                Career Paths
+              </Link>
+            </Button>
+            <Button variant="outline" className="hover:scale-105 transition-all duration-200 border-2 hover:border-primary hover:bg-primary/5" asChild>
+              <Link href="/dashboard" className="flex items-center gap-2">
+                <ArrowLeft className="h-4 w-4" />
+                Dashboard
+              </Link>
+            </Button>
           </div>
-          <Button variant="outline" asChild>
-            <Link href="/dashboard">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </Link>
-          </Button>
         </div>
       </nav>
 
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Government Colleges Directory
-          </h1>
-          <p className="text-gray-600">
-            Discover government colleges across India with detailed information about programs, facilities, and admissions.
-          </p>
+      {/* Hero Section */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-primary via-blue-600 to-purple-700 text-white">
+        {/* Background decoration */}
+        <div className="absolute inset-0">
+          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-white/10 to-transparent"></div>
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
+          <div className="absolute top-20 left-10 w-72 h-72 bg-white/10 rounded-full blur-2xl"></div>
         </div>
+        
+        <div className="container mx-auto px-4 py-16 relative z-10">
+          <div className="text-center max-w-4xl mx-auto">
+            <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 mb-8">
+              <Building2 className="h-4 w-4 text-yellow-300 fill-current" />
+              <span className="text-sm font-medium">Discover Your Future</span>
+            </div>
+            
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
+              College{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-orange-300">
+                Directory
+              </span>
+            </h1>
+            
+            <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto opacity-90 leading-relaxed">
+              Explore government colleges across India with detailed information about programs, 
+              facilities, admissions, and everything you need to make informed decisions.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Button size="lg" className="relative overflow-hidden text-lg px-8 py-4 bg-white text-blue-800 hover:bg-gray-50 transition-all duration-500 hover:scale-105 shadow-2xl hover:shadow-3xl group border-2 border-white/20" asChild>
+                <Link href="/comprehensive-assessment" className="flex items-center gap-3 relative z-10">
+                  <Star className="h-6 w-6 text-blue-600 group-hover:rotate-12 transition-transform duration-300" />
+                  <span className="font-bold text-lg">Take AI Assessment</span>
+                </Link>
+              </Button>
+              <Button size="lg" variant="outline" className="text-lg px-8 py-4 border-2 border-white/30 text-white hover:bg-white/10 transition-all duration-300 hover:scale-105" asChild>
+                <Link href="#colleges" className="flex items-center gap-3">
+                  <MapPin className="h-6 w-6" />
+                  <span className="font-bold">Browse Colleges</span>
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-12 -mt-8 relative z-10" id="colleges">
 
         {/* Tab Navigation */}
         <div className="mb-8">
-          <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8">
+          <div className="bg-white/90 backdrop-blur-sm p-2 rounded-2xl shadow-lg border border-white/20">
+            <nav className="flex space-x-2">
               <button
                 onClick={() => setActiveTab('directory')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                className={`flex items-center gap-3 px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300 ${
                   activeTab === 'directory'
-                    ? 'border-primary text-primary'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'bg-gradient-to-r from-primary to-blue-600 text-white shadow-lg'
+                    : 'text-gray-600 hover:text-primary hover:bg-gray-50'
                 }`}
               >
-                <GraduationCap className="h-4 w-4 inline mr-2" />
+                <GraduationCap className="h-5 w-5" />
                 College Directory
               </button>
               <button
                 onClick={() => setActiveTab('nearby')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                className={`flex items-center gap-3 px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300 ${
                   activeTab === 'nearby'
-                    ? 'border-primary text-primary'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'bg-gradient-to-r from-primary to-blue-600 text-white shadow-lg'
+                    : 'text-gray-600 hover:text-primary hover:bg-gray-50'
                 }`}
               >
-                <Navigation className="h-4 w-4 inline mr-2" />
+                <Navigation className="h-5 w-5" />
                 Find Nearby Colleges
               </button>
             </nav>
@@ -306,25 +376,33 @@ export default function CollegesPage() {
         {activeTab === 'directory' && (
           <>
             {/* Search and Filters */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border mb-8">
-              <div className="grid md:grid-cols-4 gap-4">
+            <div className="bg-white/90 backdrop-blur-sm p-8 rounded-2xl shadow-2xl border border-white/20 mb-12">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-gradient-to-br from-primary/20 to-blue-600/20 rounded-xl flex items-center justify-center">
+                  <Filter className="h-5 w-5 text-primary" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900">Search & Filter Colleges</h2>
+              </div>
+              
+              <div className="grid md:grid-cols-4 gap-6">
                 <div className="md:col-span-2">
                   <div className="relative">
-                    <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Search className="absolute left-4 top-4 h-5 w-5 text-gray-400" />
                     <Input
                       placeholder="Search colleges, cities, or states..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10"
+                      className="pl-12 h-12 text-lg border-2 border-gray-200 focus:border-primary rounded-xl"
                     />
                   </div>
                 </div>
                 
                 <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">State</label>
                   <select
                     value={selectedState}
                     onChange={(e) => setSelectedState(e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded-md"
+                    className="w-full h-12 p-3 border-2 border-gray-200 focus:border-primary rounded-xl text-lg"
                   >
                     <option value="">All States</option>
                     {states.map(state => (
@@ -334,10 +412,11 @@ export default function CollegesPage() {
                 </div>
                 
                 <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Type</label>
                   <select
                     value={selectedType}
                     onChange={(e) => setSelectedType(e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded-md"
+                    className="w-full h-12 p-3 border-2 border-gray-200 focus:border-primary rounded-xl text-lg"
                   >
                     <option value="">All Types</option>
                     {types.map(type => (
@@ -348,6 +427,39 @@ export default function CollegesPage() {
                   </select>
                 </div>
               </div>
+              
+              {/* Active Filters */}
+              {(searchTerm || selectedState || selectedType) && (
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-sm font-medium text-gray-600">Active filters:</span>
+                    {searchTerm && (
+                      <span className="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                        Search: "{searchTerm}"
+                        <button onClick={() => setSearchTerm("")} className="hover:bg-blue-200 rounded-full p-0.5">
+                          <X className="h-3 w-3" />
+                        </button>
+                      </span>
+                    )}
+                    {selectedState && (
+                      <span className="inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                        State: {selectedState}
+                        <button onClick={() => setSelectedState("")} className="hover:bg-green-200 rounded-full p-0.5">
+                          <X className="h-3 w-3" />
+                        </button>
+                      </span>
+                    )}
+                    {selectedType && (
+                      <span className="inline-flex items-center gap-2 px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
+                        Type: {selectedType}
+                        <button onClick={() => setSelectedType("")} className="hover:bg-purple-200 rounded-full p-0.5">
+                          <X className="h-3 w-3" />
+                        </button>
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </>
         )}
@@ -359,116 +471,253 @@ export default function CollegesPage() {
         {/* Directory Results */}
         {activeTab === 'directory' && (
           <>
-            {/* Results */}
-            <div className="mb-4">
-              <p className="text-gray-600">
-                Showing {filteredColleges.length} of {colleges.length} colleges
-              </p>
-            </div>
+            {/* Error State */}
+            {error && (
+              <div className="mb-8 bg-red-50 border border-red-200 rounded-2xl p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <AlertCircle className="h-6 w-6 text-red-600" />
+                  <h3 className="text-lg font-semibold text-red-900">Unable to Load Colleges</h3>
+                </div>
+                <p className="text-red-700 mb-4">{error}</p>
+                <Button 
+                  onClick={refreshColleges}
+                  variant="outline"
+                  className="border-red-200 text-red-700 hover:bg-red-50"
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Try Again
+                </Button>
+              </div>
+            )}
+
+            {/* Results Header */}
+            {!error && (
+              <div className="mb-8">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                      {filteredColleges.length} Colleges Found
+                    </h2>
+                    <p className="text-gray-600">
+                      Showing {filteredColleges.length} of {colleges.length} colleges
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <Users className="h-4 w-4" />
+                      <span>Live from database</span>
+                    </div>
+                    <Button 
+                      onClick={refreshColleges}
+                      variant="outline"
+                      size="sm"
+                      className="hover:bg-gray-50"
+                    >
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Refresh
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Colleges Grid */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredColleges.map((college) => (
-                <Card key={college.id} className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <CardTitle className="text-lg mb-1">{college.name}</CardTitle>
-                        <CardDescription className="flex items-center">
-                          <MapPin className="h-4 w-4 mr-1" />
-                          {college.location.city}, {college.location.state}
-                        </CardDescription>
-                      </div>
-                      {college.is_verified && (
-                        <div className="flex items-center text-green-600">
-                          <Star className="h-4 w-4 fill-current" />
+            {!error && (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {filteredColleges.map((college, index) => (
+                  <Card 
+                    key={college.id} 
+                    className="group hover:shadow-2xl transition-all duration-500 cursor-pointer border-0 bg-white/80 backdrop-blur-sm hover:bg-white hover:scale-105 hover:-translate-y-2"
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
+                    <CardHeader className="pb-4">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-blue-600/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                            <Building2 className="h-6 w-6 text-primary" />
+                          </div>
+                          <div>
+                            <CardTitle className="text-xl font-bold text-gray-900 group-hover:text-primary transition-colors">
+                              {college.name}
+                            </CardTitle>
+                            <CardDescription className="flex items-center mt-1">
+                              <MapPin className="h-4 w-4 mr-1 text-gray-500" />
+                              <span className="text-gray-600">{college.location.city}, {college.location.state}</span>
+                            </CardDescription>
+                          </div>
                         </div>
-                      )}
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center text-sm text-gray-600">
-                        <span className="font-medium">Established:</span>
-                        <span className="ml-2">{college.established_year}</span>
+                        {college.is_verified && (
+                          <div className="flex items-center text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                            <CheckCircle className="h-4 w-4 mr-1" />
+                            <span className="text-xs font-medium">Verified</span>
+                          </div>
+                        )}
                       </div>
-                      
-                      <div className="flex items-center text-sm text-gray-600">
-                        <span className="font-medium">Type:</span>
-                        <span className="ml-2 capitalize">{college.type.replace('_', ' ')}</span>
+                    </CardHeader>
+                    
+                    <CardContent className="space-y-6">
+                      {/* Key Information */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl">
+                          <Calendar className="h-5 w-5 text-primary" />
+                          <div>
+                            <p className="text-xs text-gray-500">Established</p>
+                            <p className="font-semibold text-gray-900">
+                              {college.established_year || 'N/A'}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl">
+                          <Award className="h-5 w-5 text-green-600" />
+                          <div>
+                            <p className="text-xs text-gray-500">Type</p>
+                            <p className="font-semibold text-gray-900 capitalize">
+                              {college.type.replace('_', ' ')}
+                            </p>
+                          </div>
+                        </div>
                       </div>
 
-                      {college.accreditation && (
-                        <div className="flex items-center text-sm text-gray-600">
-                          <span className="font-medium">Accreditation:</span>
-                          <span className="ml-2">{college.accreditation.join(", ")}</span>
+                      {/* Courses */}
+                      {college.courses && college.courses.length > 0 && (
+                        <div>
+                          <p className="text-sm font-medium text-gray-700 mb-3">Courses:</p>
+                          <div className="flex flex-wrap gap-2">
+                            {college.courses.slice(0, 3).map((course, courseIndex) => (
+                              <span
+                                key={courseIndex}
+                                className="px-3 py-1 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 text-sm rounded-full font-medium"
+                              >
+                                {course.name}
+                              </span>
+                            ))}
+                            {college.courses.length > 3 && (
+                              <span className="px-3 py-1 bg-gray-100 text-gray-600 text-sm rounded-full font-medium">
+                                +{college.courses.length - 3} more
+                              </span>
+                            )}
+                          </div>
                         </div>
                       )}
-                    </div>
 
-                    {college.programs && (
-                      <div>
-                        <p className="text-sm font-medium text-gray-700 mb-1">Programs:</p>
-                        <div className="flex flex-wrap gap-1">
-                          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                          {(college.programs as any)?.available?.slice(0, 3).map((program: string, index: number) => (
-                            <span
-                              key={index}
-                              className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
-                            >
-                              {program}
-                            </span>
-                          ))}
-                          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                          {(college.programs as any)?.available?.length > 3 && (
-                            <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
-                              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                              +{(college.programs as any)?.available?.length - 3} more
-                            </span>
+                      {/* Accreditation */}
+                      {college.accreditation && college.accreditation.length > 0 && (
+                        <div>
+                          <p className="text-sm font-medium text-gray-700 mb-3">Accreditation:</p>
+                          <div className="flex flex-wrap gap-2">
+                            {college.accreditation.slice(0, 2).map((acc, accIndex) => (
+                              <span key={accIndex} className="px-3 py-1 bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 text-sm rounded-full font-medium">
+                                {acc}
+                              </span>
+                            ))}
+                            {college.accreditation.length > 2 && (
+                              <span className="px-3 py-1 bg-gray-100 text-gray-600 text-sm rounded-full font-medium">
+                                +{college.accreditation.length - 2} more
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* About snippet */}
+                      {college.about && (
+                        <div>
+                          <p className="text-sm text-gray-600 line-clamp-2">
+                            {college.about}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Action Buttons */}
+                      <div className="flex items-center justify-between pt-2">
+                        <div className="flex space-x-2">
+                          {college.website && (
+                            <Button size="sm" variant="outline" className="hover:bg-blue-50 hover:border-blue-200" asChild>
+                              <a href={college.website} target="_blank" rel="noopener noreferrer">
+                                <Globe className="h-4 w-4" />
+                              </a>
+                            </Button>
+                          )}
+                          {college.phone && (
+                            <Button size="sm" variant="outline" className="hover:bg-green-50 hover:border-green-200" asChild>
+                              <a href={`tel:${college.phone}`}>
+                                <Phone className="h-4 w-4" />
+                              </a>
+                            </Button>
                           )}
                         </div>
+                        
+                        <Button size="sm" variant="outline" className="hover:bg-red-50 hover:border-red-200 hover:text-red-600">
+                          <Heart className="h-4 w-4" />
+                        </Button>
                       </div>
-                    )}
 
-                    <div className="flex items-center justify-between pt-2">
-                      <div className="flex space-x-2">
-                        {college.website && (
-                          <Button size="sm" variant="outline" asChild>
-                            <a href={college.website} target="_blank" rel="noopener noreferrer">
-                              <Globe className="h-4 w-4" />
-                            </a>
-                          </Button>
-                        )}
-                        {college.phone && (
-                          <Button size="sm" variant="outline" asChild>
-                            <a href={`tel:${college.phone}`}>
-                              <Phone className="h-4 w-4" />
-                            </a>
-                          </Button>
-                        )}
-                      </div>
-                      
-                      <Button size="sm" variant="outline">
-                        <Heart className="h-4 w-4" />
+                      <Button className="w-full h-12 text-lg font-semibold bg-gradient-to-r from-primary to-blue-600 hover:from-blue-600 hover:to-primary transition-all duration-300 group-hover:scale-105" variant="default" asChild>
+                        <Link 
+                          href={college.slug ? `/colleges/${college.slug}` : `/colleges/${college.id}`} 
+                          className="flex items-center justify-center gap-2"
+                        >
+                          <span>View Details</span>
+                          <ExternalLink className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                        </Link>
                       </Button>
-                    </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
 
-                    <Button className="w-full" asChild>
-                      <Link href={`/colleges/${college.id}`}>
-                        View Details
-                        <ExternalLink className="h-4 w-4 ml-2" />
-                      </Link>
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            {/* Empty States */}
+            {!error && filteredColleges.length === 0 && colleges.length === 0 && (
+              <div className="text-center py-16">
+                <div className="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Building2 className="h-12 w-12 text-gray-400" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">No colleges available</h3>
+                <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                  There are currently no colleges in the database. Check back later or contact support.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Button onClick={refreshColleges} variant="outline" className="hover:bg-gray-50">
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Refresh
+                  </Button>
+                  <Button asChild>
+                    <Link href="/career-pathways">
+                      Explore Career Paths
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            )}
 
-            {filteredColleges.length === 0 && (
-              <div className="text-center py-12">
-                <GraduationCap className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No colleges found</h3>
-                <p className="text-gray-600">Try adjusting your search criteria or filters.</p>
+            {!error && filteredColleges.length === 0 && colleges.length > 0 && (
+              <div className="text-center py-16">
+                <div className="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Search className="h-12 w-12 text-gray-400" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">No colleges found</h3>
+                <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                  We couldn't find any colleges matching your search criteria. Try adjusting your filters or search terms.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setSearchTerm("")
+                      setSelectedState("")
+                      setSelectedType("")
+                    }}
+                    className="hover:bg-gray-50"
+                  >
+                    Clear All Filters
+                  </Button>
+                  <Button asChild>
+                    <Link href="/career-pathways">
+                      Explore Career Paths
+                    </Link>
+                  </Button>
+                </div>
               </div>
             )}
           </>

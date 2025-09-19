@@ -58,7 +58,7 @@ interface User {
 }
 
 export default function AdminPage() {
-  const { user, profile, isAdmin } = useAuth()
+  const { user, profile, loading, requireRole, signOut } = useAuth()
   const router = useRouter()
   const [stats, setStats] = useState<AdminStats>({
     totalUsers: 0,
@@ -70,24 +70,21 @@ export default function AdminPage() {
   })
   const [colleges, setColleges] = useState<College[]>([])
   const [users, setUsers] = useState<User[]>([])
-  const [loading, setLoading] = useState(true)
+  const [dataLoading, setDataLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("overview")
   const [searchTerm, setSearchTerm] = useState("")
 
+  // Use centralized authentication enforcement
   useEffect(() => {
-    if (!user) {
-      router.push("/auth/login")
-      return
-    }
+    requireRole('admin')
+  }, [requireRole])
 
-    // Check if user is admin using the new role system
-    if (!isAdmin()) {
-      router.push("/dashboard")
-      return
+  // Fetch admin data only after authentication is confirmed
+  useEffect(() => {
+    if (!loading && user && profile) {
+      fetchAdminData()
     }
-
-    fetchAdminData()
-  }, [user, profile, isAdmin, router])
+  }, [loading, user, profile])
 
   const fetchAdminData = async () => {
     try {
@@ -177,7 +174,7 @@ export default function AdminPage() {
     } catch (error) {
       console.error("Error fetching admin data:", error)
     } finally {
-      setLoading(false)
+      setDataLoading(false)
     }
   }
 
@@ -230,6 +227,7 @@ export default function AdminPage() {
     user.last_name.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
+  // Use central loading state for authentication
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -241,7 +239,8 @@ export default function AdminPage() {
     )
   }
 
-  if (!user) {
+  // Don't render if user is not authenticated (requireRole will handle redirect)
+  if (!user || !profile) {
     return null
   }
 
@@ -250,10 +249,10 @@ export default function AdminPage() {
       {/* Navigation */}
       <nav className="bg-white border-b">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
+          <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity duration-200">
             <Settings className="h-8 w-8 text-primary" />
             <span className="text-2xl font-bold text-primary">PathNiti Admin</span>
-          </div>
+          </Link>
           <div className="flex items-center space-x-4">
             <Button variant="outline" asChild>
               <Link href="/dashboard">
@@ -261,7 +260,7 @@ export default function AdminPage() {
                 Back to Dashboard
               </Link>
             </Button>
-            <Button variant="outline" onClick={() => router.push("/auth/login")}>
+            <Button variant="outline" onClick={signOut}>
               Sign Out
             </Button>
           </div>

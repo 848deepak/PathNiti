@@ -6,6 +6,7 @@ import Link from "next/link"
 import { Button, Input, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui"
 import { Shield, Mail, Lock, Eye, EyeOff, User, ArrowLeft, AlertTriangle } from "lucide-react"
 import { useAuth } from "../../../providers"
+import { PathNitiLogo } from "@/components/PathNitiLogo"
 
 export default function AdminSignupPage() {
   const [formData, setFormData] = useState({
@@ -123,9 +124,8 @@ export default function AdminSignupPage() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center space-x-2">
-            <Shield className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold text-primary">PathNiti</span>
+          <Link href="/" className="inline-block">
+            <PathNitiLogo size="lg" showText={true} variant="horizontal" />
           </Link>
         </div>
 
@@ -350,6 +350,8 @@ export default function AdminSignupPage() {
     </div>
   )
 }
+
+
 
 
 

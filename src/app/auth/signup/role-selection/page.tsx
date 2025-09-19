@@ -4,6 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui"
 import { GraduationCap, Building, Shield, ArrowRight } from "lucide-react"
+import { PathNitiLogo } from "@/components/PathNitiLogo"
 
 export default function RoleSelectionPage() {
   const [selectedRole, setSelectedRole] = useState<'student' | 'college' | 'admin' | null>(null)
@@ -55,9 +56,8 @@ export default function RoleSelectionPage() {
       <div className="w-full max-w-6xl">
         {/* Logo */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center space-x-2">
-            <GraduationCap className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold text-primary">PathNiti</span>
+          <Link href="/" className="inline-block">
+            <PathNitiLogo size="lg" showText={true} variant="horizontal" />
           </Link>
         </div>
 
@@ -142,6 +142,8 @@ export default function RoleSelectionPage() {
     </div>
   )
 }
+
+
 
 
 

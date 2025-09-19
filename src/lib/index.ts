@@ -2,11 +2,8 @@
 export * from './types'
 
 // Supabase client exports
-export { createClient as createBrowserClient } from './supabase/client'
-export { createClient as createServerClient } from './supabase/server'
-export type { Database } from './supabase/client'
+export { createBrowserClient, createServerClient, createServiceClient } from './supabase/index'
+export type { Database, UserProfile, College, Scholarship, AdmissionDeadline, Notification, CollegeProfile } from './supabase/index'
 
-// Legacy exports for backward compatibility
-export { createClient as supabase } from './supabase/client'
-export { createClient as createClientSupabaseClient } from './supabase/client'
-export { createClient as createServerSupabaseClient } from './supabase/server'
+// Legacy exports for backward compatibility (deprecated - use named exports above)
+export { createBrowserClient as supabase } from './supabase/index'

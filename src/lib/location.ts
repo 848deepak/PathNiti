@@ -15,7 +15,7 @@ export class LocationService {
    */
   static async getCurrentLocation(): Promise<Location> {
     return new Promise((resolve, reject) => {
-      if (!navigator.geolocation) {
+      if (typeof window === 'undefined' || !navigator.geolocation) {
         reject({
           code: 0,
           message: 'Geolocation is not supported by this browser.'
@@ -155,7 +155,7 @@ export class LocationService {
    * Check if geolocation is supported
    */
   static isGeolocationSupported(): boolean {
-    return 'geolocation' in navigator
+    return typeof window !== 'undefined' && 'geolocation' in navigator
   }
 
   /**
@@ -171,5 +171,9 @@ export class LocationService {
     }
   }
 }
+
+
+
+
 
 

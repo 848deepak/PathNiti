@@ -2,6 +2,13 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
 import { ServiceWorkerProvider } from "@/components/ServiceWorkerProvider";
+import { AuthErrorNotification, AuthErrorBanner } from "@/components/AuthErrorNotification";
+import { SarthiChatWidget } from "@/components/SarthiChatWidget";
+
+// Use system fonts as fallback to avoid network dependency during build
+const inter = {
+  variable: '--font-inter'
+};
 
 export const metadata: Metadata = {
   title: "PathNiti - Your Path. Your Future. Simplified.",
@@ -58,7 +65,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#1E40AF",
+  themeColor: "#1A237E",
 };
 
 export default function RootLayout({
@@ -67,15 +74,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={inter.variable}>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet" />
         <link rel="manifest" href="/manifest.json" />
-        <link rel="icon" href="/icons/favicon.svg" type="image/svg+xml" />
-        <link rel="apple-touch-icon" href="/icons/icon-192x192.svg" />
-        <meta name="theme-color" content="#1E40AF" />
+        <link rel="icon" href="/favicon-pathniti.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/favicon-pathniti.svg" />
+        <meta name="theme-color" content="#1A237E" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="PathNiti" />
@@ -84,7 +88,10 @@ export default function RootLayout({
       <body className="min-h-screen bg-background font-sans antialiased">
         <Providers>
           <ServiceWorkerProvider>
+            <AuthErrorBanner />
             {children}
+            <AuthErrorNotification />
+            <SarthiChatWidget />
           </ServiceWorkerProvider>
         </Providers>
       </body>

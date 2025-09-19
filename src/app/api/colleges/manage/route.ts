@@ -1,198 +1,232 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
+import { createClient as createServerClient } from '@/lib/supabase/server'
+import { updateCollegeProfile, getCollegeBySlug } from '@/lib/utils/college-db-utils'
+import type { CollegeProfileUpdateData } from '@/lib/types/college-profile'
+
+// Force this route to be dynamic
+export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   try {
-    const cookieStore = cookies()
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value
-          },
-        },
-      }
-    )
-
-    // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const supabase = createServerClient()
+    
+    // Check if user is authenticated
+    const { data: { session } } = await supabase.auth.getSession()
+    
+    if (!session) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Please log in' },
+        { status: 401 }
+      )
     }
 
-    // Check if user is college
-    const { data: profile, error: profileError } = await supabase
+    // Check if user has college role
+    const { data: profile } = await supabase
       .from('profiles')
       .select('role')
-      .eq('id', user.id)
+      .eq('id', session.user.id)
       .single()
 
-    if (profileError || profile?.role !== 'college') {
-      return NextResponse.json({ error: 'Forbidden - College access required' }, { status: 403 })
+    if (!profile || profile.role !== 'college') {
+      return NextResponse.json(
+        { error: 'Forbidden - College role required' },
+        { status: 403 }
+      )
     }
 
-    // Get college profile and data
-    const { data: collegeProfile, error: collegeProfileError } = await supabase
-      .from('college_profiles')
+    // Get college associated with this user's email
+    const { data: college, error } = await supabase
+      .from('colleges')
       .select(`
         *,
-        colleges (
-          id,
-          name,
-          type,
-          location,
-          address,
-          website,
-          phone,
-          email,
-          established_year,
-          accreditation,
-          facilities,
-          programs,
-          cut_off_data,
-          admission_process,
-          fees,
-          images,
-          is_verified,
-          is_active,
-          created_at,
-          updated_at
-        )
+        college_courses(*),
+        college_notices(*)
       `)
-      .eq('id', user.id)
+      .eq('email', session.user.email)
       .single()
 
-    if (collegeProfileError) {
-      return NextResponse.json({ error: 'Failed to fetch college data' }, { status: 500 })
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return NextResponse.json(
+          { error: 'College not found', details: 'No college is registered with this email' },
+          { status: 404 }
+        )
+      }
+      console.error('Error fetching college:', error)
+      return NextResponse.json(
+        { error: 'Failed to fetch college profile' },
+        { status: 500 }
+      )
     }
 
-    return NextResponse.json({ college: collegeProfile })
+    // Transform the data to match our interface
+    const transformedData = {
+      ...college,
+      slug: college.slug || '',
+      courses: college.college_courses || [],
+      notices: college.college_notices || [],
+      events: [] // Events will be added later when implemented
+    }
+
+    return NextResponse.json({ college: transformedData })
+
   } catch (error) {
-    console.error('Error in GET /api/colleges/manage:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    console.error('API error:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function PUT(request: NextRequest) {
   try {
-    const cookieStore = cookies()
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value
-          },
-        },
-      }
-    )
-
-    // Check authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const supabase = createServerClient()
+    
+    // Check if user is authenticated
+    const { data: { session } } = await supabase.auth.getSession()
+    
+    if (!session) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Please log in' },
+        { status: 401 }
+      )
     }
 
-    // Check if user is college
-    const { data: profile, error: profileError } = await supabase
+    // Check if user has college role
+    const { data: profile } = await supabase
       .from('profiles')
       .select('role')
-      .eq('id', user.id)
+      .eq('id', session.user.id)
       .single()
 
-    if (profileError || profile?.role !== 'college') {
-      return NextResponse.json({ error: 'Forbidden - College access required' }, { status: 403 })
+    if (!profile || profile.role !== 'college') {
+      return NextResponse.json(
+        { error: 'Forbidden - College role required' },
+        { status: 403 }
+      )
+    }
+
+    // Get college associated with this user's email
+    const { data: existingCollege } = await supabase
+      .from('colleges')
+      .select('id, name, slug')
+      .eq('email', session.user.email)
+      .single()
+
+    if (!existingCollege) {
+      return NextResponse.json(
+        { error: 'College not found', details: 'No college is registered with this email' },
+        { status: 404 }
+      )
     }
 
     const body = await request.json()
-    const { action, data } = body
-
-    // Get college ID from college profile
-    const { data: collegeProfile, error: collegeProfileError } = await supabase
-      .from('college_profiles')
-      .select('college_id')
-      .eq('id', user.id)
-      .single()
-
-    if (collegeProfileError || !collegeProfile) {
-      return NextResponse.json({ error: 'College profile not found' }, { status: 404 })
+    
+    // Validate data if provided
+    if (body.type) {
+      const validTypes = ['government', 'government_aided', 'private', 'deemed']
+      if (!validTypes.includes(body.type)) {
+        return NextResponse.json(
+          { error: 'Invalid college type', details: `Type must be one of: ${validTypes.join(', ')}` },
+          { status: 400 }
+        )
+      }
     }
 
-    switch (action) {
-      case 'update_college':
-        const { error: updateCollegeError } = await supabase
-          .from('colleges')
-          .update(data)
-          .eq('id', collegeProfile.college_id)
-
-        if (updateCollegeError) {
-          return NextResponse.json({ error: 'Failed to update college' }, { status: 500 })
-        }
-        break
-
-      case 'update_profile':
-        const { error: updateProfileError } = await supabase
-          .from('college_profiles')
-          .update(data)
-          .eq('id', user.id)
-
-        if (updateProfileError) {
-          return NextResponse.json({ error: 'Failed to update profile' }, { status: 500 })
-        }
-        break
-
-      case 'add_program':
-        const { error: addProgramError } = await supabase
-          .from('programs')
-          .insert({
-            ...data,
-            college_id: collegeProfile.college_id
-          })
-
-        if (addProgramError) {
-          return NextResponse.json({ error: 'Failed to add program' }, { status: 500 })
-        }
-        break
-
-      case 'update_program':
-        const { error: updateProgramError } = await supabase
-          .from('programs')
-          .update(data)
-          .eq('id', data.id)
-          .eq('college_id', collegeProfile.college_id) // Ensure college owns this program
-
-        if (updateProgramError) {
-          return NextResponse.json({ error: 'Failed to update program' }, { status: 500 })
-        }
-        break
-
-      case 'delete_program':
-        const { error: deleteProgramError } = await supabase
-          .from('programs')
-          .delete()
-          .eq('id', data.id)
-          .eq('college_id', collegeProfile.college_id) // Ensure college owns this program
-
-        if (deleteProgramError) {
-          return NextResponse.json({ error: 'Failed to delete program' }, { status: 500 })
-        }
-        break
-
-      default:
-        return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
+    if (body.location && (!body.location.city || !body.location.state || !body.location.country)) {
+      return NextResponse.json(
+        { error: 'Invalid location data', details: 'Location must include city, state, and country' },
+        { status: 400 }
+      )
     }
 
-    return NextResponse.json({ success: true })
+    if (body.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) {
+      return NextResponse.json(
+        { error: 'Invalid email format' },
+        { status: 400 }
+      )
+    }
+
+    if (body.website && !/^https?:\/\/.+/.test(body.website)) {
+      return NextResponse.json(
+        { error: 'Invalid website URL', details: 'Website must start with http:// or https://' },
+        { status: 400 }
+      )
+    }
+
+    if (body.established_year) {
+      const year = parseInt(body.established_year)
+      const currentYear = new Date().getFullYear()
+      if (isNaN(year) || year < 1800 || year > currentYear) {
+        return NextResponse.json(
+          { error: 'Invalid established year', details: `Year must be between 1800 and ${currentYear}` },
+          { status: 400 }
+        )
+      }
+    }
+
+    // Prepare update data
+    const updateData: CollegeProfileUpdateData = {}
+    
+    // Only include fields that are provided and different
+    if (body.name && body.name.trim() !== existingCollege.name) {
+      updateData.name = body.name.trim()
+    }
+    if (body.type) updateData.type = body.type
+    if (body.location) updateData.location = body.location
+    if (body.address) updateData.address = body.address.trim()
+    if (body.website !== undefined) updateData.website = body.website?.trim() || null
+    if (body.phone !== undefined) updateData.phone = body.phone?.trim() || null
+    if (body.email !== undefined) updateData.email = body.email?.trim() || null
+    if (body.established_year !== undefined) {
+      updateData.established_year = body.established_year ? parseInt(body.established_year) : null
+    }
+    if (body.accreditation !== undefined) updateData.accreditation = body.accreditation
+    if (body.about !== undefined) updateData.about = body.about?.trim() || null
+    if (body.admission_criteria !== undefined) updateData.admission_criteria = body.admission_criteria
+    if (body.scholarships !== undefined) updateData.scholarships = body.scholarships
+    if (body.entrance_tests !== undefined) updateData.entrance_tests = body.entrance_tests
+    if (body.fee_structure !== undefined) updateData.fee_structure = body.fee_structure
+    if (body.gallery !== undefined) updateData.gallery = body.gallery
+
+    // If no changes, return current data
+    if (Object.keys(updateData).length === 0) {
+      const { data: currentCollege } = await getCollegeBySlug(existingCollege.slug || existingCollege.id)
+      return NextResponse.json({
+        message: 'No changes detected',
+        college: currentCollege
+      })
+    }
+
+    // Update college profile
+    const { data: updatedCollege, error } = await updateCollegeProfile(existingCollege.id, updateData)
+
+    if (error) {
+      console.error('Error updating college profile:', error)
+      return NextResponse.json(
+        { error: 'Failed to update college profile', details: error },
+        { status: 500 }
+      )
+    }
+
+    if (!updatedCollege) {
+      return NextResponse.json(
+        { error: 'Failed to update college profile' },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({
+      message: 'College profile updated successfully',
+      college: updatedCollege
+    })
+
   } catch (error) {
-    console.error('Error in POST /api/colleges/manage:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    console.error('API error:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
   }
 }
-
-
-
-

@@ -7,6 +7,7 @@ import { Button, Input, Card, CardContent, CardDescription, CardHeader, CardTitl
 import { GraduationCap, Mail, Lock, Eye, EyeOff } from "lucide-react"
 import { useAuth } from "../../providers"
 import { supabase } from "@/lib/supabase"
+import { DynamicHeader } from "@/components/DynamicHeader"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -102,8 +103,8 @@ export default function LoginPage() {
 
       // Check if user is authenticated
       if (data?.user) {
-        // User is authenticated, redirect to dashboard
-        router.push("/dashboard")
+        // User is authenticated, redirect to home page
+        router.push("/")
       } else {
         setError('Authentication failed. Please try again.')
       }
@@ -143,15 +144,12 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center space-x-2">
-            <GraduationCap className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold text-primary">PathNiti</span>
-          </Link>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+      {/* Header */}
+      <DynamicHeader variant="auth" />
+      
+      <div className="flex items-center justify-center p-4 pt-8">
+        <div className="w-full max-w-md">
 
         <Card>
           <CardHeader className="text-center">
@@ -295,6 +293,7 @@ export default function LoginPage() {
             </p>
           </div>
         </div>
+      </div>
       </div>
     </div>
   )

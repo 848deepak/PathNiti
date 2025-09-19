@@ -158,8 +158,8 @@ const CAREER_DATA = [
 ];
 
 export class AIRecommendationEngine {
-  private genAI: GoogleGenerativeAI;
-  private model: any;
+  private genAI: GoogleGenerativeAI | null = null;
+  private model: any = null;
 
   constructor() {
     const apiKey = process.env.GEMINI_API_KEY;

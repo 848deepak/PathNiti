@@ -1,0 +1,521 @@
+/**
+ * Enhanced AI-driven Career Recommendation Engine
+ * Implements comprehensive assessment with RIASEC interests, aptitude, personality, and practical constraints
+ */
+
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import { 
+  AptitudeScores, 
+  RIASECScores, 
+  PersonalityScores, 
+  SubjectPerformance, 
+  PracticalConstraints,
+  StreamRecommendation,
+  CollegeRecommendation,
+  ScholarshipRecommendation,
+  BackupOption 
+} from './types';
+
+// Enhanced user profile for comprehensive assessment
+export interface EnhancedUserProfile {
+  user_id: string;
+  basic_info: {
+    age?: number;
+    class_level?: string;
+    current_stream?: string;
+    location?: {
+      state?: string;
+      city?: string;
+      district?: string;
+    };
+  };
+  assessment_results: {
+    aptitude_scores: AptitudeScores;
+    riasec_scores: RIASECScores;
+    personality_scores: PersonalityScores;
+    subject_performance: SubjectPerformance;
+    practical_constraints: PracticalConstraints;
+  };
+  timestamp: string;
+}
+
+export interface ComprehensiveRecommendationResult {
+  primary_recommendations: StreamRecommendation[];
+  secondary_recommendations: StreamRecommendation[];
+  backup_options: BackupOption[];
+  colleges: CollegeRecommendation[];
+  scholarships: ScholarshipRecommendation[];
+  overall_reasoning: string;
+  confidence_score: number;
+}
+
+// Career data with enhanced information
+const ENHANCED_CAREER_DATA = [
+  {
+    stream: 'engineering',
+    careers: [
+      {
+        title: 'Software Engineer',
+        time_to_earn: '4-5 years',
+        average_salary: '6-25 LPA',
+        job_demand_trend: 'very_high',
+        required_aptitudes: ['logical_reasoning', 'quantitative_skills'],
+        riasec_match: ['investigative', 'realistic'],
+        personality_match: ['structured'],
+        subjects: ['math', 'science']
+      },
+      {
+        title: 'Civil Engineer',
+        time_to_earn: '4-6 years',
+        average_salary: '4-15 LPA',
+        job_demand_trend: 'high',
+        required_aptitudes: ['spatial_visual_skills', 'quantitative_skills'],
+        riasec_match: ['realistic', 'investigative'],
+        personality_match: ['structured', 'leadership'],
+        subjects: ['math', 'science']
+      }
+    ]
+  },
+  {
+    stream: 'medical',
+    careers: [
+      {
+        title: 'Doctor (MBBS)',
+        time_to_earn: '5.5-11 years',
+        average_salary: '8-50 LPA',
+        job_demand_trend: 'very_high',
+        required_aptitudes: ['memory_attention', 'language_verbal_skills'],
+        riasec_match: ['social', 'investigative'],
+        personality_match: ['leadership', 'supportive'],
+        subjects: ['science']
+      },
+      {
+        title: 'Pharmacist',
+        time_to_earn: '4-6 years',
+        average_salary: '3-12 LPA',
+        job_demand_trend: 'high',
+        required_aptitudes: ['memory_attention', 'logical_reasoning'],
+        riasec_match: ['investigative', 'social'],
+        personality_match: ['structured'],
+        subjects: ['science']
+      }
+    ]
+  },
+  {
+    stream: 'commerce',
+    careers: [
+      {
+        title: 'Chartered Accountant',
+        time_to_earn: '4-5 years',
+        average_salary: '6-30 LPA',
+        job_demand_trend: 'high',
+        required_aptitudes: ['quantitative_skills', 'logical_reasoning'],
+        riasec_match: ['conventional', 'enterprising'],
+        personality_match: ['structured'],
+        subjects: ['math']
+      },
+      {
+        title: 'Investment Banker',
+        time_to_earn: '4-6 years',
+        average_salary: '8-40 LPA',
+        job_demand_trend: 'medium',
+        required_aptitudes: ['quantitative_skills', 'language_verbal_skills'],
+        riasec_match: ['enterprising', 'conventional'],
+        personality_match: ['risk_taking', 'leadership'],
+        subjects: ['math', 'english']
+      }
+    ]
+  },
+  {
+    stream: 'arts',
+    careers: [
+      {
+        title: 'Civil Services (IAS/IPS)',
+        time_to_earn: '4-6 years',
+        average_salary: '7-20 LPA',
+        job_demand_trend: 'high',
+        required_aptitudes: ['language_verbal_skills', 'memory_attention'],
+        riasec_match: ['social', 'enterprising'],
+        personality_match: ['leadership'],
+        subjects: ['social_science', 'english', 'general_knowledge']
+      },
+      {
+        title: 'Journalist',
+        time_to_earn: '3-4 years',
+        average_salary: '3-15 LPA',
+        job_demand_trend: 'medium',
+        required_aptitudes: ['language_verbal_skills'],
+        riasec_match: ['artistic', 'social'],
+        personality_match: ['flexible', 'risk_taking'],
+        subjects: ['english', 'social_science']
+      }
+    ]
+  },
+  {
+    stream: 'science',
+    careers: [
+      {
+        title: 'Research Scientist',
+        time_to_earn: '6-10 years',
+        average_salary: '5-25 LPA',
+        job_demand_trend: 'growing',
+        required_aptitudes: ['logical_reasoning', 'memory_attention'],
+        riasec_match: ['investigative'],
+        personality_match: ['structured'],
+        subjects: ['science', 'math']
+      },
+      {
+        title: 'Data Scientist',
+        time_to_earn: '4-6 years',
+        average_salary: '8-30 LPA',
+        job_demand_trend: 'very_high',
+        required_aptitudes: ['logical_reasoning', 'quantitative_skills'],
+        riasec_match: ['investigative', 'conventional'],
+        personality_match: ['structured'],
+        subjects: ['math', 'science']
+      }
+    ]
+  }
+];
+
+export class EnhancedAIRecommendationEngine {
+  private genAI: GoogleGenerativeAI | null = null;
+  private model: any = null;
+
+  constructor() {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (apiKey) {
+      this.genAI = new GoogleGenerativeAI(apiKey);
+      this.model = this.genAI.getGenerativeModel({ 
+        model: 'gemini-1.5-flash',
+        generationConfig: {
+          maxOutputTokens: 2000,
+          temperature: 0.7,
+        }
+      });
+    }
+  }
+
+  /**
+   * Generate comprehensive career recommendations based on multidimensional assessment
+   */
+  async generateComprehensiveRecommendations(
+    userProfile: EnhancedUserProfile
+  ): Promise<ComprehensiveRecommendationResult> {
+    try {
+      // Calculate base recommendations using scoring algorithm
+      const baseRecommendations = this.calculateMultidimensionalScores(userProfile);
+      
+      // Enhance with AI if available
+      if (this.model) {
+        return await this.enhanceWithAI(userProfile, baseRecommendations);
+      }
+      
+      return this.formatBasicRecommendations(userProfile, baseRecommendations);
+    } catch (error) {
+      console.error('Error generating recommendations:', error);
+      // Fallback to basic algorithm
+      const baseRecommendations = this.calculateMultidimensionalScores(userProfile);
+      return this.formatBasicRecommendations(userProfile, baseRecommendations);
+    }
+  }
+
+  /**
+   * Calculate scores using multidimensional assessment data
+   */
+  private calculateMultidimensionalScores(userProfile: EnhancedUserProfile) {
+    const { aptitude_scores, riasec_scores, personality_scores, subject_performance, practical_constraints } = userProfile.assessment_results;
+    const streamScores: Record<string, { score: number; reasons: string[]; careers: any[] }> = {};
+
+    for (const streamData of ENHANCED_CAREER_DATA) {
+      const stream = streamData.stream;
+      let totalScore = 0;
+      const reasons: string[] = [];
+      const matchingCareers = [];
+
+      for (const career of streamData.careers) {
+        let careerScore = 0;
+        
+        // Aptitude matching (30% weight)
+        for (const aptitude of career.required_aptitudes) {
+          const aptitudeScore = aptitude_scores[aptitude as keyof AptitudeScores] || 0;
+          careerScore += aptitudeScore * 0.3;
+          if (aptitudeScore > 0.7) {
+            reasons.push(`Strong ${aptitude.replace('_', ' ')} skills match ${career.title}`);
+          }
+        }
+
+        // RIASEC interest matching (25% weight)
+        for (const interest of career.riasec_match) {
+          const interestScore = riasec_scores[interest as keyof RIASECScores] || 0;
+          careerScore += interestScore * 0.25;
+          if (interestScore > 0.7) {
+            reasons.push(`${interest} interests align with ${career.title}`);
+          }
+        }
+
+        // Personality matching (20% weight)
+        for (const trait of career.personality_match) {
+          const personalityScore = this.getPersonalityScore(personality_scores, trait);
+          careerScore += personalityScore * 0.2;
+          if (personalityScore > 0.7) {
+            reasons.push(`${trait} personality trait suits ${career.title}`);
+          }
+        }
+
+        // Subject performance matching (20% weight)
+        for (const subject of career.subjects) {
+          const subjectScore = this.getSubjectScore(subject_performance, subject);
+          careerScore += subjectScore * 0.2;
+          if (subjectScore > 0.7) {
+            reasons.push(`Strong performance in ${subject} supports ${career.title}`);
+          }
+        }
+
+        // Job demand and practical considerations (5% weight)
+        const demandMultiplier = this.getDemandMultiplier(career.job_demand_trend);
+        careerScore *= demandMultiplier;
+
+        if (careerScore > 1.5) { // Threshold for viable career match
+          matchingCareers.push({
+            ...career,
+            score: careerScore
+          });
+        }
+
+        totalScore += careerScore;
+      }
+
+      // Apply practical constraints
+      totalScore = this.applyPracticalConstraints(totalScore, stream, practical_constraints, reasons);
+
+      streamScores[stream] = {
+        score: totalScore / streamData.careers.length, // Average score
+        reasons: [...new Set(reasons)], // Remove duplicates
+        careers: matchingCareers.sort((a, b) => b.score - a.score)
+      };
+    }
+
+    return streamScores;
+  }
+
+  private getPersonalityScore(personality: PersonalityScores, trait: string): number {
+    switch (trait) {
+      case 'structured':
+        return 1 - personality.structured_vs_flexible; // Lower = more structured
+      case 'flexible':
+        return personality.structured_vs_flexible; // Higher = more flexible
+      case 'leadership':
+        return personality.leadership_vs_supportive; // Higher = more leadership
+      case 'supportive':
+        return 1 - personality.leadership_vs_supportive; // Lower = more supportive
+      case 'risk_taking':
+        return personality.risk_taking_vs_risk_averse; // Higher = more risk taking
+      case 'risk_averse':
+        return 1 - personality.risk_taking_vs_risk_averse; // Lower = more risk averse
+      default:
+        return 0.5;
+    }
+  }
+
+  private getSubjectScore(subjects: SubjectPerformance, subject: string): number {
+    const subjectData = subjects[subject as keyof SubjectPerformance];
+    if (!subjectData) return 0;
+    
+    // Combine accuracy and speed (70% accuracy, 30% speed)
+    return (subjectData.accuracy * 0.7) + (subjectData.speed * 0.3);
+  }
+
+  private getDemandMultiplier(demand: string): number {
+    switch (demand) {
+      case 'very_high': return 1.2;
+      case 'high': return 1.1;
+      case 'growing': return 1.15;
+      case 'medium': return 1.0;
+      case 'declining': return 0.8;
+      default: return 1.0;
+    }
+  }
+
+  private applyPracticalConstraints(
+    score: number, 
+    stream: string, 
+    constraints: PracticalConstraints,
+    reasons: string[]
+  ): number {
+    let adjustedScore = score;
+
+    // Financial background considerations
+    if (constraints.financial_background === 'low') {
+      if (['medical', 'engineering'].includes(stream)) {
+        adjustedScore *= 0.8; // Higher cost streams get penalty
+        reasons.push('Consider financial constraints for professional courses');
+      } else {
+        adjustedScore *= 1.1; // Boost other streams
+        reasons.push('Financially accessible career path');
+      }
+    }
+
+    // Parental expectations
+    if (constraints.parental_expectation === 'doctor' && stream === 'medical') {
+      adjustedScore *= 1.2;
+      reasons.push('Aligns with family expectations');
+    } else if (constraints.parental_expectation === 'engineer' && stream === 'engineering') {
+      adjustedScore *= 1.2;
+      reasons.push('Aligns with family expectations');
+    }
+
+    return adjustedScore;
+  }
+
+  /**
+   * Enhance recommendations with AI analysis
+   */
+  private async enhanceWithAI(
+    userProfile: EnhancedUserProfile,
+    baseRecommendations: Record<string, any>
+  ): Promise<ComprehensiveRecommendationResult> {
+    const prompt = this.buildAIPrompt(userProfile, baseRecommendations);
+    
+    try {
+      const result = await this.model.generateContent(prompt);
+      const response = result.response;
+      const aiAnalysis = response.text();
+
+      return this.parseAIResponse(aiAnalysis, baseRecommendations);
+    } catch (error) {
+      console.error('AI enhancement failed:', error);
+      return this.formatBasicRecommendations(userProfile, baseRecommendations);
+    }
+  }
+
+  private buildAIPrompt(userProfile: EnhancedUserProfile, baseRecommendations: Record<string, any>): string {
+    const { aptitude_scores, riasec_scores, personality_scores, subject_performance, practical_constraints } = userProfile.assessment_results;
+    
+    return `
+You are an expert career counselor analyzing a comprehensive student assessment. Please provide detailed career recommendations.
+
+STUDENT PROFILE:
+- Age: ${userProfile.basic_info.age}
+- Class Level: ${userProfile.basic_info.class_level}
+- Location: ${userProfile.basic_info.location?.state}, ${userProfile.basic_info.location?.city}
+
+APTITUDE SCORES (0-1 scale):
+- Logical Reasoning: ${aptitude_scores.logical_reasoning}
+- Quantitative Skills: ${aptitude_scores.quantitative_skills}
+- Language/Verbal Skills: ${aptitude_scores.language_verbal_skills}
+- Spatial/Visual Skills: ${aptitude_scores.spatial_visual_skills}
+- Memory/Attention: ${aptitude_scores.memory_attention}
+
+RIASEC INTERESTS (0-1 scale):
+- Realistic: ${riasec_scores.realistic}
+- Investigative: ${riasec_scores.investigative}
+- Artistic: ${riasec_scores.artistic}
+- Social: ${riasec_scores.social}
+- Enterprising: ${riasec_scores.enterprising}
+- Conventional: ${riasec_scores.conventional}
+
+PERSONALITY TRAITS (0-1 scale):
+- Introvert/Extrovert: ${personality_scores.introvert_extrovert}
+- Risk Taking/Risk Averse: ${personality_scores.risk_taking_vs_risk_averse}
+- Structured/Flexible: ${personality_scores.structured_vs_flexible}
+- Leadership/Supportive: ${personality_scores.leadership_vs_supportive}
+
+PRACTICAL CONSTRAINTS:
+- Location: ${practical_constraints.location}
+- Financial Background: ${practical_constraints.financial_background}
+- Parental Expectation: ${practical_constraints.parental_expectation}
+
+CALCULATED STREAM SCORES:
+${Object.entries(baseRecommendations).map(([stream, data]: [string, any]) => 
+  `${stream}: ${data.score.toFixed(2)} (${data.reasons.slice(0, 2).join(', ')})`
+).join('\n')}
+
+Please provide:
+1. Top 3 primary stream recommendations with detailed reasoning
+2. 2-3 secondary alternatives
+3. 2-3 backup options for exam failure scenarios
+4. Overall confidence assessment (0-1)
+5. Key insights about the student's profile
+
+Format as structured analysis focusing on career fit, earning potential, and personal fulfillment.
+    `;
+  }
+
+  private parseAIResponse(
+    aiResponse: string, 
+    baseRecommendations: Record<string, any>
+  ): ComprehensiveRecommendationResult {
+    // Parse AI response and combine with base recommendations
+    // This is a simplified version - in practice, you'd implement more sophisticated parsing
+    
+    const sortedStreams = Object.entries(baseRecommendations)
+      .sort(([,a], [,b]) => (b as any).score - (a as any).score);
+
+    const primary_recommendations: StreamRecommendation[] = sortedStreams.slice(0, 3).map(([stream, data]: [string, any]) => ({
+      stream,
+      reasoning: data.reasons.join('. ') + '. ' + (data.careers[0]?.title ? `Top career: ${data.careers[0].title}` : ''),
+      time_to_earn: data.careers[0]?.time_to_earn || '4-6 years',
+      average_salary: data.careers[0]?.average_salary || '5-20 LPA',
+      job_demand_trend: data.careers[0]?.job_demand_trend || 'medium',
+      confidence_score: Math.min(data.score / 3, 1) // Normalize to 0-1
+    }));
+
+    const secondary_recommendations: StreamRecommendation[] = sortedStreams.slice(3, 5).map(([stream, data]: [string, any]) => ({
+      stream,
+      reasoning: data.reasons.join('. '),
+      time_to_earn: data.careers[0]?.time_to_earn || '4-6 years',
+      average_salary: data.careers[0]?.average_salary || '4-15 LPA',
+      job_demand_trend: data.careers[0]?.job_demand_trend || 'medium',
+      confidence_score: Math.min(data.score / 3, 1)
+    }));
+
+    const backup_options: BackupOption[] = [
+      {
+        course: 'Diploma Courses',
+        why_considered: 'Shorter duration with practical skills, good job opportunities'
+      },
+      {
+        course: 'Skill-based Certifications',
+        why_considered: 'Industry-relevant skills that can be learned quickly'
+      }
+    ];
+
+    const overall_reasoning = `
+Based on your comprehensive assessment, your strongest areas are ${this.getTopStrengths(baseRecommendations)}. 
+The AI analysis suggests focusing on ${primary_recommendations[0]?.stream} as your primary path due to strong alignment 
+with your aptitude, interests, and personality traits. ${aiResponse.slice(0, 200)}...
+    `.trim();
+
+    const confidence_score = primary_recommendations.length > 0 ? 
+      primary_recommendations.reduce((sum, rec) => sum + rec.confidence_score, 0) / primary_recommendations.length : 0.5;
+
+    return {
+      primary_recommendations,
+      secondary_recommendations,
+      backup_options,
+      colleges: [], // Will be populated by separate college matching logic
+      scholarships: [], // Will be populated by separate scholarship matching logic
+      overall_reasoning,
+      confidence_score
+    };
+  }
+
+  private formatBasicRecommendations(
+    userProfile: EnhancedUserProfile,
+    baseRecommendations: Record<string, any>
+  ): ComprehensiveRecommendationResult {
+    // Fallback formatting when AI is not available
+    return this.parseAIResponse('Basic algorithm recommendations', baseRecommendations);
+  }
+
+  private getTopStrengths(recommendations: Record<string, any>): string {
+    const topStream = Object.entries(recommendations)
+      .sort(([,a], [,b]) => (b as any).score - (a as any).score)[0];
+    
+    return topStream ? `${topStream[0]} with score ${(topStream[1] as any).score.toFixed(2)}` : 'analytical thinking';
+  }
+}
+
+// Export singleton instance
+export const enhancedAIEngine = new EnhancedAIRecommendationEngine();

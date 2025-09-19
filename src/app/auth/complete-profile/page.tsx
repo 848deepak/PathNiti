@@ -6,6 +6,7 @@ import { Button, Input, Card, CardContent, CardDescription, CardHeader, CardTitl
 import { useAuth } from "../../providers"
 import { supabase } from "@/lib/supabase"
 import { GraduationCap, MapPin, User } from "lucide-react"
+import { PathNitiLogo } from "@/components/PathNitiLogo"
 
 export default function CompleteProfilePage() {
   const { user } = useAuth()
@@ -163,10 +164,7 @@ export default function CompleteProfilePage() {
       <div className="w-full max-w-2xl">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center space-x-2">
-            <GraduationCap className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold text-primary">PathNiti</span>
-          </div>
+          <PathNitiLogo size="lg" showText={true} variant="horizontal" />
         </div>
 
         <Card>

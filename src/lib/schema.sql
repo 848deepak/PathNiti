@@ -6,7 +6,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "postgis";
 
 -- Create custom types
-CREATE TYPE user_role AS ENUM ('student', 'admin', 'college');
+CREATE TYPE user_role AS ENUM ('student', 'admin', 'college', 'counselor', 'college_admin');
 CREATE TYPE stream_type AS ENUM ('arts', 'science', 'commerce', 'vocational', 'engineering', 'medical');
 CREATE TYPE class_level AS ENUM ('10', '12', 'undergraduate', 'postgraduate');
 CREATE TYPE gender AS ENUM ('male', 'female', 'other', 'prefer_not_to_say');
@@ -34,43 +34,64 @@ CREATE TABLE public.profiles (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Aptitude quiz questions
+-- Comprehensive assessment questions for aptitude, interests, and personality
 CREATE TABLE public.quiz_questions (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     question_text TEXT NOT NULL,
-    question_type TEXT NOT NULL, -- 'aptitude', 'interest', 'personality'
-    category TEXT NOT NULL, -- 'mathematics', 'science', 'arts', 'commerce', etc.
-    options JSONB NOT NULL, -- Array of answer options
+    question_type TEXT NOT NULL DEFAULT 'aptitude', -- 'aptitude', 'riasec_interest', 'personality', 'subject_performance'
+    category TEXT NOT NULL, -- 'logical_reasoning', 'quantitative_skills', 'realistic', 'investigative', etc.
+    subcategory TEXT, -- Optional subcategory for more specific classification
+    options TEXT[] NOT NULL, -- Array of answer options
     correct_answer INTEGER, -- Index of correct answer (for aptitude questions)
-    difficulty_level INTEGER DEFAULT 1, -- 1-5 scale
-    time_limit INTEGER DEFAULT 60, -- seconds
+    time_limit INTEGER DEFAULT 60, -- Time limit in seconds
+    scoring_weight NUMERIC(3,2) DEFAULT 1.0, -- Weight for scoring
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Student quiz responses
-CREATE TABLE public.quiz_responses (
+-- Student assessment responses
+CREATE TABLE public.assessment_responses (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+    session_id UUID REFERENCES public.assessment_sessions(id) ON DELETE CASCADE,
     question_id UUID REFERENCES public.quiz_questions(id) ON DELETE CASCADE,
-    selected_answer INTEGER NOT NULL,
-    time_taken INTEGER, -- seconds
+    user_answer INTEGER NOT NULL,
+    time_taken INTEGER DEFAULT 0, -- seconds
     is_correct BOOLEAN,
+    answered_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Quiz sessions
-CREATE TABLE public.quiz_sessions (
+-- Comprehensive assessment sessions
+CREATE TABLE public.assessment_sessions (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
     status quiz_status DEFAULT 'not_started',
     started_at TIMESTAMP WITH TIME ZONE,
     completed_at TIMESTAMP WITH TIME ZONE,
+    
+    -- Aptitude scores
+    aptitude_scores JSONB, -- {logical_reasoning: score, quantitative_skills: score, language_verbal_skills: score, spatial_visual_skills: score, memory_attention: score}
+    
+    -- RIASEC interest scores
+    riasec_scores JSONB, -- {realistic: score, investigative: score, artistic: score, social: score, enterprising: score, conventional: score}
+    
+    -- Personality trait scores
+    personality_scores JSONB, -- {introvert_extrovert: score, risk_taking_vs_risk_averse: score, structured_vs_flexible: score, leadership_vs_supportive: score}
+    
+    -- Subject performance scores
+    subject_performance JSONB, -- {math: {accuracy: score, speed: score}, science: {accuracy: score, speed: score}, etc.}
+    
+    -- Practical constraints
+    practical_constraints JSONB, -- {location: string, financial_background: string, parental_expectation: string}
+    
+    -- Overall assessment metrics
     total_score INTEGER DEFAULT 0,
-    aptitude_score INTEGER DEFAULT 0,
-    interest_scores JSONB, -- {category: score}
-    recommendations JSONB, -- AI-generated recommendations
+    total_questions INTEGER DEFAULT 0,
+    answered_questions INTEGER DEFAULT 0,
+    time_spent INTEGER DEFAULT 0,
+    session_type TEXT DEFAULT 'comprehensive', -- 'comprehensive', 'quick', 'aptitude_only', etc.
+    
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -127,8 +148,43 @@ CREATE TABLE public.career_pathways (
     skills_required TEXT[],
     job_opportunities JSONB, -- Available job roles
     salary_range JSONB, -- {min, max, currency}
+    time_to_earn JSONB, -- {min_years, max_years, description}
+    job_demand_trend TEXT, -- 'high', 'medium', 'low', 'growing', 'declining'
     growth_prospects TEXT,
     related_exams TEXT[], -- Competitive exams
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- AI-generated student recommendations
+CREATE TABLE public.student_recommendations (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+    session_id UUID REFERENCES public.assessment_sessions(id) ON DELETE CASCADE,
+    
+    -- Primary recommendations (top 3)
+    primary_recommendations JSONB, -- [{stream, reasoning, time_to_earn, average_salary, job_demand_trend, confidence_score}]
+    
+    -- Secondary recommendations (alternatives)
+    secondary_recommendations JSONB, -- [{stream, reasoning, time_to_earn, average_salary, job_demand_trend, confidence_score}]
+    
+    -- Backup options (in case of exam failure)
+    backup_options JSONB, -- [{course, why_considered, alternate_path}]
+    
+    -- Matched colleges
+    recommended_colleges JSONB, -- [{college_id, college_name, address, stream_offered, admission_criteria, fee_structure, admission_open_date, admission_close_date, match_score, reasons}]
+    
+    -- Relevant scholarships
+    relevant_scholarships JSONB, -- [{scholarship_id, name, eligibility, benefit, application_deadline, match_score}]
+    
+    -- AI reasoning and explanation
+    overall_reasoning TEXT,
+    recommendation_confidence FLOAT, -- 0-1 score
+    ai_model_used TEXT, -- Which AI model generated this
+    
+    -- Metadata
+    generated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -233,6 +289,12 @@ CREATE INDEX idx_programs_college_id ON public.programs(college_id);
 CREATE INDEX idx_programs_stream ON public.programs(stream);
 CREATE INDEX idx_quiz_responses_user_id ON public.quiz_responses(user_id);
 CREATE INDEX idx_quiz_sessions_user_id ON public.quiz_sessions(user_id);
+CREATE INDEX idx_assessment_sessions_user_id ON public.assessment_sessions(user_id);
+CREATE INDEX idx_assessment_responses_user_id ON public.assessment_responses(user_id);
+CREATE INDEX idx_assessment_responses_session_id ON public.assessment_responses(session_id);
+CREATE INDEX idx_student_recommendations_user_id ON public.student_recommendations(user_id);
+CREATE INDEX idx_student_recommendations_session_id ON public.student_recommendations(session_id);
+CREATE INDEX idx_career_pathways_stream ON public.career_pathways(stream);
 CREATE INDEX idx_admission_deadlines_date ON public.admission_deadlines(deadline_date);
 CREATE INDEX idx_notifications_user_id ON public.notifications(user_id);
 CREATE INDEX idx_user_favorites_user_id ON public.user_favorites(user_id);
@@ -242,6 +304,9 @@ CREATE INDEX idx_college_profiles_college_id ON public.college_profiles(college_
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.quiz_responses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.quiz_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.assessment_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.assessment_responses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.student_recommendations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_favorites ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_timeline ENABLE ROW LEVEL SECURITY;
@@ -276,6 +341,44 @@ CREATE POLICY "Users can update own quiz sessions" ON public.quiz_sessions
 
 CREATE POLICY "Users can insert own quiz sessions" ON public.quiz_sessions
     FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- Policies for assessment sessions
+CREATE POLICY "Users can view own assessment sessions" ON public.assessment_sessions
+    FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own assessment sessions" ON public.assessment_sessions
+    FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own assessment sessions" ON public.assessment_sessions
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- Policies for assessment responses
+CREATE POLICY "Users can view own assessment responses" ON public.assessment_responses
+    FOR SELECT USING (EXISTS (
+        SELECT 1 FROM public.assessment_sessions 
+        WHERE id = assessment_responses.session_id AND user_id = auth.uid()
+    ));
+
+CREATE POLICY "Users can insert own assessment responses" ON public.assessment_responses
+    FOR INSERT WITH CHECK (EXISTS (
+        SELECT 1 FROM public.assessment_sessions 
+        WHERE id = assessment_responses.session_id AND user_id = auth.uid()
+    ));
+
+-- Policies for student recommendations
+CREATE POLICY "Users can view own recommendations" ON public.student_recommendations
+    FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own recommendations" ON public.student_recommendations
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Admins can view all recommendations" ON public.student_recommendations
+    FOR SELECT USING (
+        EXISTS (
+            SELECT 1 FROM public.profiles 
+            WHERE id = auth.uid() AND role = 'admin'
+        )
+    );
 
 -- Policies for user favorites
 CREATE POLICY "Users can view own favorites" ON public.user_favorites
@@ -402,4 +505,10 @@ CREATE TRIGGER update_college_plugin_data_updated_at BEFORE UPDATE ON public.col
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_college_profiles_updated_at BEFORE UPDATE ON public.college_profiles
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_assessment_sessions_updated_at BEFORE UPDATE ON public.assessment_sessions
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_student_recommendations_updated_at BEFORE UPDATE ON public.student_recommendations
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

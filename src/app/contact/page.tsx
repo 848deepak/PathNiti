@@ -103,7 +103,7 @@ export default function ContactPage() {
       {/* Navigation */}
       <nav className="border-b bg-white/90 backdrop-blur-md sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
+          <Link href="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity duration-200">
             <div className="relative group">
               <div className="absolute inset-0 bg-gradient-to-r from-primary to-blue-600 rounded-xl blur-sm opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
               <div className="relative bg-white p-2 rounded-xl shadow-lg">
@@ -114,7 +114,7 @@ export default function ContactPage() {
             <span className="text-3xl font-black bg-gradient-to-r from-blue-800 via-blue-600 to-purple-600 bg-clip-text text-transparent tracking-tight">
               PathNiti
             </span>
-          </div>
+          </Link>
           <div className="hidden md:flex items-center space-x-8">
             <Link href="/features" className="text-gray-600 hover:text-primary transition-all duration-200 hover:scale-105">
               Features
@@ -350,13 +350,13 @@ export default function ContactPage() {
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-4 gap-12">
             <div className="md:col-span-1">
-              <div className="flex items-center space-x-3 mb-6">
+              <Link href="/" className="flex items-center space-x-3 mb-6 hover:opacity-80 transition-opacity duration-200">
                 <div className="relative">
                   <GraduationCap className="h-8 w-8 text-primary" />
                   <Sparkles className="h-3 w-3 text-yellow-500 absolute -top-1 -right-1" />
                 </div>
                 <span className="text-2xl font-bold bg-gradient-to-r from-blue-800 via-blue-600 to-purple-600 bg-clip-text text-transparent">PathNiti</span>
-              </div>
+              </Link>
               <p className="text-gray-400 leading-relaxed mb-6">
                 Empowering students with personalized career guidance and education resources. 
                 Your future starts here.

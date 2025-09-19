@@ -105,7 +105,13 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Update question based on action
-    let updateData: any = {
+    const updateData: {
+      pending_review: boolean;
+      approved_by: string;
+      approved_at: string;
+      is_active?: boolean;
+      admin_feedback?: string;
+    } = {
       pending_review: false,
       approved_by: user.id,
       approved_at: new Date().toISOString()

@@ -1,10 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+// import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button, Input, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui"
-import { GraduationCap, Mail, Lock, Eye, EyeOff, User, ArrowLeft } from "lucide-react"
+import { Mail, Lock, Eye, EyeOff, User, ArrowLeft } from "lucide-react"
 import { useAuth } from "../../../providers"
 import { DynamicHeader } from "@/components/DynamicHeader"
 
@@ -20,7 +20,7 @@ export default function StudentSignupPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState(false)
-  const router = useRouter()
+  // const router = useRouter()
   const { signUpStudent, signInWithOAuth, loading } = useAuth()
 
   // Password validation function

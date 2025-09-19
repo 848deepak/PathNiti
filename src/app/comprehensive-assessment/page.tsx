@@ -189,13 +189,6 @@ export default function ComprehensiveAssessmentPage() {
     parental_expectation: ''
   });
 
-  // Loading check
-  if (loading) {
-    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
-  }
-
-  requireAuth();
-
   const currentQuestions = SAMPLE_QUESTIONS[currentSection] || [];
   const currentQuestion = currentQuestions[currentQuestionIndex];
   const totalSections = Object.keys(ASSESSMENT_SECTIONS).length;
@@ -307,6 +300,13 @@ export default function ComprehensiveAssessmentPage() {
       practical_constraints: practicalConstraints
     };
   }, [answers, timeSpent, practicalConstraints]);
+
+  // Loading check
+  if (loading) {
+    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
+  }
+
+  requireAuth();
 
   const handleSubmitAssessment = useCallback(async () => {
     if (!user) return;

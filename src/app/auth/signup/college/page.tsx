@@ -6,10 +6,10 @@ import Link from "next/link"
 import { Button, Input, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui"
 // import { SearchableSelect } from "@/components/ui/searchable-select"
 import { FormErrorDisplay, FieldError, SessionRecoveryBanner, ValidationSummary } from "@/components/ui/form-error-display"
-import { Building, Mail, Lock, Eye, EyeOff, User, ArrowLeft, Phone, Briefcase, Plus, CheckCircle, AlertCircle } from "lucide-react"
+import { Mail, Lock, Eye, EyeOff, User, ArrowLeft, Phone, Briefcase, CheckCircle, AlertCircle } from "lucide-react"
 import { useAuth } from "../../../providers"
 import { PathNitiLogo } from "@/components/PathNitiLogo"
-import { createBrowserClient as createClient } from "@/lib/supabase"
+// import { createBrowserClient as createClient } from "@/lib/supabase"
 import { signupSessionManager } from "@/lib/services/signup-session"
 import { useDebounce } from "@/hooks/useDebounce"
 import { useFormValidation } from "@/hooks/useFormValidation"
@@ -507,7 +507,7 @@ function CollegeSignupPageContent() {
                         </p>
                         <p className="text-xs text-green-700">
                           {searchParams.get('collegeName') && (
-                            <>"{searchParams.get('collegeName')}" has been pre-selected. </>
+                            <>&quot;{searchParams.get('collegeName')}&quot; has been pre-selected. </>
                           )}
                           You can now complete your account creation.
                         </p>

@@ -93,7 +93,12 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Update college based on action
-    let updateData: any = {
+    const updateData: {
+      verified_by: string;
+      last_verified_at: string;
+      verified?: boolean;
+      admin_feedback?: string;
+    } = {
       verified_by: user.id,
       last_verified_at: new Date().toISOString()
     };

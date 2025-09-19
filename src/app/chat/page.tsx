@@ -1,8 +1,7 @@
 import { Metadata } from 'next';
 import { SarthiChat } from '@/components/SarthiChat';
 import { DynamicHeader } from '@/components/DynamicHeader';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MessageSquare, Bot, BookOpen, GraduationCap, MapPin, ArrowLeft, Home, User, Settings } from 'lucide-react';
+import { Bot } from 'lucide-react';
 import Link from 'next/link';
 import { PathNitiLogo } from '@/components/PathNitiLogo';
 

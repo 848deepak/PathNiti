@@ -165,7 +165,7 @@ export default function LoginPage() {
                 {showResendConfirmation && (
                   <div className="mt-3 pt-2 border-t border-red-200">
                     <p className="text-xs text-gray-600 mb-2">
-                      Haven't received the confirmation email?
+                      Haven&apos;t received the confirmation email?
                     </p>
                     <button
                       type="button"

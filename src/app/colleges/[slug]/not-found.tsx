@@ -13,7 +13,7 @@ export default function CollegeNotFound() {
         <h1 className="text-3xl font-bold text-gray-900 mb-4">College Not Found</h1>
         
         <p className="text-gray-600 mb-8 leading-relaxed">
-          The college profile you're looking for doesn't exist or may have been moved. 
+          The college profile you&apos;re looking for doesn&apos;t exist or may have been moved. 
           Please check the URL or browse our college directory.
         </p>
         

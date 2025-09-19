@@ -6,7 +6,7 @@ import type { CollegeProfileUpdateData } from '@/lib/types/college-profile'
 // Force this route to be dynamic
 export const dynamic = 'force-dynamic'
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const supabase = createServerClient()
     

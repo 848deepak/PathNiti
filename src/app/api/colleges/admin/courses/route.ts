@@ -10,7 +10,7 @@ import {
  * GET /api/colleges/admin/courses
  * Get all courses for the authenticated college
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const supabase = createClient()
     

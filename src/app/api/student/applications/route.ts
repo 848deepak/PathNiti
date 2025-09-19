@@ -5,7 +5,7 @@ import { Database } from '@/lib/supabase/types'
 // Force dynamic rendering
 export const dynamic = 'force-dynamic'
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const supabase = createClient()
     

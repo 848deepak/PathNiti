@@ -435,7 +435,7 @@ export default function CollegesPage() {
                     <span className="text-sm font-medium text-gray-600">Active filters:</span>
                     {searchTerm && (
                       <span className="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-                        Search: "{searchTerm}"
+                        Search: &quot;{searchTerm}&quot;
                         <button onClick={() => setSearchTerm("")} className="hover:bg-blue-200 rounded-full p-0.5">
                           <X className="h-3 w-3" />
                         </button>
@@ -698,7 +698,7 @@ export default function CollegesPage() {
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-4">No colleges found</h3>
                 <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                  We couldn't find any colleges matching your search criteria. Try adjusting your filters or search terms.
+                  We couldn&apos;t find any colleges matching your search criteria. Try adjusting your filters or search terms.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Button 

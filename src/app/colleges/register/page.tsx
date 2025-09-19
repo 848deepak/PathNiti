@@ -71,7 +71,7 @@ export default async function CollegeRegisterPage({ searchParams }: PageProps) {
           {isFromSignup && (
             <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md max-w-md mx-auto">
               <p className="text-sm text-blue-800">
-                After registering your college, you'll be automatically redirected back to complete your account creation.
+                After registering your college, you&apos;ll be automatically redirected back to complete your account creation.
               </p>
             </div>
           )}

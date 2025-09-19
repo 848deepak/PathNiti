@@ -301,13 +301,6 @@ export default function ComprehensiveAssessmentPage() {
     };
   }, [answers, timeSpent, practicalConstraints]);
 
-  // Loading check
-  if (loading) {
-    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
-  }
-
-  requireAuth();
-
   const handleSubmitAssessment = useCallback(async () => {
     if (!user) return;
 
@@ -355,6 +348,13 @@ export default function ComprehensiveAssessmentPage() {
       setIsSubmitting(false);
     }
   }, [user, calculateScores, answers, timeSpent, router]);
+
+  // Loading check
+  if (loading) {
+    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
+  }
+
+  requireAuth();
 
   if (currentSection === 'constraints') {
     return (

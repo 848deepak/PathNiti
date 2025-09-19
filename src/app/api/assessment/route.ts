@@ -205,7 +205,7 @@ function calculateOverallScore(assessmentData: AssessmentRequest['assessment_dat
   const personalityAvg = Object.values(personality_scores).reduce((sum, val) => sum + (val as number), 0) / Object.values(personality_scores).length;
   
   const subjectAvg = Object.values(subject_performance).reduce((sum, subject) => {
-    const subj = subject as any;
+    const subj = subject as { accuracy: number; speed: number };
     return sum + ((subj.accuracy + subj.speed) / 2);
   }, 0) / Object.values(subject_performance).length;
 
@@ -220,9 +220,9 @@ function calculateOverallScore(assessmentData: AssessmentRequest['assessment_dat
  * Get relevant colleges and scholarships based on recommendations
  */
 async function getRelevantCollegesAndScholarships(
-  supabase: any,
-  primaryRecommendations: any[],
-  userProfile: any
+  supabase: ReturnType<typeof createClient>,
+  primaryRecommendations: Array<{ stream: string; [key: string]: unknown }>,
+  userProfile: { location: string; [key: string]: unknown }
 ) {
   const recommendedStreams = primaryRecommendations.map(rec => rec.stream);
   const userLocation = userProfile.location;
@@ -261,11 +261,16 @@ async function getRelevantCollegesAndScholarships(
   }
 
   // Format college data for recommendations
-  const formattedColleges = (colleges || []).map((college: any) => ({
+  const formattedColleges = (colleges || []).map((college: { 
+    id: string; 
+    name: string; 
+    location?: { city?: string; state?: string }; 
+    programs?: Array<{ stream: string; eligibility?: string; fees?: string }> 
+  }) => ({
     college_id: college.id,
     college_name: college.name,
     address: `${college.location?.city}, ${college.location?.state}`,
-    stream_offered: college.programs?.map((p: any) => p.stream).join(', ') || '',
+    stream_offered: college.programs?.map((p) => p.stream).join(', ') || '',
     admission_criteria: college.programs?.[0]?.eligibility || 'Check college website',
     fee_structure: college.programs?.[0]?.fees || 'Contact college',
     admission_open_date: 'Check college website',
@@ -290,11 +295,15 @@ async function getRelevantCollegesAndScholarships(
   };
 }
 
-function calculateCollegeMatchScore(college: any, userProfile: any, recommendedStreams: string[]): number {
+function calculateCollegeMatchScore(
+  college: { programs?: Array<{ stream: string }> }, 
+  userProfile: { [key: string]: unknown }, 
+  recommendedStreams: string[]
+): number {
   let score = 0.5; // Base score
 
   // Stream match
-  if (college.programs?.some((p: any) => recommendedStreams.includes(p.stream))) {
+  if (college.programs?.some((p) => recommendedStreams.includes(p.stream))) {
     score += 0.3;
   }
 
@@ -311,10 +320,14 @@ function calculateCollegeMatchScore(college: any, userProfile: any, recommendedS
   return Math.min(score, 1.0);
 }
 
-function generateCollegeMatchReasons(college: any, userProfile: any, recommendedStreams: string[]): string[] {
+function generateCollegeMatchReasons(
+  college: { programs?: Array<{ stream: string }>; type?: string }, 
+  userProfile: { location?: { state?: string } }, 
+  recommendedStreams: string[]
+): string[] {
   const reasons = [];
 
-  if (college.programs?.some((p: any) => recommendedStreams.includes(p.stream))) {
+  if (college.programs?.some((p) => recommendedStreams.includes(p.stream))) {
     reasons.push('Offers your recommended stream');
   }
 

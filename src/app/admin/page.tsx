@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+// import { useRouter } from "next/navigation"
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input } from "@/components/ui"
 import { useAuth } from "../providers"
 import { 
@@ -59,7 +59,7 @@ interface User {
 
 export default function AdminPage() {
   const { user, profile, loading, requireRole, signOut } = useAuth()
-  const router = useRouter()
+  // const router = useRouter()
   const [stats, setStats] = useState<AdminStats>({
     totalUsers: 0,
     totalColleges: 0,
@@ -70,7 +70,7 @@ export default function AdminPage() {
   })
   const [colleges, setColleges] = useState<College[]>([])
   const [users, setUsers] = useState<User[]>([])
-  const [dataLoading, setDataLoading] = useState(true)
+  const [dataLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("overview")
   const [searchTerm, setSearchTerm] = useState("")
 

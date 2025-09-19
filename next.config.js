@@ -1,9 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    // For Next.js 14, use experimental.serverComponentsExternalPackages
-    serverComponentsExternalPackages: ['@supabase/ssr', '@supabase/supabase-js', '@supabase/realtime-js'],
-  },
+  // For Next.js 15, serverComponentsExternalPackages moved to root level
+  serverExternalPackages: ['@supabase/ssr', '@supabase/supabase-js', '@supabase/realtime-js'],
   images: {
     domains: ['localhost'],
   },
@@ -22,7 +20,6 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   // Optimize build performance
-  swcMinify: true,
   compress: true,
   webpack: (config, { isServer }) => {
     // Create missing CSS file during build to prevent ENOENT errors

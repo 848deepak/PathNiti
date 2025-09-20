@@ -1,13 +1,36 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-// import { Database } from '@/lib/supabase/types' // Unused import
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
+import { Database } from '@/lib/supabase/types';
 
 // Force dynamic rendering
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   try {
-    const supabase = createClient();
+    const cookieStore = cookies();
+    const supabase = createServerClient<Database>(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.then(store => store.getAll());
+          },
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) =>
+                cookieStore.then(store => store.set(name, value, options)),
+              );
+            } catch {
+              // The `setAll` method was called from a Server Component.
+              // This can be ignored if you have middleware refreshing
+              // user sessions.
+            }
+          },
+        },
+      },
+    );
     const { searchParams } = new URL(request.url);
     const userIdParam = searchParams.get("userId");
 
@@ -61,12 +84,12 @@ export async function GET(request: Request) {
         );
       }
 
-      if (profile.role !== "student") {
-        console.error("User role mismatch. Expected 'student', got:", profile.role, "for user:", userId);
+      if ((profile as { role?: string }).role !== "student") {
+        console.error("User role mismatch. Expected 'student', got:", (profile as { role?: string }).role, "for user:", userId);
         return NextResponse.json(
           { 
             error: "Access denied. Student role required.", 
-            currentRole: profile.role,
+            currentRole: (profile as { role?: string }).role,
             userId: userId 
           },
           { status: 403 },

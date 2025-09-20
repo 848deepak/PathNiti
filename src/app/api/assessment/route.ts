@@ -112,16 +112,16 @@ export async function POST(request: NextRequest) {
           : null; // For interest/personality questions, is_correct is null
 
         return {
-          user_id: user_id,
+          session_id: (session as any).id,
           question_id: response.question_id,
-          selected_answer: response.selected_answer,
+          user_answer: response.selected_answer,
           time_taken: response.time_taken,
           is_correct: isCorrect,
         };
       });
 
       const { error: responsesError } = await supabase
-        .from("quiz_responses")
+        .from("assessment_responses")
         .insert(responseData as any);
 
       if (responsesError) {

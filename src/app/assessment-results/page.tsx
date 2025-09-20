@@ -543,17 +543,73 @@ function AssessmentResultsPageContent() {
             </h2>
             <div className="grid gap-4">
               {(() => {
-                const primaryRec = getPrimaryRecommendation();
-                console.log("Primary recommendation:", primaryRec);
-                console.log("Primary confidence score:", primaryRec?.confidence_score);
-                console.log("Primary confidence score type:", typeof primaryRec?.confidence_score);
-                console.log("Primary confidence score * 100:", (primaryRec?.confidence_score || 0) * 100);
-                return primaryRec && (
-                  <Card className="border-l-4 border-l-green-500">
+                // Get all primary recommendations instead of just the first one
+                const primaryRecommendations = (recommendations as any).primary_recommendations || [];
+                console.log("All primary recommendations:", primaryRecommendations);
+                
+                if (primaryRecommendations.length === 0) {
+                  const primaryRec = getPrimaryRecommendation();
+                  if (primaryRec) {
+                    return (
+                      <Card className="border-l-4 border-l-green-500">
+                        <CardHeader>
+                          <div className="flex justify-between items-start">
+                            <CardTitle className="text-xl capitalize">
+                              {primaryRec.stream.replace("_", " ")}
+                            </CardTitle>
+                            <Badge
+                              className={getConfidenceColor(primaryRec?.confidence_score || 0.3)}
+                            >
+                              {Math.round((primaryRec?.confidence_score || 0.3) * 100)}% Match
+                            </Badge>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <p className="text-gray-700">{primaryRec.reasoning}</p>
+
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="flex items-center gap-2">
+                              <Clock className="h-4 w-4 text-blue-600" />
+                              <div>
+                                <p className="text-sm text-gray-600">Time to Earn</p>
+                                <p className="font-semibold">{primaryRec.time_to_earn}</p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <DollarSign className="h-4 w-4 text-green-600" />
+                              <div>
+                                <p className="text-sm text-gray-600">
+                                  Average Salary
+                                </p>
+                                <p className="font-semibold">{primaryRec.average_salary}</p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <TrendingUp className="h-4 w-4 text-purple-600" />
+                              <div>
+                                <p className="text-sm text-gray-600">Job Demand</p>
+                                <Badge
+                                  className={getDemandColor(primaryRec.job_demand_trend)}
+                                >
+                                  {primaryRec.job_demand_trend.replace("_", " ")}
+                                </Badge>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  }
+                }
+                
+                return primaryRecommendations.map((primaryRec: any, index: number) => (
+                  <Card key={index} className={`border-l-4 ${index === 0 ? 'border-l-green-500' : 'border-l-blue-500'}`}>
                     <CardHeader>
                       <div className="flex justify-between items-start">
                         <CardTitle className="text-xl capitalize">
-                          {primaryRec.stream.replace("_", " ")}
+                          {primaryRec.stream?.replace("_", " ") || "General"}
                         </CardTitle>
                         <Badge
                           className={getConfidenceColor(primaryRec?.confidence_score || 0.3)}
@@ -591,14 +647,14 @@ function AssessmentResultsPageContent() {
                             <Badge
                               className={getDemandColor(primaryRec.job_demand_trend)}
                             >
-                              {primaryRec.job_demand_trend.replace("_", " ")}
+                              {primaryRec.job_demand_trend?.replace("_", " ") || "Medium"}
                             </Badge>
                           </div>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
-                );
+                ));
               })()}
             </div>
           </div>

@@ -1,13 +1,36 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-// import { Database } from '@/lib/supabase/types' // Unused import
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
+import { Database } from '@/lib/supabase/types';
 
 // Force dynamic rendering
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const supabase = createClient();
+    const cookieStore = cookies();
+    const supabase = createServerClient<Database>(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.then(store => store.getAll());
+          },
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) =>
+                cookieStore.then(store => store.set(name, value, options)),
+              );
+            } catch {
+              // The `setAll` method was called from a Server Component.
+              // This can be ignored if you have middleware refreshing
+              // user sessions.
+            }
+          },
+        },
+      },
+    );
 
     // Get the authenticated user
     const {
@@ -26,7 +49,7 @@ export async function GET() {
       .eq("id", user.id)
       .single();
 
-    if (profileError || profile?.role !== "student") {
+    if (profileError || (profile as { role?: string })?.role !== "student") {
       return NextResponse.json(
         { error: "Access denied. Student role required." },
         { status: 403 },
@@ -65,7 +88,7 @@ export async function GET() {
 
     // Transform the data to include college information at the top level
     const transformedApplications =
-      applications?.map((app) => ({
+      applications?.map((app: any) => ({
         ...app,
         college_name: app.colleges?.name || "Unknown College",
         college_slug: app.colleges?.slug || "",

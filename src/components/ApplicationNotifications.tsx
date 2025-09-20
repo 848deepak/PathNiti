@@ -39,7 +39,7 @@ export function ApplicationNotifications({
       setError(null);
 
       const response = await fetch(
-        `/api/student/notifications?user_id=${userId}`,
+        `/api/student/notifications?userId=${userId}`,
       );
 
       if (!response.ok) {

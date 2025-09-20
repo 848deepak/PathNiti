@@ -176,32 +176,63 @@ export function AIRecommendationsCard({
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Primary Recommendation */}
-        {primaryRec && (
-          <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-4 rounded-lg border border-purple-200">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
-                <Star className="h-5 w-5 text-white" />
+        {/* Primary Recommendations */}
+        {(() => {
+          const primaryRecommendations = recommendations.primary_recommendations || [];
+          if (primaryRecommendations.length === 0 && primaryRec) {
+            return (
+              <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-4 rounded-lg border border-purple-200">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Star className="h-5 w-5 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900 mb-1">
+                      Recommended Stream:{" "}
+                      {primaryRec.stream?.toUpperCase() || "General"}
+                    </h3>
+                    <p className="text-sm text-gray-600 mb-2">
+                      {primaryRec.reasoning ||
+                        "Based on your assessment results and interests."}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="outline" className="text-xs">
+                        <Target className="h-3 w-3 mr-1" />
+                        {Math.round(primaryRec.confidence * 100)}% Match
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-gray-900 mb-1">
-                  Recommended Stream:{" "}
-                  {primaryRec.stream?.toUpperCase() || "General"}
-                </h3>
-                <p className="text-sm text-gray-600 mb-2">
-                  {primaryRec.reasoning ||
-                    "Based on your assessment results and interests."}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <Badge variant="outline" className="text-xs">
-                    <Target className="h-3 w-3 mr-1" />
-                    {Math.round(primaryRec.confidence * 100)}% Match
-                  </Badge>
+            );
+          }
+          
+          return primaryRecommendations.slice(0, 3).map((rec: any, index: number) => (
+            <div key={index} className={`p-4 rounded-lg border ${index === 0 ? 'bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200' : 'bg-gray-50 border-gray-200'}`}>
+              <div className="flex items-start gap-3">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${index === 0 ? 'bg-purple-600' : 'bg-blue-600'}`}>
+                  <Star className="h-5 w-5 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-gray-900 mb-1">
+                    {index === 0 ? 'Top Recommendation' : `Alternative ${index}`}:{" "}
+                    {rec.stream?.toUpperCase() || "General"}
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-2">
+                    {rec.reasoning ||
+                      "Based on your assessment results and interests."}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="outline" className="text-xs">
+                      <Target className="h-3 w-3 mr-1" />
+                      {Math.round((rec.confidence_score || 0.3) * 100)}% Match
+                    </Badge>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          ));
+        })()}
 
         {/* Top College Recommendation */}
         {topCollege && (

@@ -26,6 +26,7 @@ import Link from "next/link";
 import NotificationSystem from "@/components/NotificationSystem";
 import { AuthGuard } from "@/components/AuthGuard";
 import { DynamicHeader } from "@/components/DynamicHeader";
+import LastTestReview from "@/components/LastTestReview";
 
 export default function DashboardPage() {
   const { user, profile, loading, signOut } = useAuth();
@@ -180,7 +181,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Main Actions */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           <Link
             href="/quiz"
             className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
@@ -277,6 +278,28 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
           </Link>
+
+          <Link
+            href="/test-review"
+            className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+          >
+            <Card className="h-full">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <BookOpen className="h-6 w-6 text-purple-600 mr-2" />
+                  Test Review
+                </CardTitle>
+                <CardDescription>
+                  Review your last assessment with detailed analysis and explanations
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button className="w-full" variant="outline" asChild>
+                  <span>Review Test</span>
+                </Button>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
 
         {/* Recent Activity */}
@@ -311,6 +334,13 @@ export default function DashboardPage() {
           </div>
 
         </div>
+
+        {/* Last Test Review */}
+        {user && (
+          <div className="mt-6">
+            <LastTestReview userId={user.id} />
+          </div>
+        )}
 
         {/* Quick Recommendations */}
         <div className="mt-6">

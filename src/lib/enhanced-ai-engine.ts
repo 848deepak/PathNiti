@@ -124,6 +124,26 @@ const ENHANCED_CAREER_DATA = [
         personality_match: ["risk_taking", "leadership"],
         subjects: ["math", "english"],
       },
+      {
+        title: "Business Analyst",
+        time_to_earn: "3-5 years",
+        average_salary: "5-20 LPA",
+        job_demand_trend: "high",
+        required_aptitudes: ["logical_reasoning", "language_verbal_skills"],
+        riasec_match: ["conventional", "investigative"],
+        personality_match: ["structured"],
+        subjects: ["math", "english"],
+      },
+      {
+        title: "Financial Advisor",
+        time_to_earn: "3-4 years",
+        average_salary: "4-15 LPA",
+        job_demand_trend: "growing",
+        required_aptitudes: ["quantitative_skills", "language_verbal_skills"],
+        riasec_match: ["social", "conventional"],
+        personality_match: ["supportive"],
+        subjects: ["math", "english"],
+      },
     ],
   },
   {
@@ -203,6 +223,71 @@ const ENHANCED_CAREER_DATA = [
         riasec_match: ["investigative", "conventional"],
         personality_match: ["structured"],
         subjects: ["math", "science"],
+      },
+      {
+        title: "Environmental Scientist",
+        time_to_earn: "4-6 years",
+        average_salary: "4-15 LPA",
+        job_demand_trend: "growing",
+        required_aptitudes: ["logical_reasoning", "memory_attention"],
+        riasec_match: ["investigative", "realistic"],
+        personality_match: ["structured"],
+        subjects: ["science", "math"],
+      },
+      {
+        title: "Biotechnologist",
+        time_to_earn: "4-6 years",
+        average_salary: "5-20 LPA",
+        job_demand_trend: "high",
+        required_aptitudes: ["logical_reasoning", "memory_attention"],
+        riasec_match: ["investigative"],
+        personality_match: ["structured"],
+        subjects: ["science", "math"],
+      },
+    ],
+  },
+  {
+    stream: "vocational",
+    careers: [
+      {
+        title: "Electrician",
+        time_to_earn: "2-3 years",
+        average_salary: "3-12 LPA",
+        job_demand_trend: "high",
+        required_aptitudes: ["spatial_visual_skills", "logical_reasoning"],
+        riasec_match: ["realistic", "conventional"],
+        personality_match: ["structured"],
+        subjects: ["science", "math"],
+      },
+      {
+        title: "Automotive Technician",
+        time_to_earn: "2-3 years",
+        average_salary: "3-10 LPA",
+        job_demand_trend: "high",
+        required_aptitudes: ["spatial_visual_skills", "logical_reasoning"],
+        riasec_match: ["realistic", "investigative"],
+        personality_match: ["structured"],
+        subjects: ["science", "math"],
+      },
+      {
+        title: "Chef",
+        time_to_earn: "2-4 years",
+        average_salary: "3-15 LPA",
+        job_demand_trend: "growing",
+        required_aptitudes: ["spatial_visual_skills"],
+        riasec_match: ["artistic", "realistic"],
+        personality_match: ["flexible"],
+        subjects: ["science"],
+      },
+      {
+        title: "Plumber",
+        time_to_earn: "2-3 years",
+        average_salary: "3-10 LPA",
+        job_demand_trend: "high",
+        required_aptitudes: ["spatial_visual_skills", "logical_reasoning"],
+        riasec_match: ["realistic", "conventional"],
+        personality_match: ["structured"],
+        subjects: ["science", "math"],
       },
     ],
   },
@@ -308,18 +393,21 @@ export class EnhancedAIRecommendationEngine {
             careerScore += aptitudeScore * 0.5;
             aptitudeMatchCount++;
             reasons.push(
-              `Strong ${aptitude.replace("_", " ")} skills match ${career.title}`,
+              `Your strong ${aptitude.replace("_", " ")} skills align well with ${career.title}`,
             );
           } else if (aptitudeScore > 0.4) {
             // Moderate aptitude gets partial score
             careerScore += aptitudeScore * 0.3;
             aptitudeMatchCount++;
+            reasons.push(
+              `Your ${aptitude.replace("_", " ")} skills are suitable for ${career.title}`,
+            );
           } else {
             // Weak aptitude gets strong penalty
             careerScore -= 0.5; // Strong penalty for weak required skill
             hasWeakRequiredSkill = true;
             reasons.push(
-              `Weak ${aptitude.replace("_", " ")} skills may limit ${career.title} success`,
+              `Your ${aptitude.replace("_", " ")} skills may need improvement for ${career.title}`,
             );
           }
         }
@@ -353,7 +441,7 @@ export class EnhancedAIRecommendationEngine {
             riasec_scores[interest as keyof RIASECScores] || 0;
           careerScore += interestScore * 0.35;
           if (interestScore > 0.5) { // Lowered threshold from 0.7
-            reasons.push(`${interest} interests align with ${career.title}`);
+            reasons.push(`Your ${interest} interests align well with ${career.title}`);
           }
         }
 
@@ -408,9 +496,13 @@ export class EnhancedAIRecommendationEngine {
         reasons,
       );
 
+      // Calculate average score and ensure minimum visibility
+      const averageScore = totalScore / streamData.careers.length;
+      const minimumScore = 0.5; // Lower minimum to allow for more score variation
+      
       streamScores[stream] = {
-        score: totalScore / streamData.careers.length, // Average score
-        reasons: [...new Set(reasons)], // Remove duplicates
+        score: Math.max(averageScore, minimumScore), // Ensure minimum visibility but allow variation
+        reasons: Array.from(new Set(reasons)), // Remove duplicates
         careers: matchingCareers.sort((a, b) => b.score - a.score),
       };
     }
@@ -418,7 +510,8 @@ export class EnhancedAIRecommendationEngine {
     console.log("Final stream scores:", streamScores);
     console.log("=== DETAILED SCORE BREAKDOWN ===");
     Object.entries(streamScores).forEach(([stream, data]) => {
-      console.log(`${stream}: score=${data.score}, reasons=${data.reasons.length}, careers=${data.careers.length}`);
+      console.log(`${stream}: score=${data.score.toFixed(2)}, reasons=${data.reasons.length}, careers=${data.careers.length}`);
+      console.log(`  Top reasons: ${data.reasons.slice(0, 2).join(", ")}`);
     });
     return streamScores;
   }
@@ -614,7 +707,7 @@ Format as structured analysis focusing on career fit, earning potential, and per
     );
 
     const primary_recommendations: StreamRecommendation[] = sortedStreams
-      .slice(0, 3)
+      .slice(0, 5) // Show top 5 streams instead of just 3
       .map(([stream, data]: [string, unknown]) => {
         const dataObj = data as { 
           score?: number; 
@@ -629,13 +722,33 @@ Format as structured analysis focusing on career fit, earning potential, and per
         
         let reasoning = "";
         if (cleanReasons.length > 0) {
-          reasoning = cleanReasons.slice(0, 2).join(". "); // Take only first 2 reasons
+          // Clean up the reasoning text
+          const cleanedReasons = cleanReasons.slice(0, 2).map(reason => {
+            // Fix duplicate words and improve readability
+            return reason
+              .replace(/(\w+)\s+\1\s+/g, '$1 ') // Remove duplicate words
+              .replace(/skills skills/g, 'skills') // Fix "skills skills"
+              .replace(/may limit (\w+) success/g, 'may be challenging for $1') // Improve negative phrasing
+              .replace(/Strong (\w+) skills match (\w+)/g, 'Your strong $1 skills align well with $2') // Improve positive phrasing
+              .replace(/Weak (\w+) skills may be challenging for (\w+)/g, 'Your $1 skills may need improvement for $2'); // Improve negative phrasing
+          });
+          reasoning = cleanedReasons.join(". ");
         } else {
-          reasoning = `Strong match for ${stream} stream based on your assessment results.`;
+          // Generate a more specific fallback based on the stream
+          const streamDescriptions = {
+            engineering: "Your technical and analytical skills make engineering a strong option for you.",
+            medical: "Your caring nature and scientific aptitude align well with medical careers.",
+            commerce: "Your numerical and business skills are well-suited for commerce and finance.",
+            arts: "Your creative and communication abilities make arts and humanities a great fit.",
+            science: "Your analytical thinking and research skills are perfect for scientific careers.",
+            vocational: "Your practical skills and hands-on approach make vocational training ideal."
+          };
+          reasoning = streamDescriptions[stream as keyof typeof streamDescriptions] || 
+            `Good match for ${stream} stream based on your assessment results.`;
         }
         
         if (topCareer?.title) {
-          reasoning += ` Top career: ${topCareer.title}`;
+          reasoning += ` Top career option: ${topCareer.title}.`;
         }
 
         return {
@@ -644,12 +757,12 @@ Format as structured analysis focusing on career fit, earning potential, and per
           time_to_earn: topCareer?.time_to_earn || "4-6 years",
           average_salary: topCareer?.average_salary || "5-20 LPA",
           job_demand_trend: topCareer?.job_demand_trend || "medium",
-          confidence_score: Math.max(Math.min((dataObj.score || 0) / 10, 1), 0.3), // Normalize to 0-1 with minimum 30%
+          confidence_score: Math.max(Math.min((dataObj.score || 0) / 15, 0.95), 0.3), // More realistic confidence scores
         };
       });
 
     const secondary_recommendations: StreamRecommendation[] = sortedStreams
-      .slice(3, 5)
+      .slice(5, 10) // Show more secondary options
       .map(([stream, data]: [string, unknown]) => {
         const dataObj = data as { 
           score?: number; 
@@ -664,9 +777,28 @@ Format as structured analysis focusing on career fit, earning potential, and per
         
         let reasoning = "";
         if (cleanReasons.length > 0) {
-          reasoning = cleanReasons.slice(0, 1).join(". "); // Take only first reason for secondary
+          // Clean up the reasoning text for secondary recommendations
+          const cleanedReasons = cleanReasons.slice(0, 1).map(reason => {
+            return reason
+              .replace(/(\w+)\s+\1\s+/g, '$1 ') // Remove duplicate words
+              .replace(/skills skills/g, 'skills') // Fix "skills skills"
+              .replace(/may limit (\w+) success/g, 'may be challenging for $1') // Improve negative phrasing
+              .replace(/Strong (\w+) skills match (\w+)/g, 'Your strong $1 skills align well with $2') // Improve positive phrasing
+              .replace(/Weak (\w+) skills may be challenging for (\w+)/g, 'Your $1 skills may need improvement for $2'); // Improve negative phrasing
+          });
+          reasoning = cleanedReasons.join(". ");
         } else {
-          reasoning = `Good alternative option in ${stream} stream.`;
+          // Generate a more specific fallback for secondary recommendations
+          const streamDescriptions = {
+            engineering: "Engineering could be a good alternative path for you.",
+            medical: "Medical careers might be worth considering as an alternative.",
+            commerce: "Commerce and business could be viable alternative options.",
+            arts: "Arts and creative fields might be good alternatives to explore.",
+            science: "Scientific careers could be interesting alternative paths.",
+            vocational: "Vocational training might be a practical alternative option."
+          };
+          reasoning = streamDescriptions[stream as keyof typeof streamDescriptions] || 
+            `Good alternative option in ${stream} stream.`;
         }
 
         return {
@@ -675,7 +807,7 @@ Format as structured analysis focusing on career fit, earning potential, and per
           time_to_earn: topCareer?.time_to_earn || "4-6 years",
           average_salary: topCareer?.average_salary || "4-15 LPA",
           job_demand_trend: dataObj.careers?.[0]?.job_demand_trend || "medium",
-          confidence_score: Math.max(Math.min((dataObj.score || 0) / 10, 1), 0.3), // Normalize to 0-1 with minimum 30%
+          confidence_score: Math.max(Math.min((dataObj.score || 0) / 15, 0.8), 0.2), // More realistic confidence scores for secondary
         };
       });
 

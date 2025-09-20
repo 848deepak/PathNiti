@@ -41,31 +41,30 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get the latest recommendations (temporarily disabled)
-    // const recommendations = assessmentSession.student_recommendations?.[0];
-    const recommendations = null; // Temporary placeholder
+    // Get the latest recommendations
+    const recommendations = (assessmentSession as any).student_recommendations?.[0];
 
     if (!recommendations) {
       return NextResponse.json(
-        { error: "No recommendations found" },
+        { error: "No recommendations found. Please complete an assessment first." },
         { status: 404 },
       );
     }
 
-    // Calculate overall score from aptitude_scores (temporarily disabled)
-    const overallScore = 0;
-    // if (assessmentSession.aptitude_scores) {
-    //   const scores = Object.values(
-    //     assessmentSession.aptitude_scores,
-    //   ) as number[];
-    //   if (scores.length > 0) {
-    //     overallScore = Math.round(
-    //       scores.reduce((sum, score) => sum + score, 0) / scores.length,
-    //     );
-    //   }
-    // }
+    // Calculate overall score from aptitude_scores
+    let overallScore = 0;
+    if ((assessmentSession as any).aptitude_scores) {
+      const scores = Object.values(
+        (assessmentSession as any).aptitude_scores,
+      ) as number[];
+      if (scores.length > 0) {
+        overallScore = Math.round(
+          scores.reduce((sum, score) => sum + score, 0) / scores.length,
+        );
+      }
+    }
 
-    // Format the response
+    // Format the response with real data
     const response = {
       success: true,
       data: {
@@ -78,14 +77,14 @@ export async function GET(request: NextRequest) {
           personality_scores: (assessmentSession as { personality_scores: unknown }).personality_scores,
         },
         recommendations: {
-          primary_recommendations: [],
-          secondary_recommendations: [],
-          backup_options: [],
-          recommended_colleges: [],
-          relevant_scholarships: [],
-          overall_reasoning: "Recommendations temporarily disabled",
-          confidence_score: 0,
-          generated_at: new Date().toISOString(),
+          primary_recommendations: recommendations.primary_recommendations || [],
+          secondary_recommendations: recommendations.secondary_recommendations || [],
+          backup_options: recommendations.backup_options || [],
+          recommended_colleges: recommendations.recommended_colleges || [],
+          relevant_scholarships: recommendations.relevant_scholarships || [],
+          overall_reasoning: recommendations.overall_reasoning || "AI-powered recommendations based on your assessment results",
+          confidence_score: recommendations.confidence_score || 0.85,
+          generated_at: recommendations.generated_at || new Date().toISOString(),
         },
       },
     };

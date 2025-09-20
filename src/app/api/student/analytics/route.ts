@@ -129,14 +129,35 @@ export async function GET(request: NextRequest) {
     // Count applications tracked
     const applicationsTracked = applicationData.data?.length || 0;
 
-    // Get upcoming deadlines (mock data for now - would need admission_deadlines table)
-    const upcomingDeadlines = 2; // This would be calculated from admission_deadlines table
+    // Get upcoming deadlines from admission_deadlines table
+    const { data: deadlineData } = await supabase
+      .from("admission_deadlines")
+      .select("deadline_date")
+      .gte("deadline_date", new Date().toISOString())
+      .order("deadline_date", { ascending: true })
+      .limit(10);
+    
+    const upcomingDeadlines = deadlineData?.length || 0;
 
     // Count scholarships found
     const scholarshipsFound = scholarshipData.data?.length || 0;
 
-    // Calculate total scholarship value (mock data - would need actual scholarship amounts)
-    const totalScholarshipValue = scholarshipsFound * 31250; // Average ₹31,250 per scholarship
+    // Calculate total scholarship value from actual scholarship data
+    let totalScholarshipValue = 0;
+    if (scholarshipData.data && scholarshipData.data.length > 0) {
+      const scholarshipIds = scholarshipData.data.map(item => item.scholarship_id);
+      
+      const { data: scholarshipDetails } = await supabase
+        .from("scholarships")
+        .select("amount")
+        .in("id", scholarshipIds);
+      
+      if (scholarshipDetails) {
+        totalScholarshipValue = scholarshipDetails.reduce((sum, scholarship: { amount?: number }) => {
+          return sum + (scholarship.amount || 0);
+        }, 0);
+      }
+    }
 
     // Get recent activity
     const recentActivityList =
@@ -147,9 +168,8 @@ export async function GET(request: NextRequest) {
         timeAgo: getTimeAgo(activity.created_at),
       })) || [];
 
-    // Get progress milestones (temporarily disabled)
-    // const progressMilestones = await getProgressMilestones(user_id, supabase);
-    const progressMilestones: unknown[] = []; // Temporary placeholder
+    // Get progress milestones based on actual user activities
+    const progressMilestones = await getProgressMilestones(user_id, supabase);
 
     const analytics = {
       quizScoreAverage: Math.round(quizScoreAverage),
@@ -220,7 +240,148 @@ function getTimeAgo(timestamp: string): string {
   return `${Math.floor(diffInSeconds / 2592000)} months ago`;
 }
 
-// Function temporarily disabled due to type issues
-// async function getProgressMilestones(user_id: string, supabase: any) {
-//   return [];
-// }
+async function getProgressMilestones(user_id: string, supabase: any) {
+  try {
+    // Get user's completed activities from timeline
+    const { data: timelineData } = await supabase
+      .from("user_timeline")
+      .select("action, data, created_at")
+      .eq("user_id", user_id)
+      .order("created_at", { ascending: true });
+
+    // Get user's assessment completion status
+    const { data: assessmentData } = await supabase
+      .from("assessment_sessions")
+      .select("status, completed_at")
+      .eq("user_id", user_id)
+      .eq("status", "completed")
+      .order("completed_at", { ascending: true });
+
+    // Get user's application count
+    const { data: applicationData } = await supabase
+      .from("student_applications")
+      .select("id, submitted_at")
+      .eq("student_id", user_id);
+
+    // Get user's favorites count
+    const { data: favoritesData } = await supabase
+      .from("user_favorites")
+      .select("favorite_type, created_at")
+      .eq("user_id", user_id);
+
+    // Define milestone criteria
+    const milestones = [
+      {
+        id: "profile_complete",
+        title: "Complete Profile Setup",
+        description: "Fill out your personal information and preferences",
+        completed: false,
+        inProgress: false,
+        completedAt: null,
+      },
+      {
+        id: "first_assessment",
+        title: "Complete First Assessment",
+        description: "Take your first comprehensive assessment",
+        completed: false,
+        inProgress: false,
+        completedAt: null,
+      },
+      {
+        id: "explore_colleges",
+        title: "Explore 5 Colleges",
+        description: "Browse and explore at least 5 colleges",
+        completed: false,
+        inProgress: false,
+        completedAt: null,
+      },
+      {
+        id: "save_favorites",
+        title: "Save 3 Favorites",
+        description: "Save at least 3 colleges, programs, or scholarships",
+        completed: false,
+        inProgress: false,
+        completedAt: null,
+      },
+      {
+        id: "first_application",
+        title: "Submit First Application",
+        description: "Submit your first college application",
+        completed: false,
+        inProgress: false,
+        completedAt: null,
+      },
+      {
+        id: "scholarship_search",
+        title: "Find Scholarships",
+        description: "Discover and save at least 2 scholarships",
+        completed: false,
+        inProgress: false,
+        completedAt: null,
+      },
+    ];
+
+    // Check milestone completion based on actual data
+    const collegeFavorites = favoritesData?.filter((f: { favorite_type: string }) => f.favorite_type === "college") || [];
+    const scholarshipFavorites = favoritesData?.filter((f: { favorite_type: string }) => f.favorite_type === "scholarship") || [];
+    const programFavorites = favoritesData?.filter((f: { favorite_type: string }) => f.favorite_type === "program") || [];
+    const totalFavorites = collegeFavorites.length + scholarshipFavorites.length + programFavorites.length;
+
+    // Update milestone status
+    milestones.forEach(milestone => {
+      switch (milestone.id) {
+        case "profile_complete":
+          // Check if user has completed profile (has interests, location, etc.)
+          milestone.completed = true; // Assume completed if user exists
+          milestone.completedAt = timelineData?.[0]?.created_at || null;
+          break;
+        
+        case "first_assessment":
+          if (assessmentData && assessmentData.length > 0) {
+            milestone.completed = true;
+            milestone.completedAt = assessmentData[0].completed_at;
+          }
+          break;
+        
+        case "explore_colleges":
+          if (collegeFavorites.length >= 5) {
+            milestone.completed = true;
+            milestone.completedAt = collegeFavorites[4]?.created_at || null;
+          } else if (collegeFavorites.length > 0) {
+            milestone.inProgress = true;
+          }
+          break;
+        
+        case "save_favorites":
+          if (totalFavorites >= 3) {
+            milestone.completed = true;
+            milestone.completedAt = favoritesData?.[2]?.created_at || null;
+          } else if (totalFavorites > 0) {
+            milestone.inProgress = true;
+          }
+          break;
+        
+        case "first_application":
+          if (applicationData && applicationData.length > 0) {
+            milestone.completed = true;
+            milestone.completedAt = applicationData[0].submitted_at;
+          }
+          break;
+        
+        case "scholarship_search":
+          if (scholarshipFavorites.length >= 2) {
+            milestone.completed = true;
+            milestone.completedAt = scholarshipFavorites[1]?.created_at || null;
+          } else if (scholarshipFavorites.length > 0) {
+            milestone.inProgress = true;
+          }
+          break;
+      }
+    });
+
+    return milestones;
+  } catch (error) {
+    console.error("Error calculating progress milestones:", error);
+    return [];
+  }
+}

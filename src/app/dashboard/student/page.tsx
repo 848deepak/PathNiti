@@ -11,7 +11,6 @@ import {
   CardTitle,
 } from "@/components/ui";
 import { useAuth } from "../../providers";
-import { AIRecommendationsCard } from "@/components/AIRecommendationsCard";
 import { StudentApplicationTracker } from "@/components/StudentApplicationTracker";
 import { ApplicationNotifications } from "@/components/ApplicationNotifications";
 import { AuthGuard } from "@/components/AuthGuard";
@@ -313,12 +312,6 @@ export default function StudentDashboardPage() {
           </div>
         )}
 
-        {/* AI Recommendations */}
-        {user?.id && (
-          <div className="mb-8">
-            <AIRecommendationsCard userId={user.id} />
-          </div>
-        )}
 
         {/* Progress Tracking */}
         <div className="grid lg:grid-cols-3 gap-6 mb-8">

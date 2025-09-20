@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Button,
@@ -24,18 +24,39 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import NotificationSystem from "@/components/NotificationSystem";
-import AIChat from "@/components/AIChat";
-import { AuthDebug } from "@/components/AuthDebug";
 import { AuthGuard } from "@/components/AuthGuard";
 
 export default function DashboardPage() {
   const { user, profile, loading, signOut } = useAuth();
   const router = useRouter();
+  const [collegeCount, setCollegeCount] = useState<number>(0);
+  const [collegeCountLoading, setCollegeCountLoading] = useState(true);
 
   const handleSignOut = async () => {
     await signOut();
     router.push("/");
   };
+
+  // Fetch college count
+  useEffect(() => {
+    const fetchCollegeCount = async () => {
+      try {
+        setCollegeCountLoading(true);
+        const response = await fetch("/api/colleges/count");
+        const result = await response.json();
+        
+        if (result.success) {
+          setCollegeCount(result.data.totalColleges);
+        }
+      } catch (error) {
+        console.error("Error fetching college count:", error);
+      } finally {
+        setCollegeCountLoading(false);
+      }
+    };
+
+    fetchCollegeCount();
+  }, []);
 
   // Use central loading state from useAuth
   if (loading) {
@@ -111,7 +132,6 @@ export default function DashboardPage() {
       </nav>
 
       <div className="container mx-auto px-4 py-8">
-        <AuthDebug />
         {/* Welcome Section */}
         <div className="mb-12">
           <div className="bg-gradient-to-r from-primary/10 via-blue-50 to-purple-50 rounded-3xl p-8 border border-primary/20">
@@ -172,7 +192,9 @@ export default function DashboardPage() {
                   <p className="text-sm font-medium text-gray-600">
                     Colleges Available
                   </p>
-                  <p className="text-2xl font-bold text-gray-900">500+</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {collegeCountLoading ? "..." : collegeCount}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -311,9 +333,9 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        {/* AI Chat and Recent Activity */}
-        <div className="grid lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
+        {/* Recent Activity */}
+        <div className="grid lg:grid-cols-1 gap-6">
+          <div>
             <Card>
               <CardHeader>
                 <CardTitle>Recent Activity</CardTitle>
@@ -342,15 +364,6 @@ export default function DashboardPage() {
             </Card>
           </div>
 
-          <div className="lg:col-span-1">
-            <AIChat userProfile={profile ? {
-              user_id: profile.id,
-              class_level: undefined,
-              stream: undefined,
-              interests: [],
-              location: undefined
-            } : undefined} />
-          </div>
         </div>
 
         {/* Quick Recommendations */}

@@ -18,7 +18,6 @@ import Link from "next/link";
 import { useAuth } from "./providers";
 import { useState, useEffect } from "react";
 import { DynamicHeader } from "@/components/DynamicHeader";
-import { AuthDebug } from "@/components/AuthDebug";
 
 export default function Home() {
   const [mounted, setMounted] = useState(false);
@@ -762,8 +761,6 @@ export default function Home() {
         </div>
       </footer>
       
-      {/* Auth Debug Component - Only in Development */}
-      <AuthDebug />
     </div>
   );
 }

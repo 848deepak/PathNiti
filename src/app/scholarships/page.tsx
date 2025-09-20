@@ -22,6 +22,8 @@ import {
   ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
+import { PathNitiLogo } from "@/components/PathNitiLogo";
+import { DynamicHeader } from "@/components/DynamicHeader";
 import { supabase } from "@/lib/supabase";
 
 interface Scholarship {
@@ -312,23 +314,7 @@ export default function ScholarshipsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navigation */}
-      <nav className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link
-            href="/"
-            className="flex items-center space-x-2 hover:opacity-80 transition-opacity duration-200"
-          >
-            <GraduationCap className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold text-primary">PathNiti</span>
-          </Link>
-          <Button variant="outline" asChild>
-            <Link href="/dashboard">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </Link>
-          </Button>
-        </div>
-      </nav>
+      <DynamicHeader />
 
       <div className="container mx-auto px-4 py-8">
         {/* Header */}

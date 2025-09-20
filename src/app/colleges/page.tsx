@@ -36,6 +36,8 @@ import {
   RefreshCw,
 } from "lucide-react";
 import Link from "next/link";
+import { PathNitiLogo } from "@/components/PathNitiLogo";
+import { DynamicHeader } from "@/components/DynamicHeader";
 
 export default function CollegesPage() {
   const [colleges, setColleges] = useState<CollegeProfileData[]>([]);
@@ -298,47 +300,7 @@ export default function CollegesPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       {/* Navigation */}
-      <nav className="border-b bg-white/90 backdrop-blur-md sticky top-0 z-50 shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link
-            href="/"
-            className="flex items-center space-x-3 hover:opacity-80 transition-opacity duration-200"
-          >
-            <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary to-blue-600 rounded-xl blur-sm opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="relative bg-white p-2 rounded-xl shadow-lg">
-                <GraduationCap className="h-8 w-8 text-primary" />
-                <Sparkles className="h-3 w-3 text-yellow-500 absolute -top-1 -right-1 animate-pulse" />
-              </div>
-            </div>
-            <span className="text-3xl font-black bg-gradient-to-r from-blue-800 via-blue-600 to-purple-600 bg-clip-text text-transparent tracking-tight">
-              PathNiti
-            </span>
-          </Link>
-          <div className="flex items-center space-x-3">
-            <Button
-              variant="outline"
-              className="hover:scale-105 transition-all duration-200 border-2 hover:border-primary hover:bg-primary/5"
-              asChild
-            >
-              <Link href="/career-pathways" className="flex items-center gap-2">
-                <Building2 className="h-4 w-4" />
-                Career Paths
-              </Link>
-            </Button>
-            <Button
-              variant="outline"
-              className="hover:scale-105 transition-all duration-200 border-2 hover:border-primary hover:bg-primary/5"
-              asChild
-            >
-              <Link href="/dashboard" className="flex items-center gap-2">
-                <ArrowLeft className="h-4 w-4" />
-                Dashboard
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </nav>
+      <DynamicHeader />
 
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-gradient-to-br from-primary via-blue-600 to-purple-700 text-white">
@@ -386,7 +348,7 @@ export default function CollegesPage() {
               <Button
                 size="lg"
                 variant="outline"
-                className="text-lg px-8 py-4 border-2 border-white/30 text-white hover:bg-white/10 transition-all duration-300 hover:scale-105"
+                className="text-lg px-8 py-4 border-2 border-white/50 text-white hover:bg-white/20 hover:border-white/70 transition-all duration-300 hover:scale-105 shadow-lg backdrop-blur-sm bg-white/10"
                 asChild
               >
                 <Link href="#colleges" className="flex items-center gap-3">

@@ -25,6 +25,7 @@ import {
 import Link from "next/link";
 import NotificationSystem from "@/components/NotificationSystem";
 import { AuthGuard } from "@/components/AuthGuard";
+import { DynamicHeader } from "@/components/DynamicHeader";
 
 export default function DashboardPage() {
   const { user, profile, loading, signOut } = useAuth();
@@ -74,62 +75,7 @@ export default function DashboardPage() {
     <AuthGuard requireAuth={true}>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       {/* Navigation */}
-      <nav className="bg-white/90 backdrop-blur-md border-b border-gray-200 shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link
-            href="/"
-            className="flex items-center space-x-3 hover:opacity-80 transition-opacity duration-200"
-          >
-            <div className="relative">
-              <GraduationCap className="h-8 w-8 text-primary" />
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-            </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-              PathNiti
-            </span>
-          </Link>
-
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-3 bg-gray-50 rounded-full px-4 py-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-primary to-blue-600 rounded-full flex items-center justify-center">
-                <User className="h-4 w-4 text-white" />
-              </div>
-              <span className="text-sm font-medium text-gray-700">
-                {profile?.first_name} {profile?.last_name}
-              </span>
-            </div>
-            <NotificationSystem userId={user?.id || ""} />
-            {profile?.role === "admin" && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="hover:scale-105 transition-transform duration-200"
-                asChild
-              >
-                <Link href="/admin">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Admin
-                </Link>
-              </Button>
-            )}
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/settings">
-                <Settings className="h-4 w-4 mr-2" />
-                Settings
-              </Link>
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleSignOut}
-              className="hover:scale-105 transition-transform duration-200 hover:bg-red-50 hover:border-red-200 hover:text-red-600"
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
-            </Button>
-          </div>
-        </div>
-      </nav>
+      <DynamicHeader />
 
       <div className="container mx-auto px-4 py-8">
         {/* Welcome Section */}

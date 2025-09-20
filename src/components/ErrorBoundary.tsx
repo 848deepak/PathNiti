@@ -114,6 +114,7 @@ export class ErrorBoundary extends Component<
     const retryableErrors = [
       "ChunkLoadError",
       "Loading chunk",
+      "Cannot read properties of undefined (reading 'call')",
       "Network Error",
       "Failed to fetch",
     ];
@@ -331,7 +332,8 @@ Please describe what you were doing when this error occurred:
     // User-friendly error messages
     if (
       message.includes("ChunkLoadError") ||
-      message.includes("Loading chunk")
+      message.includes("Loading chunk") ||
+      message.includes("Cannot read properties of undefined (reading 'call')")
     ) {
       return "Failed to load application resources. Please refresh the page.";
     }

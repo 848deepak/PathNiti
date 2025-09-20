@@ -35,7 +35,45 @@ const nextConfig = {
   },
   // Optimize build performance
   compress: true,
-  webpack: (config, { isServer }) => {
+  webpack: (config, { isServer, dev }) => {
+    // Fix webpack module loading issues
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      fs: false,
+      net: false,
+      tls: false,
+    };
+
+    // Improve module resolution
+    config.resolve.alias = {
+      ...config.resolve.alias,
+    };
+
+    // Fix chunk loading issues
+    if (!isServer) {
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          ...config.optimization.splitChunks,
+          chunks: 'all',
+          cacheGroups: {
+            ...config.optimization.splitChunks?.cacheGroups,
+            default: {
+              minChunks: 2,
+              priority: -20,
+              reuseExistingChunk: true,
+            },
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name: 'vendors',
+              priority: -10,
+              chunks: 'all',
+            },
+          },
+        },
+      };
+    }
+
     // Create missing CSS file during build to prevent ENOENT errors
     if (isServer) {
       // Create CSS file in all possible locations

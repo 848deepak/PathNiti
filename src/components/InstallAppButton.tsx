@@ -28,6 +28,9 @@ export function InstallAppButton({
   const [isInstalling, setIsInstalling] = useState(false);
 
   useEffect(() => {
+    // Only run on client side
+    if (typeof window === 'undefined') return;
+
     // Check if app is already installed
     if (window.matchMedia('(display-mode: standalone)').matches || 
         (window.navigator as any).standalone === true) {
@@ -105,7 +108,7 @@ The app will then appear on your home screen!`);
   }
 
   // Don't show if not installable
-  if (!deferredPrompt && !window.matchMedia('(display-mode: standalone)').matches) {
+  if (typeof window !== 'undefined' && !deferredPrompt && !window.matchMedia('(display-mode: standalone)').matches) {
     return null;
   }
 

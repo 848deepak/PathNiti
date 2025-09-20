@@ -1,6 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+
+// Force dynamic rendering to avoid SSR issues
+export const dynamic = 'force-dynamic';
 import { InstallAppButton } from '@/components/InstallAppButton';
 import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
 import { Download, Smartphone, CheckCircle, Info } from 'lucide-react';
@@ -10,6 +13,9 @@ export default function TestPWAPage() {
   const [isOnline, setIsOnline] = useState(true);
 
   useEffect(() => {
+    // Only run on client side
+    if (typeof window === 'undefined') return;
+
     // Check if running as PWA
     setIsStandalone(
       window.matchMedia('(display-mode: standalone)').matches || 
@@ -111,8 +117,8 @@ export default function TestPWAPage() {
               <h4 className="font-medium text-blue-800">Android (Chrome)</h4>
               <ol className="list-decimal list-inside text-sm text-blue-700 space-y-1 mt-1">
                 <li>Tap the menu (3 dots) in your browser</li>
-                <li>Select "Add to Home screen"</li>
-                <li>Tap "Add" to install</li>
+                <li>Select &quot;Add to Home screen&quot;</li>
+                <li>Tap &quot;Add&quot; to install</li>
               </ol>
             </div>
             
@@ -120,8 +126,8 @@ export default function TestPWAPage() {
               <h4 className="font-medium text-blue-800">iPhone (Safari)</h4>
               <ol className="list-decimal list-inside text-sm text-blue-700 space-y-1 mt-1">
                 <li>Tap the share button (square with arrow)</li>
-                <li>Select "Add to Home Screen"</li>
-                <li>Tap "Add" to install</li>
+                <li>Select &quot;Add to Home Screen&quot;</li>
+                <li>Tap &quot;Add&quot; to install</li>
               </ol>
             </div>
           </div>

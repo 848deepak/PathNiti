@@ -18,6 +18,9 @@ export function PWAInstallPrompt() {
   const [isInstalled, setIsInstalled] = useState(false);
 
   useEffect(() => {
+    // Only run on client side
+    if (typeof window === 'undefined') return;
+
     // Check if app is already installed
     if (window.matchMedia('(display-mode: standalone)').matches || 
         (window.navigator as any).standalone === true) {
@@ -71,7 +74,9 @@ export function PWAInstallPrompt() {
   const handleDismiss = () => {
     setShowInstallPrompt(false);
     // Store dismissal in localStorage to avoid showing again for a while
-    localStorage.setItem('pwa-install-dismissed', Date.now().toString());
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('pwa-install-dismissed', Date.now().toString());
+    }
   };
 
   // Don't show if already installed or if user recently dismissed
@@ -80,7 +85,7 @@ export function PWAInstallPrompt() {
   }
 
   // Check if user recently dismissed (within 24 hours)
-  const dismissedTime = localStorage.getItem('pwa-install-dismissed');
+  const dismissedTime = typeof window !== 'undefined' ? localStorage.getItem('pwa-install-dismissed') : null;
   if (dismissedTime && Date.now() - parseInt(dismissedTime) < 24 * 60 * 60 * 1000) {
     return null;
   }

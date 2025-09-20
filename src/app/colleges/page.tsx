@@ -144,8 +144,9 @@ export default function CollegesPage() {
   // Set up real-time subscription for college updates
   useEffect(() => {
     const setupRealtimeSubscription = async () => {
-      // Use the singleton client instead of creating a new instance
-      const { supabase } = await import("@/lib/supabase");
+      try {
+        // Use the singleton client instead of creating a new instance
+        const { supabase } = await import("@/lib/supabase");
 
       const subscription = supabase
         .channel("colleges-changes")
@@ -211,6 +212,10 @@ export default function CollegesPage() {
       return () => {
         subscription.unsubscribe();
       };
+      } catch (error) {
+        console.error("Failed to setup realtime subscription:", error);
+        return () => {}; // Return empty cleanup function
+      }
     };
 
     const cleanup = setupRealtimeSubscription();

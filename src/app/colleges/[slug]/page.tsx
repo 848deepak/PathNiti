@@ -61,8 +61,18 @@ export default function CollegeProfilePage({
   // Initialize supabase client
   useEffect(() => {
     const initSupabase = async () => {
-      const { supabase } = await import("@/lib/supabase");
-      setSupabaseClient(supabase);
+      try {
+        const { supabase } = await import("@/lib/supabase");
+        setSupabaseClient(supabase);
+      } catch (error) {
+        console.error("Failed to load supabase client:", error);
+        // Fallback to direct import if dynamic import fails
+        import("@/lib/supabase").then(({ supabase }) => {
+          setSupabaseClient(supabase);
+        }).catch((fallbackError) => {
+          console.error("Fallback supabase import also failed:", fallbackError);
+        });
+      }
     };
     initSupabase();
   }, []);

@@ -10,9 +10,6 @@ const nextConfig = {
   // For mobile builds, we'll use a regular build, not static export
   // output: process.env.CAPACITOR_BUILD === 'true' ? 'export' : undefined,
   trailingSlash: true,
-  images: {
-    unoptimized: process.env.CAPACITOR_BUILD === 'true',
-  },
   // For Next.js 15, serverComponentsExternalPackages moved to root level
   serverExternalPackages: [
     "@supabase/ssr",
@@ -83,6 +80,8 @@ const nextConfig = {
         splitChunks: {
           ...config.optimization.splitChunks,
           chunks: 'all',
+          maxInitialRequests: 30,
+          maxAsyncRequests: 30,
           cacheGroups: {
             ...config.optimization.splitChunks?.cacheGroups,
             default: {
@@ -96,8 +95,21 @@ const nextConfig = {
               priority: -10,
               chunks: 'all',
             },
+            react: {
+              test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
+              name: 'react',
+              priority: 20,
+              chunks: 'all',
+            },
           },
         },
+      };
+      
+      // Fix module loading issues
+      config.output = {
+        ...config.output,
+        chunkLoadingGlobal: 'webpackChunk_N_E',
+        globalObject: 'self',
       };
     }
 

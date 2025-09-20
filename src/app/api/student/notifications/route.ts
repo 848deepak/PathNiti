@@ -5,39 +5,54 @@ import { createClient } from "@/lib/supabase/server";
 // Force dynamic rendering
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const supabase = createClient();
+    const { searchParams } = new URL(request.url);
+    const userIdParam = searchParams.get("userId");
 
-    // Get the authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    let userId: string;
 
-    if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (userIdParam) {
+      // If userId is provided as query parameter, use it directly
+      userId = userIdParam;
+    } else {
+      // Otherwise, get the authenticated user
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
+
+      if (authError || !user) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+
+      userId = user.id;
     }
 
-    // Verify user is a student
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
+    // Verify user is a student (only if we have a valid userId)
+    if (userId) {
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", userId)
+        .single();
 
-    if (profileError || profile?.role !== "student") {
-      return NextResponse.json(
-        { error: "Access denied. Student role required." },
-        { status: 403 },
-      );
+      if (profileError || profile?.role !== "student") {
+        return NextResponse.json(
+          { error: "Access denied. Student role required." },
+          { status: 403 },
+        );
+      }
+    } else {
+      return NextResponse.json({ error: "User ID required" }, { status: 400 });
     }
 
     // Fetch notifications for the user
     const { data: notifications, error: notificationsError } = await supabase
       .from("notifications")
       .select("*")
-      .eq("user_id", user.id)
+      .eq("user_id", userId)
       .order("sent_at", { ascending: false })
       .limit(50); // Limit to recent 50 notifications
 

@@ -17,6 +17,7 @@ import type {
   AuthChangeEvent,
 } from "@supabase/supabase-js";
 import { supabase, safeGetUser } from "@/lib/supabase";
+import { offlineAuthManager } from "@/lib/offline-auth-manager";
 import { AuthErrorBoundary } from "@/components/AuthErrorBoundary";
 import { AuthErrorProvider } from "@/contexts/AuthErrorContext";
 import { parseAuthError, logAuthError } from "@/lib/auth-errors";
@@ -110,6 +111,7 @@ interface AuthContextType {
   session: Session | null;
   profile: UserProfile | null;
   loading: boolean;
+  isOnline: boolean;
   signIn: (
     email: string,
     password: string,
@@ -196,6 +198,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   }, [profile]);
   const [loading, setLoading] = useState(true); // Start with true, set to false after initial load
   const [mounted, setMounted] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
   const router = useRouter();
 
   // Performance tracking refs
@@ -222,6 +225,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
     try {
       setMounted(true);
 
+      // Set up network status monitoring
+      const unsubscribeConnection = offlineAuthManager.addConnectionListener((status) => {
+        setIsOnline(status.isOnline);
+        console.log("[AuthProvider] Network status changed:", status);
+      });
+
       // Capture ref values to avoid exhaustive deps warning
       const operationStates = profileOperationStates.current;
       const operationLocks = profileOperationLocks.current;
@@ -242,6 +251,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
           
           // Clear auth state change lock
           authStateChangeLock.current = false;
+          
+          // Unsubscribe from network monitoring
+          unsubscribeConnection();
         } catch (error) {
           console.warn("Error during cleanup:", error);
         }
@@ -624,19 +636,46 @@ export function Providers({ children }: { children: React.ReactNode }) {
     const getInitialSession = async () => {
       try {
         console.log("[AuthProvider] Getting initial session...");
-        const {
-          data: { session },
-          error,
-        } = await supabase.auth.getSession();
+        
+        // Try to get session from Supabase
+        let session: Session | null = null;
+        let user: User | null = null;
+        let error: any = null;
+
+        try {
+          const {
+            data: { session: supabaseSession },
+            error: sessionError,
+          } = await supabase.auth.getSession();
+
+          session = supabaseSession;
+          user = session?.user ?? null;
+          error = sessionError;
+        } catch (sessionError) {
+          console.warn("[AuthProvider] Supabase session failed, trying offline state:", sessionError);
+          
+          // If it's a network error, try to get offline state
+          if (await offlineAuthManager.handleAuthError(sessionError)) {
+            const offlineState = await offlineAuthManager.getOfflineAuthState();
+            if (offlineState) {
+              session = offlineState.session;
+              user = offlineState.user;
+              console.log("[AuthProvider] Using offline auth state");
+            }
+          } else {
+            throw sessionError;
+          }
+        }
 
         console.log("[AuthProvider] Initial session result:", {
           hasSession: !!session,
           userId: session?.user?.id,
           userEmail: session?.user?.email,
           error: error?.message,
+          isOnline: isOnline,
         });
 
-        if (error) {
+        if (error && !session) {
           console.error("Error getting session:", error);
           // Critical session errors should be handled by error boundary
           if (
@@ -648,7 +687,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         }
 
         setSession(session);
-        setUser(session?.user ?? null);
+        setUser(user);
 
         // Fetch user profile if session exists
         if (session?.user?.id) {
@@ -754,11 +793,19 @@ export function Providers({ children }: { children: React.ReactNode }) {
               hasSession: !!session,
               userId: session?.user?.id,
               userEmail: session?.user?.email,
+              isOnline: isOnline,
             });
             
             // Skip processing for INITIAL_SESSION events to prevent loops
             if (event === 'INITIAL_SESSION') {
               console.log("Skipping INITIAL_SESSION event to prevent auth loop");
+              setLoading(false);
+              return;
+            }
+            
+            // Handle offline scenarios
+            if (!isOnline && event === 'TOKEN_REFRESHED') {
+              console.log("Token refresh attempted while offline, skipping");
               setLoading(false);
               return;
             }
@@ -862,7 +909,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       console.error("Failed to set up auth listener:", error);
       setLoading(false);
     }
-  }, [mounted, debouncedCreateUserProfile, fetchUserProfile]); // Include all dependencies
+  }, [mounted, debouncedCreateUserProfile, fetchUserProfile, isOnline]); // Include all dependencies
 
   const signIn = useCallback(async (email: string, password: string) => {
     const timer = performanceMonitor.startTimer("signIn");
@@ -1335,6 +1382,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       session,
       profile,
       loading,
+      isOnline,
       signIn,
       signUpStudent,
       signUpCollege,
@@ -1354,6 +1402,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       session,
       profile,
       loading,
+      isOnline,
       signIn,
       signUpStudent,
       signUpCollege,
@@ -1381,6 +1430,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
               session: null,
               profile: null,
               loading: true,
+              isOnline: true,
               signIn: async () => ({ data: null, error: null }),
               signUpStudent: async () => ({ data: null, error: null }),
               signUpCollege: async () => ({ data: null, error: null }),

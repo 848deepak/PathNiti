@@ -2,12 +2,13 @@
 // This file provides a clean interface for the most common Supabase operations
 
 import { createClient } from "./supabase/client";
+import { createOfflineAwareClient } from "./supabase/offline-client";
 import type { Database, UserProfile } from "./supabase/types";
 
-// Create a singleton client instance with error handling
-let supabase: ReturnType<typeof createClient>;
+// Create a singleton client instance with offline support
+let supabase: ReturnType<typeof createOfflineAwareClient>;
 try {
-  supabase = createClient();
+  supabase = createOfflineAwareClient();
 } catch (error) {
   console.error("Failed to create Supabase client:", error);
   throw error;

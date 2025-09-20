@@ -7,6 +7,8 @@ import {
   AuthErrorBanner,
 } from "@/components/AuthErrorNotification";
 import { SarthiChatWidget } from "@/components/SarthiChatWidget";
+import { NetworkStatusIndicator } from "@/components/NetworkStatusIndicator";
+import { OfflineErrorBoundary } from "@/components/OfflineErrorBoundary";
 
 // Use system fonts as fallback to avoid network dependency during build
 const inter = {
@@ -104,10 +106,13 @@ export default function RootLayout({
       <body className="min-h-screen bg-background font-sans antialiased">
         <Providers>
           <ServiceWorkerProvider>
-            <AuthErrorBanner />
-            {children}
-            <AuthErrorNotification />
-            <SarthiChatWidget />
+            <OfflineErrorBoundary>
+              <AuthErrorBanner />
+              <NetworkStatusIndicator />
+              {children}
+              <AuthErrorNotification />
+              <SarthiChatWidget />
+            </OfflineErrorBoundary>
           </ServiceWorkerProvider>
         </Providers>
       </body>

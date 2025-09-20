@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/app/providers";
+import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MessageSquare, X, Bot } from "lucide-react";
@@ -19,9 +20,11 @@ export function SarthiChatWidget({
   position = "bottom-right",
 }: SarthiChatWidgetProps) {
   const { user } = useAuth();
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [hasNewMessage, setHasNewMessage] = useState(false);
+  const [isPermanentlyClosed, setIsPermanentlyClosed] = useState(false);
 
   const positionClasses = {
     "bottom-right": "bottom-4 right-4",
@@ -46,6 +49,30 @@ export function SarthiChatWidget({
     setIsMinimized(false);
   };
 
+  const closeChat = () => {
+    setIsOpen(false);
+    setIsMinimized(false);
+    setIsPermanentlyClosed(true);
+    // Store in localStorage to remember the user's preference
+    localStorage.setItem("sarthi-chat-closed", "true");
+  };
+
+  // Check if chat was permanently closed
+  useEffect(() => {
+    const wasClosed = localStorage.getItem("sarthi-chat-closed");
+    if (wasClosed === "true") {
+      setIsPermanentlyClosed(true);
+    }
+  }, []);
+
+  // Reset closed state when user navigates to chat page
+  useEffect(() => {
+    if (pathname === "/chat") {
+      setIsPermanentlyClosed(false);
+      localStorage.removeItem("sarthi-chat-closed");
+    }
+  }, [pathname]);
+
   // Show notification for new users
   useEffect(() => {
     if (user && !isOpen) {
@@ -57,8 +84,24 @@ export function SarthiChatWidget({
     }
   }, [user, isOpen]);
 
+  // Don't show widget for non-authenticated users
   if (!user) {
-    return null; // Don't show widget for non-authenticated users
+    return null;
+  }
+
+  // Don't show widget on certain pages where it shouldn't appear
+  const hiddenPages = [
+    "/comprehensive-assessment",
+    "/assessment-results",
+    "/quiz",
+    "/test-assessment",
+    "/chat", // Don't show widget on dedicated chat page
+  ];
+
+  const shouldHideWidget = hiddenPages.some(page => pathname.startsWith(page)) || isPermanentlyClosed;
+
+  if (shouldHideWidget) {
+    return null;
   }
 
   return (
@@ -100,17 +143,18 @@ export function SarthiChatWidget({
                     <p className="text-xs text-gray-500">Click to expand</p>
                   </div>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsOpen(false);
-                  }}
-                  className="h-8 w-8 p-0 hover:bg-gray-200 rounded-full"
-                >
-                  <X className="w-4 h-4" />
-                </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        closeChat();
+                      }}
+                      className="h-8 w-8 p-0 hover:bg-gray-200 rounded-full"
+                      title="Close chat"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
               </div>
             </div>
           ) : (
@@ -141,8 +185,9 @@ export function SarthiChatWidget({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => setIsOpen(false)}
+                      onClick={closeChat}
                       className="h-8 w-8 p-0 hover:bg-gray-200 rounded-full"
+                      title="Close chat permanently"
                     >
                       <X className="w-4 h-4" />
                     </Button>

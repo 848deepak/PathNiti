@@ -1124,13 +1124,12 @@ export default function CareerPathwaysPage() {
               </Button>
               <Button
                 size="lg"
-                variant="outline"
-                className="text-lg px-8 py-4 border-2 border-white/30 text-white hover:bg-white/10 transition-all duration-300 hover:scale-105"
+                className="relative overflow-hidden text-lg px-8 py-4 bg-white/20 text-white hover:bg-white/30 transition-all duration-500 hover:scale-105 shadow-2xl hover:shadow-3xl group border-2 border-white/40"
                 asChild
               >
                 <Link href="/colleges" className="flex items-center gap-3">
-                  <MapPin className="h-6 w-6" />
-                  <span className="font-bold">Find Colleges</span>
+                  <MapPin className="h-6 w-6 group-hover:rotate-12 transition-transform duration-300" />
+                  <span className="font-bold text-lg">Find Colleges</span>
                 </Link>
               </Button>
             </div>

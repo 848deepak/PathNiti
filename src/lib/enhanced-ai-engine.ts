@@ -130,6 +130,36 @@ const ENHANCED_CAREER_DATA = [
     stream: "arts",
     careers: [
       {
+        title: "Architect",
+        time_to_earn: "5-6 years",
+        average_salary: "6-25 LPA",
+        job_demand_trend: "high",
+        required_aptitudes: ["spatial_visual_skills", "quantitative_skills"],
+        riasec_match: ["artistic", "realistic"],
+        personality_match: ["structured", "leadership"],
+        subjects: ["math", "science"],
+      },
+      {
+        title: "Graphic Designer",
+        time_to_earn: "3-4 years",
+        average_salary: "3-12 LPA",
+        job_demand_trend: "high",
+        required_aptitudes: ["spatial_visual_skills"],
+        riasec_match: ["artistic"],
+        personality_match: ["flexible"],
+        subjects: ["english"],
+      },
+      {
+        title: "Interior Designer",
+        time_to_earn: "3-4 years",
+        average_salary: "4-15 LPA",
+        job_demand_trend: "medium",
+        required_aptitudes: ["spatial_visual_skills"],
+        riasec_match: ["artistic", "realistic"],
+        personality_match: ["structured"],
+        subjects: ["math"],
+      },
+      {
         title: "Civil Services (IAS/IPS)",
         time_to_earn: "4-6 years",
         average_salary: "7-20 LPA",
@@ -184,6 +214,8 @@ export class EnhancedAIRecommendationEngine {
 
   constructor() {
     const apiKey = process.env.GEMINI_API_KEY;
+    console.log("=== AI ENGINE INITIALIZATION ===");
+    console.log("API Key available:", !!apiKey);
     if (apiKey) {
       this.genAI = new GoogleGenerativeAI(apiKey);
       this.model = this.genAI.getGenerativeModel({
@@ -193,6 +225,9 @@ export class EnhancedAIRecommendationEngine {
           temperature: 0.7,
         },
       });
+      console.log("AI Engine initialized successfully");
+    } else {
+      console.log("AI Engine initialized without API key - will use fallback recommendations");
     }
   }
 
@@ -202,6 +237,8 @@ export class EnhancedAIRecommendationEngine {
   async generateComprehensiveRecommendations(
     userProfile: EnhancedUserProfile,
   ): Promise<ComprehensiveRecommendationResult> {
+    console.log("=== AI ENGINE RECOMMENDATION GENERATION ===");
+    console.log("Model available:", !!this.model);
     try {
       // Calculate base recommendations using scoring algorithm
       const baseRecommendations =
@@ -209,9 +246,11 @@ export class EnhancedAIRecommendationEngine {
 
       // Enhance with AI if available
       if (this.model) {
+        console.log("Using AI enhancement");
         return await this.enhanceWithAI(userProfile, baseRecommendations);
       }
 
+      console.log("Using basic recommendations (no AI model)");
       return this.formatBasicRecommendations(userProfile, baseRecommendations);
     } catch (error) {
       console.error("Error generating recommendations:", error);
@@ -233,6 +272,14 @@ export class EnhancedAIRecommendationEngine {
       subject_performance,
       practical_constraints,
     } = userProfile.assessment_results;
+
+    console.log("=== AI ENGINE DEBUG ===");
+    console.log("User Profile:", userProfile);
+    console.log("Aptitude Scores:", aptitude_scores);
+    console.log("RIASEC Scores:", riasec_scores);
+    console.log("Personality Scores:", personality_scores);
+    console.log("Subject Performance:", subject_performance);
+    console.log("Practical Constraints:", practical_constraints);
     const streamScores: Record<
       string,
       { score: number; reasons: string[]; careers: Array<{ title: string; score: number; [key: string]: unknown }> }
@@ -247,36 +294,77 @@ export class EnhancedAIRecommendationEngine {
       for (const career of streamData.careers) {
         let careerScore = 0;
 
-        // Aptitude matching (30% weight)
+        // Aptitude matching (50% weight) - with strong penalty for weak required skills
+        let aptitudeMatchCount = 0;
+        const totalRequiredAptitudes = career.required_aptitudes.length;
+        let hasWeakRequiredSkill = false;
+        
         for (const aptitude of career.required_aptitudes) {
           const aptitudeScore =
             aptitude_scores[aptitude as keyof AptitudeScores] || 0;
-          careerScore += aptitudeScore * 0.3;
+          
+          // Strong aptitude gets high positive score
           if (aptitudeScore > 0.7) {
+            careerScore += aptitudeScore * 0.5;
+            aptitudeMatchCount++;
             reasons.push(
               `Strong ${aptitude.replace("_", " ")} skills match ${career.title}`,
             );
+          } else if (aptitudeScore > 0.4) {
+            // Moderate aptitude gets partial score
+            careerScore += aptitudeScore * 0.3;
+            aptitudeMatchCount++;
+          } else {
+            // Weak aptitude gets strong penalty
+            careerScore -= 0.5; // Strong penalty for weak required skill
+            hasWeakRequiredSkill = true;
+            reasons.push(
+              `Weak ${aptitude.replace("_", " ")} skills may limit ${career.title} success`,
+            );
           }
         }
+        
+        // Strong bonus for matching all required aptitudes
+        if (aptitudeMatchCount === totalRequiredAptitudes) {
+          careerScore += 0.3;
+        }
+        
+        // Strong penalty if any required skill is weak
+        if (hasWeakRequiredSkill) {
+          careerScore -= 0.4;
+        }
+        
+        // Special bonus for careers that match user's strongest skills
+        const spatialScore = aptitude_scores.spatial_visual_skills || 0;
+        const quantitativeScore = aptitude_scores.quantitative_skills || 0;
+        
+        if (spatialScore > 0.8 && career.required_aptitudes.includes('spatial_visual_skills')) {
+          careerScore += 0.3; // Bonus for matching strongest skill
+          reasons.push(`Excellent spatial skills make ${career.title} ideal`);
+        }
+        
+        if (quantitativeScore > 0.6 && career.required_aptitudes.includes('quantitative_skills')) {
+          careerScore += 0.2; // Bonus for matching good skill
+        }
 
-        // RIASEC interest matching (25% weight)
+        // RIASEC interest matching (35% weight) - increased from 25%
         for (const interest of career.riasec_match) {
           const interestScore =
             riasec_scores[interest as keyof RIASECScores] || 0;
-          careerScore += interestScore * 0.25;
-          if (interestScore > 0.7) {
+          careerScore += interestScore * 0.35;
+          if (interestScore > 0.5) { // Lowered threshold from 0.7
             reasons.push(`${interest} interests align with ${career.title}`);
           }
         }
 
-        // Personality matching (20% weight)
+        // Personality matching (25% weight) - increased from 20%
         for (const trait of career.personality_match) {
           const personalityScore = this.getPersonalityScore(
             personality_scores,
             trait,
           );
-          careerScore += personalityScore * 0.2;
-          if (personalityScore > 0.7) {
+          careerScore += personalityScore * 0.25;
+          if (personalityScore > 0.5) { // Lowered threshold from 0.7
             reasons.push(`${trait} personality trait suits ${career.title}`);
           }
         }
@@ -327,6 +415,11 @@ export class EnhancedAIRecommendationEngine {
       };
     }
 
+    console.log("Final stream scores:", streamScores);
+    console.log("=== DETAILED SCORE BREAKDOWN ===");
+    Object.entries(streamScores).forEach(([stream, data]) => {
+      console.log(`${stream}: score=${data.score}, reasons=${data.reasons.length}, careers=${data.careers.length}`);
+    });
     return streamScores;
   }
 
@@ -528,18 +621,30 @@ Format as structured analysis focusing on career fit, earning potential, and per
           reasons?: string[]; 
           careers?: Array<{ title?: string; time_to_earn?: string; average_salary?: string; job_demand_trend?: string }> 
         };
+        // Create cleaner, more readable reasoning
+        const topCareer = dataObj.careers?.[0];
+        const cleanReasons = Array.isArray(dataObj.reasons) 
+          ? dataObj.reasons.filter(reason => reason.length < 100) // Filter out very long reasons
+          : [];
+        
+        let reasoning = "";
+        if (cleanReasons.length > 0) {
+          reasoning = cleanReasons.slice(0, 2).join(". "); // Take only first 2 reasons
+        } else {
+          reasoning = `Strong match for ${stream} stream based on your assessment results.`;
+        }
+        
+        if (topCareer?.title) {
+          reasoning += ` Top career: ${topCareer.title}`;
+        }
+
         return {
           stream,
-          reasoning:
-            (Array.isArray(dataObj.reasons) ? dataObj.reasons.join(". ") : "Good fit") +
-            ". " +
-            (dataObj.careers?.[0]?.title
-              ? `Top career: ${dataObj.careers[0].title}`
-              : ""),
-          time_to_earn: dataObj.careers?.[0]?.time_to_earn || "4-6 years",
-          average_salary: dataObj.careers?.[0]?.average_salary || "5-20 LPA",
-          job_demand_trend: dataObj.careers?.[0]?.job_demand_trend || "medium",
-          confidence_score: Math.min((dataObj.score || 0) / 3, 1), // Normalize to 0-1
+          reasoning,
+          time_to_earn: topCareer?.time_to_earn || "4-6 years",
+          average_salary: topCareer?.average_salary || "5-20 LPA",
+          job_demand_trend: topCareer?.job_demand_trend || "medium",
+          confidence_score: Math.max(Math.min((dataObj.score || 0) / 10, 1), 0.3), // Normalize to 0-1 with minimum 30%
         };
       });
 
@@ -551,13 +656,26 @@ Format as structured analysis focusing on career fit, earning potential, and per
           reasons?: string[]; 
           careers?: Array<{ title?: string; time_to_earn?: string; average_salary?: string; job_demand_trend?: string }> 
         };
+        // Create cleaner reasoning for secondary recommendations
+        const topCareer = dataObj.careers?.[0];
+        const cleanReasons = Array.isArray(dataObj.reasons) 
+          ? dataObj.reasons.filter(reason => reason.length < 100)
+          : [];
+        
+        let reasoning = "";
+        if (cleanReasons.length > 0) {
+          reasoning = cleanReasons.slice(0, 1).join(". "); // Take only first reason for secondary
+        } else {
+          reasoning = `Good alternative option in ${stream} stream.`;
+        }
+
         return {
           stream,
-          reasoning: Array.isArray(dataObj.reasons) ? dataObj.reasons.join(". ") : "Good alternative",
-          time_to_earn: dataObj.careers?.[0]?.time_to_earn || "4-6 years",
-          average_salary: dataObj.careers?.[0]?.average_salary || "4-15 LPA",
+          reasoning,
+          time_to_earn: topCareer?.time_to_earn || "4-6 years",
+          average_salary: topCareer?.average_salary || "4-15 LPA",
           job_demand_trend: dataObj.careers?.[0]?.job_demand_trend || "medium",
-          confidence_score: Math.min((dataObj.score || 0) / 3, 1),
+          confidence_score: Math.max(Math.min((dataObj.score || 0) / 10, 1), 0.3), // Normalize to 0-1 with minimum 30%
         };
       });
 
@@ -579,13 +697,15 @@ The AI analysis suggests focusing on ${primary_recommendations[0]?.stream} as yo
 with your aptitude, interests, and personality traits. ${aiResponse.slice(0, 200)}...
     `.trim();
 
-    const confidence_score =
+    const confidence_score = Math.max(
       primary_recommendations.length > 0
         ? primary_recommendations.reduce(
             (sum, rec) => sum + rec.confidence_score,
             0,
           ) / primary_recommendations.length
-        : 0.5;
+        : 0.5,
+      0.3 // Minimum 30% confidence to avoid 0% scores
+    );
 
     return {
       primary_recommendations,
@@ -626,3 +746,4 @@ with your aptitude, interests, and personality traits. ${aiResponse.slice(0, 200
 
 // Export singleton instance
 export const enhancedAIEngine = new EnhancedAIRecommendationEngine();
+

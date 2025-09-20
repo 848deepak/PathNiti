@@ -115,9 +115,13 @@ function InstallPrompt() {
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
+      console.log("PWA install prompt event received");
+      // Prevent the mini-infobar from appearing on mobile
       e.preventDefault();
+      // Stash the event so it can be triggered later
       setDeferredPrompt(e);
       setShowInstallPrompt(true);
+      console.log("PWA install prompt set to show:", true);
     };
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
@@ -131,11 +135,13 @@ function InstallPrompt() {
   }, []);
 
   const handleInstallClick = async () => {
+    console.log("Install button clicked, deferredPrompt:", !!deferredPrompt);
     if (deferredPrompt) {
       const promptEvent = deferredPrompt as unknown as {
         prompt: () => void;
         userChoice: Promise<{ outcome: string }>;
       };
+      console.log("Calling prompt()");
       promptEvent.prompt();
       const { outcome } = await promptEvent.userChoice;
 

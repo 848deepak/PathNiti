@@ -14,7 +14,15 @@ const nextConfig = {
     "@supabase/realtime-js",
   ],
   images: {
-    domains: ["localhost"],
+    domains: ["localhost", "maps.googleapis.com"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "maps.googleapis.com",
+        port: "",
+        pathname: "/maps/api/place/photo**",
+      },
+    ],
   },
   // Explicitly define environment variables for client-side access
   env: {

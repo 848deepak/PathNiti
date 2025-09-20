@@ -785,7 +785,7 @@ export default function ComprehensiveAssessmentPage() {
 
             <Button
               onClick={handleNextQuestion}
-              disabled={!answers[currentQuestion.id]}
+              disabled={answers[currentQuestion.id] === null || answers[currentQuestion.id] === undefined}
             >
               {currentQuestionIndex === currentQuestions.length - 1
                 ? "Complete Section"

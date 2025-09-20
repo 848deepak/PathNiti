@@ -34,13 +34,41 @@ export async function GET(request: Request) {
     if (userId) {
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
-        .select("role")
+        .select("role, first_name, last_name")
         .eq("id", userId)
         .single();
 
-      if (profileError || profile?.role !== "student") {
+      if (profileError) {
+        console.error("Profile fetch error for user:", userId, profileError);
         return NextResponse.json(
-          { error: "Access denied. Student role required." },
+          { 
+            error: "Profile not found or access denied.", 
+            details: profileError.message,
+            userId: userId 
+          },
+          { status: 403 },
+        );
+      }
+
+      if (!profile) {
+        console.error("No profile found for user:", userId);
+        return NextResponse.json(
+          { 
+            error: "User profile not found. Please complete your profile setup.", 
+            userId: userId 
+          },
+          { status: 403 },
+        );
+      }
+
+      if (profile.role !== "student") {
+        console.error("User role mismatch. Expected 'student', got:", profile.role, "for user:", userId);
+        return NextResponse.json(
+          { 
+            error: "Access denied. Student role required.", 
+            currentRole: profile.role,
+            userId: userId 
+          },
           { status: 403 },
         );
       }

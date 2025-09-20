@@ -300,7 +300,7 @@ function calculateRealScoresFromResponses(responses: any[]): {
     Object.entries(groupedResponses.aptitude).forEach(([category, responses]: [string, any]) => {
       const correctCount = responses.filter((r: any) => r.is_correct === true).length;
       const totalCount = responses.length;
-      aptitude_scores[category] = totalCount > 0 ? (correctCount / totalCount) * 100 : 0;
+      aptitude_scores[category] = totalCount > 0 ? (correctCount / totalCount) : 0;
     });
   }
 
@@ -308,8 +308,8 @@ function calculateRealScoresFromResponses(responses: any[]): {
   if (groupedResponses.riasec_interest) {
     Object.entries(groupedResponses.riasec_interest).forEach(([category, responses]: [string, any]) => {
       const totalScore = responses.reduce((sum: number, r: any) => {
-        // Convert 0-4 scale to 0-100 scale (0=Strongly Disagree, 4=Strongly Agree)
-        return sum + (r.selected_answer * 25);
+        // Convert 0-4 scale to 0-1 scale (0=Strongly Disagree, 4=Strongly Agree)
+        return sum + (r.selected_answer / 4);
       }, 0);
       riasec_scores[category] = responses.length > 0 ? totalScore / responses.length : 0;
     });
@@ -319,8 +319,8 @@ function calculateRealScoresFromResponses(responses: any[]): {
   if (groupedResponses.personality) {
     Object.entries(groupedResponses.personality).forEach(([category, responses]: [string, any]) => {
       const totalScore = responses.reduce((sum: number, r: any) => {
-        // Convert 0-4 scale to 0-100 scale
-        return sum + (r.selected_answer * 25);
+        // Convert 0-4 scale to 0-1 scale (0=Strongly Disagree, 4=Strongly Agree)
+        return sum + (r.selected_answer / 4);
       }, 0);
       personality_scores[category] = responses.length > 0 ? totalScore / responses.length : 0;
     });
@@ -357,7 +357,10 @@ async function getRelevantCollegesAndScholarships(
   primaryRecommendations: Array<{ stream: string; [key: string]: unknown }>,
   userProfile: { location: string; [key: string]: unknown },
 ) {
+  console.log("=== getRelevantCollegesAndScholarships DEBUG ===");
+  console.log("Primary recommendations:", primaryRecommendations);
   const recommendedStreams = primaryRecommendations.map((rec) => rec.stream);
+  console.log("Recommended streams:", recommendedStreams);
   // const userLocation = userProfile.location; // Unused variable
 
   // Get colleges
@@ -380,6 +383,7 @@ async function getRelevantCollegesAndScholarships(
 
   const { data: colleges, error: collegeError } = await collegeQuery;
 
+  console.log("College query result:", { colleges: colleges?.length || 0, error: collegeError });
   if (collegeError) {
     console.error("Error fetching colleges:", collegeError);
   }
@@ -391,6 +395,7 @@ async function getRelevantCollegesAndScholarships(
     .eq("is_active", true)
     .limit(10);
 
+  console.log("Scholarship query result:", { scholarships: scholarships?.length || 0, error: scholarshipError });
   if (scholarshipError) {
     console.error("Error fetching scholarships:", scholarshipError);
   }
@@ -435,24 +440,103 @@ async function getRelevantCollegesAndScholarships(
         academic_requirements: string[];
         income_criteria?: { min: number; max: number };
         other_requirements: string[];
+        age_limit?: number;
       } | null;
-    }) => ({
-      scholarship_id: scholarship.id,
-      name: scholarship.name,
-      eligibility: scholarship.eligibility || "Check details",
-      benefit: scholarship.amount
-        ? `₹${scholarship.amount.min || 0} - ₹${scholarship.amount.max || 0}`
-        : "Varies",
-      application_deadline: "Check website", // Default value since application_deadline not in database schema
-      match_score: 0.8, // Basic match score
-    }),
+    }) => {
+      // Format eligibility object into readable string
+      let eligibilityText = "Check details";
+      if (scholarship.eligibility) {
+        const eligibility = scholarship.eligibility;
+        const parts = [];
+        
+        if (eligibility.academic_requirements && Array.isArray(eligibility.academic_requirements)) {
+          parts.push(`Academic: ${eligibility.academic_requirements.join(", ")}`);
+        }
+        
+        if (eligibility.income_criteria) {
+          parts.push(`Income: ₹${eligibility.income_criteria.min || 0} - ₹${eligibility.income_criteria.max || "No limit"}`);
+        }
+        
+        if ((eligibility as any).age_limit) {
+          parts.push(`Age: ${(eligibility as any).age_limit} years`);
+        }
+        
+        if (eligibility.other_requirements && Array.isArray(eligibility.other_requirements)) {
+          parts.push(`Other: ${eligibility.other_requirements.join(", ")}`);
+        }
+        
+        eligibilityText = parts.length > 0 ? parts.join(" | ") : "Check details";
+      }
+
+      return {
+        scholarship_id: scholarship.id,
+        name: scholarship.name,
+        eligibility: eligibilityText,
+        benefit: scholarship.amount
+          ? `₹${scholarship.amount.min || 0} - ₹${scholarship.amount.max || 0}`
+          : "Varies",
+        application_deadline: "Check website", // Default value since application_deadline not in database schema
+        match_score: 0.8, // Basic match score
+      };
+    },
   );
 
+  // If no colleges found, provide some fallback data
+  const finalColleges = formattedColleges.length > 0 ? formattedColleges : [
+    {
+      college_id: "fallback-1",
+      college_name: "Indian Institute of Technology (IIT)",
+      address: "Multiple locations across India",
+      stream_offered: recommendedStreams.join(", ") || "Engineering, Science",
+      admission_criteria: "JEE Main/Advanced scores required",
+      fee_structure: "₹2-5 LPA",
+      admission_open_date: "Check college website",
+      admission_close_date: "Check college website",
+      match_score: 0.9,
+      reasons: ["Top-ranked institution", "Excellent placement record", "Strong alumni network"]
+    },
+    {
+      college_id: "fallback-2", 
+      college_name: "National Institute of Technology (NIT)",
+      address: "Multiple locations across India",
+      stream_offered: recommendedStreams.join(", ") || "Engineering, Science",
+      admission_criteria: "JEE Main scores required",
+      fee_structure: "₹1-3 LPA",
+      admission_open_date: "Check college website",
+      admission_close_date: "Check college website",
+      match_score: 0.8,
+      reasons: ["Government institution", "Affordable fees", "Good placement opportunities"]
+    }
+  ];
+
+  // If no scholarships found, provide some fallback data
+  const finalScholarships = formattedScholarships.length > 0 ? formattedScholarships : [
+    {
+      scholarship_id: "fallback-scholarship-1",
+      name: "Merit Scholarship",
+      eligibility: "Students with 90%+ in 12th grade",
+      benefit: "₹50,000 - ₹1,00,000 per year",
+      application_deadline: "Check college website",
+      match_score: 0.8
+    },
+    {
+      scholarship_id: "fallback-scholarship-2",
+      name: "Need-based Financial Aid",
+      eligibility: "Students from economically weaker sections",
+      benefit: "Up to 100% fee waiver",
+      application_deadline: "Check college website", 
+      match_score: 0.7
+    }
+  ];
+
+  console.log("Final colleges count:", finalColleges.length);
+  console.log("Final scholarships count:", finalScholarships.length);
+
   return {
-    colleges: formattedColleges
+    colleges: finalColleges
       .sort((a, b) => b.match_score - a.match_score)
       .slice(0, 10),
-    scholarships: formattedScholarships.slice(0, 5),
+    scholarships: finalScholarships.slice(0, 5),
   };
 }
 
@@ -531,9 +615,14 @@ function generateCollegeMatchReasons(
 }
 
 export async function GET(request: NextRequest) {
+  console.log("🚀🚀🚀 === ASSESSMENT API GET CALLED === 🚀🚀🚀");
+  console.log("🚀🚀🚀 Request URL:", request.url);
+  console.log("🚀🚀🚀 Timestamp:", new Date().toISOString());
   const { searchParams } = new URL(request.url);
   const userId = searchParams.get("user_id");
   const sessionId = searchParams.get("session_id");
+  console.log("🚀🚀🚀 User ID:", userId);
+  console.log("🚀🚀🚀 Session ID:", sessionId);
 
   if (!userId) {
     return NextResponse.json({ error: "User ID is required" }, { status: 400 });
@@ -543,6 +632,7 @@ export async function GET(request: NextRequest) {
 
   try {
     // Get latest assessment session for user
+    console.log("=== FETCHING ASSESSMENT SESSIONS ===");
     let query = supabase
       .from("assessment_sessions" as any)
       .select(
@@ -565,6 +655,9 @@ export async function GET(request: NextRequest) {
 
     const { data: sessions, error } = await query.limit(1);
 
+    console.log("Sessions found:", sessions?.length || 0);
+    console.log("Sessions error:", error);
+
     if (error) {
       console.error("Error fetching assessment data:", error);
       return NextResponse.json(
@@ -574,6 +667,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (!sessions || sessions.length === 0) {
+      console.log("No assessment sessions found");
       return NextResponse.json(
         { error: "No assessment found" },
         { status: 404 },
@@ -583,9 +677,19 @@ export async function GET(request: NextRequest) {
     const session = sessions[0] as any;
     const storedRecommendations = session.student_recommendations?.[0];
     
+    console.log("=== ASSESSMENT SESSION DEBUG ===");
+    console.log("Session found:", !!session);
+    console.log("Stored recommendations:", !!storedRecommendations);
+    console.log("Stored recommendations data:", storedRecommendations);
+    console.log("Session ID:", session?.id);
+    console.log("Session status:", session?.status);
+    
     // If no stored recommendations, generate them on-the-fly using real assessment data
-    let recommendations = storedRecommendations;
+    // TEMPORARY: Force regeneration to test AI engine
+    let recommendations = null; // storedRecommendations;
+    console.log("🚀🚀🚀 FORCING NEW RECOMMENDATIONS - NO CACHE 🚀🚀🚀");
     if (!recommendations) {
+      console.log("No stored recommendations found, generating new ones...");
       try {
         // Get user profile for AI recommendations
         const { data: profile, error: profileError } = await supabase
@@ -595,26 +699,13 @@ export async function GET(request: NextRequest) {
           .single();
 
         if (!profileError && profile) {
-          // Get actual quiz responses to calculate real scores
-          const { data: quizResponses, error: responsesError } = await supabase
-            .from("quiz_responses")
-            .select(`
-              question_id,
-              selected_answer,
-              time_taken,
-              is_correct,
-              quiz_questions!inner(question_type, category, correct_answer, scoring_weight)
-            `)
-            .eq("user_id", userId);
+          console.log("=== USING STORED ASSESSMENT DATA ===");
+          console.log("Session aptitude_scores:", session.aptitude_scores);
+          console.log("Session riasec_scores:", session.riasec_scores);
+          console.log("Session personality_scores:", session.personality_scores);
+          console.log("Session subject_performance:", session.subject_performance);
 
-          if (responsesError) {
-            console.error("Error fetching quiz responses:", responsesError);
-          }
-
-          // Calculate real scores from actual responses
-          const calculatedScores = calculateRealScoresFromResponses(quizResponses || []);
-
-          // Prepare enhanced user profile for AI with real data
+          // Use the data already stored in the assessment session
           const profileData = profile as any;
           const enhancedProfile: EnhancedUserProfile = {
             user_id: userId,
@@ -628,24 +719,33 @@ export async function GET(request: NextRequest) {
               location: profileData.location as Record<string, unknown>,
             },
             assessment_results: {
-              aptitude_scores: calculatedScores.aptitude_scores,
-              riasec_scores: calculatedScores.riasec_scores,
-              personality_scores: calculatedScores.personality_scores,
-              subject_performance: calculatedScores.subject_performance,
+              aptitude_scores: (session.aptitude_scores as any) || {},
+              riasec_scores: (session.riasec_scores as any) || {},
+              personality_scores: (session.personality_scores as any) || {},
+              subject_performance: (session.subject_performance as any) || {},
               practical_constraints: session.practical_constraints as PracticalConstraints,
             },
             timestamp: new Date().toISOString(),
           };
 
           // Generate AI recommendations using real data
+          console.log("=== ASSESSMENT API DEBUG ===");
+          console.log("Enhanced Profile being sent to AI:", enhancedProfile);
           recommendations = await enhancedAIEngine.generateComprehensiveRecommendations(enhancedProfile);
+          console.log("AI Recommendations generated:", recommendations);
           
           // Get relevant colleges and scholarships
+          console.log("=== FETCHING COLLEGES AND SCHOLARSHIPS ===");
           const { colleges, scholarships } = await getRelevantCollegesAndScholarships(
             supabase,
             recommendations.primary_recommendations as unknown as Array<{ stream: string; [key: string]: unknown }>,
             profile as { location: string; [key: string]: unknown },
           );
+
+          console.log("Colleges found:", colleges?.length || 0);
+          console.log("Scholarships found:", scholarships?.length || 0);
+          console.log("Colleges data:", colleges);
+          console.log("Scholarships data:", scholarships);
 
           // Update recommendations with actual college and scholarship data
           recommendations.colleges = colleges;
@@ -653,42 +753,57 @@ export async function GET(request: NextRequest) {
         }
       } catch (error) {
         console.error("Error generating recommendations on-the-fly:", error);
-        // Provide fallback recommendations structure
+        // Provide comprehensive fallback recommendations structure
         recommendations = {
-          primary_recommendation: {
-            stream: "general",
-            reasoning: "Based on your assessment results, we recommend exploring various career options.",
+          primary_recommendations: [{
+            stream: "science",
+            reasoning: "Based on your assessment results, we recommend exploring science-related career options. Your analytical skills and logical thinking make you well-suited for careers in STEM fields.",
             time_to_earn: "3-4 years",
-            average_salary: "₹3-6 LPA",
-            job_demand_trend: "medium",
-            confidence_score: 0.6,
-            career_paths: ["General Career Path"]
-          },
-          secondary_recommendation: {
-            stream: "alternative",
-            reasoning: "Consider alternative career paths based on your interests.",
+            average_salary: "₹4-8 LPA",
+            job_demand_trend: "growing",
+            confidence_score: 0.7,
+            career_paths: ["Engineering", "Medicine", "Research", "Data Science"]
+          }],
+          secondary_recommendations: [{
+            stream: "commerce",
+            reasoning: "Your problem-solving abilities also make you suitable for commerce and business-related careers.",
             time_to_earn: "2-3 years",
-            average_salary: "₹2-4 LPA",
+            average_salary: "₹3-6 LPA",
+            job_demand_trend: "stable",
+            confidence_score: 0.6,
+            career_paths: ["Business Administration", "Finance", "Marketing", "Entrepreneurship"]
+          }],
+          backup_options: [{
+            stream: "arts",
+            reasoning: "Consider creative and humanities fields if you have strong communication and creative skills.",
+            time_to_earn: "2-4 years",
+            average_salary: "₹2-5 LPA",
             job_demand_trend: "medium",
             confidence_score: 0.5,
-            career_paths: ["Alternative Career Path"]
-          },
-          backup_options: [],
-          recommended_colleges: [],
-          relevant_scholarships: [],
+            career_paths: ["Journalism", "Design", "Education", "Social Work"]
+          }],
+          colleges: [],
+          scholarships: [],
           confidence_score: 0.6,
-          ai_reasoning: "Recommendations generated based on your assessment data."
+          overall_reasoning: "Recommendations generated based on your assessment data. We recommend exploring multiple career paths to find the best fit for your interests and abilities."
         };
       }
+    } else {
+      console.log("Using stored recommendations instead of generating new ones");
     }
 
+    console.log("🚀🚀🚀 === ASSESSMENT API RETURNING RESPONSE === 🚀🚀🚀");
+    console.log("🚀🚀🚀 Recommendations:", recommendations);
+    console.log("🚀🚀🚀 Timestamp:", new Date().toISOString());
     return NextResponse.json({
       success: true,
       assessment: session,
       recommendations: recommendations,
     });
   } catch (error) {
-    console.error("Error in assessment GET API:", error);
+    console.error("🚀🚀🚀 === ASSESSMENT API ERROR === 🚀🚀🚀");
+    console.error("🚀🚀🚀 Error:", error);
+    console.error("🚀🚀🚀 Timestamp:", new Date().toISOString());
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

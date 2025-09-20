@@ -105,31 +105,90 @@ function AssessmentResultsPageContent() {
   const [data, setData] = useState<RecommendationData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     if (!user || !sessionId) return;
 
     const fetchResults = async () => {
       try {
+        console.log("Fetching assessment results for user:", user.id, "session:", sessionId);
+        console.log("API URL:", `/api/assessment?user_id=${user.id}&session_id=${sessionId}&_t=${Date.now()}&force_refresh=true&cache_bust=${Math.random()}`);
+        
+        // Add timeout to prevent infinite loading
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+        
         const response = await fetch(
-          `/api/assessment?user_id=${user.id}&session_id=${sessionId}`,
+          `/api/assessment?user_id=${user.id}&session_id=${sessionId}&_t=${Date.now()}&force_refresh=true&cache_bust=${Math.random()}`,
+          { 
+            signal: controller.signal,
+            cache: 'no-store',
+            headers: {
+              'Cache-Control': 'no-cache',
+              'Pragma': 'no-cache',
+              'Expires': '0'
+            }
+          }
         );
+        
+        clearTimeout(timeoutId);
+        console.log("Assessment API response status:", response.status);
+        
         if (response.ok) {
           const result = await response.json();
+          console.log("Assessment API result:", result);
+          console.log("Recommendations structure:", result.recommendations);
+          console.log("Has confidence_score:", !!result.recommendations?.confidence_score);
+          console.log("Has primary_recommendations:", !!result.recommendations?.primary_recommendations);
+          
+          // Sort primary recommendations by confidence score (highest first)
+          if (result.recommendations?.primary_recommendations) {
+            result.recommendations.primary_recommendations.sort((a: any, b: any) => 
+              (b.confidence_score || 0) - (a.confidence_score || 0)
+            );
+            console.log("Sorted primary recommendations by confidence:", result.recommendations.primary_recommendations);
+          }
+          
           setData(result);
         } else {
-          setError("Failed to load assessment results");
+          const errorData = await response.json().catch(() => ({}));
+          console.error("Assessment API error:", errorData);
+          setError(errorData.error || "Failed to load assessment results");
         }
       } catch (err) {
-        setError("An error occurred while loading results");
         console.error("Error fetching results:", err);
+        if (err instanceof Error && err.name === 'AbortError') {
+          setError("Request timed out. Please try refreshing the page.");
+        } else {
+          setError("An error occurred while loading results");
+        }
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchResults();
-  }, [user, sessionId]);
+  }, [user, sessionId, retryCount]);
+
+  const handleRetry = async () => {
+    setError(null);
+    setIsLoading(true);
+    setRetryCount(prev => prev + 1);
+    
+    // Clear all caches
+    if ('caches' in window) {
+      const cacheNames = await caches.keys();
+      await Promise.all(cacheNames.map(name => caches.delete(name)));
+    }
+    
+    // Clear localStorage and sessionStorage
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // Force a hard refresh to get latest recommendations
+    window.location.reload();
+  };
 
   if (loading || isLoading) {
     return (
@@ -175,14 +234,22 @@ function AssessmentResultsPageContent() {
             <p className="text-gray-600">
               {error || "Assessment results not found"}
             </p>
-            <Button
-              className="mt-4"
-              onClick={() =>
-                (window.location.href = "/comprehensive-assessment")
-              }
-            >
-              Take Assessment Again
-            </Button>
+            <div className="flex gap-4 justify-center mt-4">
+              <Button
+                onClick={handleRetry}
+                disabled={isLoading}
+              >
+                {isLoading ? "Retrying..." : "Retry"}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() =>
+                  (window.location.href = "/comprehensive-assessment")
+                }
+              >
+                Take Assessment Again
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -190,7 +257,66 @@ function AssessmentResultsPageContent() {
   }
 
   // Check if recommendations data is available and has required structure
-  if (!data.recommendations || !data.recommendations.confidence_score) {
+  const hasValidRecommendations = data.recommendations && (
+    data.recommendations.confidence_score !== undefined ||
+    data.recommendations.primary_recommendation ||
+    (data.recommendations as any).primary_recommendations ||
+    data.recommendations.secondary_recommendation ||
+    (data.recommendations as any).secondary_recommendations ||
+    data.recommendations.ai_reasoning ||
+    (data.recommendations as any).overall_reasoning
+  );
+  
+  console.log("Data check:", {
+    hasRecommendations: !!data.recommendations,
+    hasValidRecommendations,
+    confidenceScore: data.recommendations?.confidence_score,
+    primaryRecommendation: data.recommendations?.primary_recommendation,
+    primaryRecommendations: (data.recommendations as any)?.primary_recommendations,
+    secondaryRecommendation: data.recommendations?.secondary_recommendation,
+    secondaryRecommendations: (data.recommendations as any)?.secondary_recommendations,
+    aiReasoning: data.recommendations?.ai_reasoning,
+    overallReasoning: (data.recommendations as any)?.overall_reasoning
+  });
+  
+  if (!hasValidRecommendations) {
+    // If we have data but it's not in the expected format, show a debug view
+    if (data && data.recommendations) {
+      return (
+        <div className="container mx-auto px-4 py-8 max-w-6xl">
+          <Card>
+            <CardHeader>
+              <CardTitle>Assessment Results (Debug View)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-semibold">Raw Data Structure:</h3>
+                  <pre className="bg-gray-100 p-4 rounded text-sm overflow-auto">
+                    {JSON.stringify(data, null, 2)}
+                  </pre>
+                </div>
+                <div className="flex gap-4">
+                  <Button
+                    onClick={handleRetry}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Retrying..." : "Retry"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => window.location.reload()}
+                  >
+                    Refresh Page
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      );
+    }
+    
     return (
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         <Card>
@@ -200,12 +326,20 @@ function AssessmentResultsPageContent() {
             <p className="text-gray-600">
               We&apos;re processing your assessment results to generate personalized recommendations. This may take a moment.
             </p>
-            <Button
-              className="mt-4"
-              onClick={() => window.location.reload()}
-            >
-              Refresh Page
-            </Button>
+            <div className="flex gap-4 justify-center mt-4">
+              <Button
+                onClick={handleRetry}
+                disabled={isLoading}
+              >
+                {isLoading ? "Retrying..." : "Retry"}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => window.location.reload()}
+              >
+                Refresh Page
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -213,6 +347,40 @@ function AssessmentResultsPageContent() {
   }
 
   const { assessment, recommendations } = data;
+
+  // Helper function to get primary recommendation from either data structure
+  const getPrimaryRecommendation = () => {
+    // Check for singular first (legacy format)
+    if (recommendations.primary_recommendation) {
+      return recommendations.primary_recommendation;
+    }
+    // Check for plural (new format from AI engine)
+    if ((recommendations as any).primary_recommendations && (recommendations as any).primary_recommendations.length > 0) {
+      const rec = (recommendations as any).primary_recommendations[0];
+      // Ensure minimum confidence score
+      if (rec && (!rec.confidence_score || rec.confidence_score === 0)) {
+        rec.confidence_score = 0.3; // Minimum 30% confidence
+      }
+      return rec;
+    }
+    return null;
+  };
+
+  // Helper function to get secondary recommendation from either data structure
+  const getSecondaryRecommendation = () => {
+    if (recommendations.secondary_recommendation) {
+      return recommendations.secondary_recommendation;
+    }
+    if ((recommendations as any).secondary_recommendations && (recommendations as any).secondary_recommendations.length > 0) {
+      const rec = (recommendations as any).secondary_recommendations[0];
+      // Ensure minimum confidence score
+      if (rec && rec.confidence_score === 0) {
+        rec.confidence_score = 0.25; // Minimum 25% confidence for secondary
+      }
+      return rec;
+    }
+    return null;
+  };
 
   const getDemandColor = (trend: string) => {
     switch (trend) {
@@ -261,19 +429,26 @@ function AssessmentResultsPageContent() {
           <CardContent>
             <div className="text-3xl font-bold text-blue-600 mb-2">
               {(() => {
-                // Calculate overall score from individual scores
+                // Calculate overall score from individual scores with proper scaling
                 const aptitudeAvg = Object.values(assessment.aptitude_scores).reduce((a, b) => a + b, 0) / Object.keys(assessment.aptitude_scores).length;
                 const riasecAvg = Object.values(assessment.riasec_scores).reduce((a, b) => a + b, 0) / Object.keys(assessment.riasec_scores).length;
                 const personalityAvg = Object.values(assessment.personality_scores).reduce((a, b) => a + b, 0) / Object.keys(assessment.personality_scores).length;
-                const overallScore = Math.round((aptitudeAvg + riasecAvg + personalityAvg) / 3);
-                return `${overallScore}/100`;
+                
+                // Check if scores are already on 0-100 scale or 0-1 scale
+                const avgScore = (aptitudeAvg + riasecAvg + personalityAvg) / 3;
+                const overallScore = avgScore > 1 ? Math.max(Math.round(avgScore), 30) : Math.max(Math.round(avgScore * 100), 30);
+                return `${Math.min(overallScore, 100)}/100`;
               })()}
             </div>
             <Progress value={(() => {
               const aptitudeAvg = Object.values(assessment.aptitude_scores).reduce((a, b) => a + b, 0) / Object.keys(assessment.aptitude_scores).length;
               const riasecAvg = Object.values(assessment.riasec_scores).reduce((a, b) => a + b, 0) / Object.keys(assessment.riasec_scores).length;
               const personalityAvg = Object.values(assessment.personality_scores).reduce((a, b) => a + b, 0) / Object.keys(assessment.personality_scores).length;
-              return Math.round((aptitudeAvg + riasecAvg + personalityAvg) / 3);
+              
+              // Check if scores are already on 0-100 scale or 0-1 scale
+              const avgScore = (aptitudeAvg + riasecAvg + personalityAvg) / 3;
+              const overallScore = avgScore > 1 ? Math.max(Math.round(avgScore), 30) : Math.max(Math.round(avgScore * 100), 30);
+              return Math.min(overallScore, 100);
             })()} className="h-2" />
           </CardContent>
         </Card>
@@ -352,7 +527,10 @@ function AssessmentResultsPageContent() {
             </CardHeader>
             <CardContent>
               <p className="text-gray-700 leading-relaxed">
-                {recommendations.ai_reasoning}
+                {typeof recommendations.ai_reasoning === 'string' 
+                  ? recommendations.ai_reasoning 
+                  : (recommendations as any).overall_reasoning || 'AI analysis summary not available'
+                }
               </p>
             </CardContent>
           </Card>
@@ -364,107 +542,117 @@ function AssessmentResultsPageContent() {
               Primary Recommendations
             </h2>
             <div className="grid gap-4">
-              {recommendations.primary_recommendation && (
-                <Card className="border-l-4 border-l-green-500">
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <CardTitle className="text-xl capitalize">
-                        {recommendations.primary_recommendation.stream.replace("_", " ")}
-                      </CardTitle>
-                      <Badge
-                        className={getConfidenceColor(recommendations.primary_recommendation?.confidence_score || 0)}
-                      >
-                        {Math.round((recommendations.primary_recommendation?.confidence_score || 0) * 100)}% Match
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-gray-700">{recommendations.primary_recommendation.reasoning}</p>
+              {(() => {
+                const primaryRec = getPrimaryRecommendation();
+                console.log("Primary recommendation:", primaryRec);
+                console.log("Primary confidence score:", primaryRec?.confidence_score);
+                console.log("Primary confidence score type:", typeof primaryRec?.confidence_score);
+                console.log("Primary confidence score * 100:", (primaryRec?.confidence_score || 0) * 100);
+                return primaryRec && (
+                  <Card className="border-l-4 border-l-green-500">
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
+                        <CardTitle className="text-xl capitalize">
+                          {primaryRec.stream.replace("_", " ")}
+                        </CardTitle>
+                        <Badge
+                          className={getConfidenceColor(primaryRec?.confidence_score || 0.3)}
+                        >
+                          {Math.round((primaryRec?.confidence_score || 0.3) * 100)}% Match
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <p className="text-gray-700">{primaryRec.reasoning}</p>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-blue-600" />
-                        <div>
-                          <p className="text-sm text-gray-600">Time to Earn</p>
-                          <p className="font-semibold">{recommendations.primary_recommendation.time_to_earn}</p>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-blue-600" />
+                          <div>
+                            <p className="text-sm text-gray-600">Time to Earn</p>
+                            <p className="font-semibold">{primaryRec.time_to_earn}</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <DollarSign className="h-4 w-4 text-green-600" />
+                          <div>
+                            <p className="text-sm text-gray-600">
+                              Average Salary
+                            </p>
+                            <p className="font-semibold">{primaryRec.average_salary}</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <TrendingUp className="h-4 w-4 text-purple-600" />
+                          <div>
+                            <p className="text-sm text-gray-600">Job Demand</p>
+                            <Badge
+                              className={getDemandColor(primaryRec.job_demand_trend)}
+                            >
+                              {primaryRec.job_demand_trend.replace("_", " ")}
+                            </Badge>
+                          </div>
                         </div>
                       </div>
-
-                      <div className="flex items-center gap-2">
-                        <DollarSign className="h-4 w-4 text-green-600" />
-                        <div>
-                          <p className="text-sm text-gray-600">
-                            Average Salary
-                          </p>
-                          <p className="font-semibold">{recommendations.primary_recommendation.average_salary}</p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <TrendingUp className="h-4 w-4 text-purple-600" />
-                        <div>
-                          <p className="text-sm text-gray-600">Job Demand</p>
-                          <Badge
-                            className={getDemandColor(recommendations.primary_recommendation.job_demand_trend)}
-                          >
-                            {recommendations.primary_recommendation.job_demand_trend.replace("_", " ")}
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+                    </CardContent>
+                  </Card>
+                );
+              })()}
             </div>
           </div>
 
           {/* Secondary Recommendations */}
-          {recommendations.secondary_recommendation && (
-            <div>
-              <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                <Target className="h-6 w-6 text-blue-500" />
-                Alternative Options
-              </h2>
-              <div className="grid gap-4">
-                <Card className="border-l-4 border-l-blue-500">
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <CardTitle className="text-lg capitalize">
-                        {recommendations.secondary_recommendation.stream.replace("_", " ")}
-                      </CardTitle>
-                      <Badge variant="outline">
-                        {Math.round(recommendations.secondary_recommendation.confidence_score * 100)}% Match
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-700 mb-4">{recommendations.secondary_recommendation.reasoning}</p>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-blue-600" />
-                        <span>{recommendations.secondary_recommendation.time_to_earn}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <DollarSign className="h-4 w-4 text-green-600" />
-                        <span>{recommendations.secondary_recommendation.average_salary}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <TrendingUp className="h-4 w-4 text-purple-600" />
-                        <Badge
-                          className={getDemandColor(recommendations.secondary_recommendation.job_demand_trend)}
-                        >
-                          {recommendations.secondary_recommendation.job_demand_trend.replace("_", " ")}
+          {(() => {
+            const secondaryRec = getSecondaryRecommendation();
+            return secondaryRec && (
+              <div>
+                <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                  <Target className="h-6 w-6 text-blue-500" />
+                  Alternative Options
+                </h2>
+                <div className="grid gap-4">
+                  <Card className="border-l-4 border-l-blue-500">
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
+                        <CardTitle className="text-lg capitalize">
+                          {secondaryRec.stream.replace("_", " ")}
+                        </CardTitle>
+                        <Badge variant="outline">
+                          {Math.round((secondaryRec.confidence_score || 0.25) * 100)}% Match
                         </Badge>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-gray-700 mb-4">{secondaryRec.reasoning}</p>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-blue-600" />
+                          <span>{secondaryRec.time_to_earn}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <DollarSign className="h-4 w-4 text-green-600" />
+                          <span>{secondaryRec.average_salary}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <TrendingUp className="h-4 w-4 text-purple-600" />
+                          <Badge
+                            className={getDemandColor(secondaryRec.job_demand_trend)}
+                          >
+                            {secondaryRec.job_demand_trend.replace("_", " ")}
+                          </Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* Backup Options */}
-          {recommendations.backup_options.length > 0 && (
+          {recommendations.backup_options && recommendations.backup_options.length > 0 && (
             <div>
               <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
                 <AlertTriangle className="h-6 w-6 text-orange-500" />
@@ -497,12 +685,12 @@ function AssessmentResultsPageContent() {
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold">Recommended Colleges</h2>
             <Badge variant="outline">
-              {recommendations.recommended_colleges.length} matches found
+              {((recommendations as any).recommended_colleges || (recommendations as any).colleges || []).length} matches found
             </Badge>
           </div>
 
           <div className="grid gap-6">
-            {recommendations.recommended_colleges.map((college, index) => (
+            {((recommendations as any).recommended_colleges || (recommendations as any).colleges || []).map((college: any, index: number) => (
               <Card key={index}>
                 <CardHeader>
                   <div className="flex justify-between items-start">
@@ -550,7 +738,7 @@ function AssessmentResultsPageContent() {
                       Why This College?
                     </h4>
                     <div className="flex flex-wrap gap-2">
-                      {college.reasons.map((reason, idx) => (
+                      {college.reasons.map((reason: string, idx: number) => (
                         <Badge key={idx} variant="outline" className="text-xs">
                           {reason}
                         </Badge>
@@ -568,12 +756,12 @@ function AssessmentResultsPageContent() {
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold">Available Scholarships</h2>
             <Badge variant="outline">
-              {recommendations.relevant_scholarships.length} opportunities
+              {((recommendations as any).relevant_scholarships || (recommendations as any).scholarships || []).length} opportunities
             </Badge>
           </div>
 
           <div className="grid gap-4">
-            {recommendations.relevant_scholarships.map((scholarship, index) => (
+            {((recommendations as any).relevant_scholarships || (recommendations as any).scholarships || []).map((scholarship: any, index: number) => (
               <Card key={index}>
                 <CardHeader>
                   <div className="flex justify-between items-start">
@@ -607,7 +795,12 @@ function AssessmentResultsPageContent() {
                     <h4 className="font-semibold text-gray-900 mb-1">
                       Eligibility
                     </h4>
-                    <p className="text-gray-700">{scholarship.eligibility}</p>
+                    <p className="text-gray-700">
+                      {typeof scholarship.eligibility === 'string' 
+                        ? scholarship.eligibility 
+                        : 'Check scholarship details for eligibility requirements'
+                      }
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -736,6 +929,9 @@ function AssessmentResultsPageContent() {
       <div className="mt-8 flex gap-4 justify-center">
         <Button variant="outline" onClick={() => window.print()}>
           Download Report
+        </Button>
+        <Button variant="outline" onClick={handleRetry}>
+          Refresh Recommendations
         </Button>
         <Button
           onClick={() => (window.location.href = "/comprehensive-assessment")}

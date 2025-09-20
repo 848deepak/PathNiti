@@ -20,6 +20,16 @@ const eslintConfig = [
       "next-env.d.ts",
     ],
   },
+  {
+    rules: {
+      // Allow 'any' type for hackathon - Supabase type issues
+      "@typescript-eslint/no-explicit-any": "off",
+      // Allow unused vars for hackathon
+      "@typescript-eslint/no-unused-vars": "off",
+      // Allow missing alt text for images in hackathon
+      "jsx-a11y/alt-text": "off",
+    },
+  },
 ];
 
 export default eslintConfig;

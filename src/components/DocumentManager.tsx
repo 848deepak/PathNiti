@@ -1,30 +1,54 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback } from "react"
-import { Upload, Search, Filter, RefreshCw, AlertCircle, Loader2, FolderOpen } from "lucide-react"
-import { Button, Card, CardContent, CardHeader, CardTitle, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Alert, AlertDescription } from "@/components/ui"
-import DocumentPreview from "./DocumentPreview"
-import { documentStorageService, type DocumentMetadata, type DocumentType, type StorageBucket } from "@/lib/services/document-storage-service"
-import { formatFileSize } from "@/lib/utils/file-validation"
+import { useState, useEffect, useCallback } from "react";
+import {
+  Search,
+  RefreshCw,
+  AlertCircle,
+  Loader2,
+  FolderOpen,
+} from "lucide-react";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Alert,
+  AlertDescription,
+} from "@/components/ui";
+import DocumentPreview from "./DocumentPreview";
+import {
+  documentStorageService,
+  type DocumentMetadata,
+  type DocumentType,
+} from "@/lib/services/document-storage-service";
+import { formatFileSize } from "@/lib/utils/file-validation";
 
 interface DocumentManagerProps {
-  userId?: string
-  applicationId?: string
-  collegeId?: string
-  documentType?: DocumentType
-  allowUpload?: boolean
-  allowDelete?: boolean
-  compact?: boolean
-  title?: string
-  emptyMessage?: string
-  onDocumentChange?: (documents: DocumentMetadata[]) => void
+  userId?: string;
+  applicationId?: string;
+  collegeId?: string;
+  documentType?: DocumentType;
+  allowUpload?: boolean;
+  allowDelete?: boolean;
+  compact?: boolean;
+  title?: string;
+  emptyMessage?: string;
+  onDocumentChange?: (documents: DocumentMetadata[]) => void;
 }
 
 interface FilterOptions {
-  documentType?: DocumentType | 'all'
-  isActive?: boolean
-  sortBy: 'name' | 'date' | 'size' | 'type'
-  sortOrder: 'asc' | 'desc'
+  documentType?: DocumentType | "all";
+  isActive?: boolean;
+  sortBy: "name" | "date" | "size" | "type";
+  sortOrder: "asc" | "desc";
 }
 
 export default function DocumentManager({
@@ -32,124 +56,136 @@ export default function DocumentManager({
   applicationId,
   collegeId,
   documentType,
-  allowUpload = true,
+  allowUpload: _allowUpload = true,
   allowDelete = true,
   compact = false,
   title = "Documents",
   emptyMessage = "No documents found",
-  onDocumentChange
+  onDocumentChange,
 }: DocumentManagerProps) {
-  const [documents, setDocuments] = useState<DocumentMetadata[]>([])
-  const [filteredDocuments, setFilteredDocuments] = useState<DocumentMetadata[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [searchQuery, setSearchQuery] = useState("")
+  const [documents, setDocuments] = useState<DocumentMetadata[]>([]);
+  const [filteredDocuments, setFilteredDocuments] = useState<
+    DocumentMetadata[]
+  >([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<FilterOptions>({
-    documentType: documentType || 'all',
+    documentType: documentType || "all",
     isActive: true,
-    sortBy: 'date',
-    sortOrder: 'desc'
-  })
+    sortBy: "date",
+    sortOrder: "desc",
+  });
 
   // Load documents
   const loadDocuments = useCallback(async () => {
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
 
     try {
-      const { data, error: fetchError } = await documentStorageService.getUserDocuments(
-        userId,
-        {
+      const { data, error: fetchError } =
+        await documentStorageService.getUserDocuments(userId, {
           documentType: documentType,
           applicationId,
           collegeId,
-          isActive: filters.isActive
-        }
-      )
+          isActive: filters.isActive,
+        });
 
       if (fetchError) {
-        setError(fetchError)
+        setError(fetchError);
       } else {
-        setDocuments(data || [])
+        setDocuments(data || []);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load documents')
+      setError(err instanceof Error ? err.message : "Failed to load documents");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [userId, applicationId, collegeId, documentType, filters.isActive])
+  }, [userId, applicationId, collegeId, documentType, filters.isActive]);
 
   // Filter and sort documents
   useEffect(() => {
-    let filtered = [...documents]
+    let filtered = [...documents];
 
     // Apply search filter
     if (searchQuery) {
-      filtered = filtered.filter(doc =>
-        doc.file_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (doc.document_type && doc.document_type.toLowerCase().includes(searchQuery.toLowerCase()))
-      )
+      filtered = filtered.filter(
+        (doc) =>
+          doc.file_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (doc.document_type &&
+            doc.document_type
+              .toLowerCase()
+              .includes(searchQuery.toLowerCase())),
+      );
     }
 
     // Apply document type filter
-    if (filters.documentType && filters.documentType !== 'all') {
-      filtered = filtered.filter(doc => doc.document_type === filters.documentType)
+    if (filters.documentType && filters.documentType !== "all") {
+      filtered = filtered.filter(
+        (doc) => doc.document_type === filters.documentType,
+      );
     }
 
     // Apply sorting
     filtered.sort((a, b) => {
-      let comparison = 0
+      let comparison = 0;
 
       switch (filters.sortBy) {
-        case 'name':
-          comparison = a.file_name.localeCompare(b.file_name)
-          break
-        case 'date':
-          comparison = new Date(a.uploaded_at).getTime() - new Date(b.uploaded_at).getTime()
-          break
-        case 'size':
-          comparison = a.file_size - b.file_size
-          break
-        case 'type':
-          comparison = (a.document_type || '').localeCompare(b.document_type || '')
-          break
+        case "name":
+          comparison = a.file_name.localeCompare(b.file_name);
+          break;
+        case "date":
+          comparison =
+            new Date(a.uploaded_at).getTime() -
+            new Date(b.uploaded_at).getTime();
+          break;
+        case "size":
+          comparison = a.file_size - b.file_size;
+          break;
+        case "type":
+          comparison = (a.document_type || "").localeCompare(
+            b.document_type || "",
+          );
+          break;
       }
 
-      return filters.sortOrder === 'desc' ? -comparison : comparison
-    })
+      return filters.sortOrder === "desc" ? -comparison : comparison;
+    });
 
-    setFilteredDocuments(filtered)
-  }, [documents, searchQuery, filters])
+    setFilteredDocuments(filtered);
+  }, [documents, searchQuery, filters]);
 
   // Notify parent of document changes
   useEffect(() => {
-    onDocumentChange?.(documents)
-  }, [documents, onDocumentChange])
+    onDocumentChange?.(documents);
+  }, [documents, onDocumentChange]);
 
   // Load documents on mount
   useEffect(() => {
-    loadDocuments()
-  }, [loadDocuments])
+    loadDocuments();
+  }, [loadDocuments]);
 
   const handleDocumentDelete = (documentId: string) => {
-    setDocuments(prev => prev.filter(doc => doc.id !== documentId))
-  }
+    setDocuments((prev) => prev.filter((doc) => doc.id !== documentId));
+  };
 
   const handleRefresh = () => {
-    loadDocuments()
-  }
+    loadDocuments();
+  };
 
   const getTotalSize = () => {
-    return documents.reduce((total, doc) => total + doc.file_size, 0)
-  }
+    return documents.reduce((total, doc) => total + doc.file_size, 0);
+  };
 
   const getDocumentTypeOptions = () => {
-    const types = new Set(documents.map(doc => doc.document_type).filter(Boolean))
-    return Array.from(types).map(type => ({
+    const types = new Set(
+      documents.map((doc) => doc.document_type).filter(Boolean),
+    );
+    return Array.from(types).map((type) => ({
       value: type!,
-      label: type!.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())
-    }))
-  }
+      label: type!.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase()),
+    }));
+  };
 
   if (loading) {
     return (
@@ -161,7 +197,7 @@ export default function DocumentManager({
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   if (error) {
@@ -185,7 +221,7 @@ export default function DocumentManager({
           </Alert>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -195,8 +231,9 @@ export default function DocumentManager({
           <div>
             <CardTitle className="text-lg">{title}</CardTitle>
             <p className="text-sm text-gray-500 mt-1">
-              {documents.length} document{documents.length !== 1 ? 's' : ''} 
-              {documents.length > 0 && ` • ${formatFileSize(getTotalSize())} total`}
+              {documents.length} document{documents.length !== 1 ? "s" : ""}
+              {documents.length > 0 &&
+                ` • ${formatFileSize(getTotalSize())} total`}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -206,7 +243,9 @@ export default function DocumentManager({
               onClick={handleRefresh}
               disabled={loading}
             >
-              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
+              />
             </Button>
           </div>
         </div>
@@ -225,21 +264,24 @@ export default function DocumentManager({
                 />
               </div>
             </div>
-            
+
             <div className="flex gap-2">
               <Select
-                value={filters.documentType || 'all'}
-                onValueChange={(value) => setFilters(prev => ({ 
-                  ...prev, 
-                  documentType: value === 'all' ? undefined : value as DocumentType 
-                }))}
+                value={filters.documentType || "all"}
+                onValueChange={(value) =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    documentType:
+                      value === "all" ? undefined : (value as DocumentType),
+                  }))
+                }
               >
                 <SelectTrigger className="w-40">
                   <SelectValue placeholder="Type" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Types</SelectItem>
-                  {getDocumentTypeOptions().map(option => (
+                  {getDocumentTypeOptions().map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>
@@ -250,8 +292,11 @@ export default function DocumentManager({
               <Select
                 value={`${filters.sortBy}-${filters.sortOrder}`}
                 onValueChange={(value) => {
-                  const [sortBy, sortOrder] = value.split('-') as [FilterOptions['sortBy'], FilterOptions['sortOrder']]
-                  setFilters(prev => ({ ...prev, sortBy, sortOrder }))
+                  const [sortBy, sortOrder] = value.split("-") as [
+                    FilterOptions["sortBy"],
+                    FilterOptions["sortOrder"],
+                  ];
+                  setFilters((prev) => ({ ...prev, sortBy, sortOrder }));
                 }}
               >
                 <SelectTrigger className="w-40">
@@ -277,15 +322,17 @@ export default function DocumentManager({
           <div className="text-center py-8">
             <FolderOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-500 mb-2">
-              {searchQuery || filters.documentType !== 'all' ? 'No documents match your filters' : emptyMessage}
+              {searchQuery || filters.documentType !== "all"
+                ? "No documents match your filters"
+                : emptyMessage}
             </p>
-            {(searchQuery || filters.documentType !== 'all') && (
+            {(searchQuery || filters.documentType !== "all") && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  setSearchQuery("")
-                  setFilters(prev => ({ ...prev, documentType: 'all' }))
+                  setSearchQuery("");
+                  setFilters((prev) => ({ ...prev, documentType: "all" }));
                 }}
               >
                 Clear Filters
@@ -307,5 +354,5 @@ export default function DocumentManager({
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

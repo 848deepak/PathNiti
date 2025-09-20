@@ -1,20 +1,30 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
-import { 
-  Search, 
-  Filter, 
-  Eye, 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
-  Download,
+import { useState, useEffect, useCallback } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Search,
+  Eye,
+  CheckCircle,
+  XCircle,
+  Clock,
   User,
   Phone,
   Mail,
@@ -22,147 +32,181 @@ import {
   Calendar,
   FileText,
   ChevronLeft,
-  ChevronRight
-} from 'lucide-react'
-import { format } from 'date-fns'
+  ChevronRight,
+} from "lucide-react";
+import { format } from "date-fns";
 
 interface StudentApplication {
-  id: string
-  student_id: string
-  college_id: string
-  full_name: string
-  email: string
-  phone: string
-  class_stream: string
+  id: string;
+  student_id: string;
+  college_id: string;
+  full_name: string;
+  email: string;
+  phone: string;
+  class_stream: string;
   documents: {
-    marksheet_10th?: string
-    marksheet_12th?: string
-    other_documents?: string[]
-  }
-  status: 'pending' | 'approved' | 'rejected'
-  feedback?: string
-  submitted_at: string
-  reviewed_at?: string
-  reviewed_by?: string
+    marksheet_10th?: string;
+    marksheet_12th?: string;
+    other_documents?: string[];
+  };
+  status: "pending" | "approved" | "rejected";
+  feedback?: string;
+  submitted_at: string;
+  reviewed_at?: string;
+  reviewed_by?: string;
   profiles?: {
-    first_name: string
-    last_name: string
-    email: string
-  }
+    first_name: string;
+    last_name: string;
+    email: string;
+  };
 }
 
 interface ApplicationManagerProps {
-  collegeId: string
-  collegeName: string
+  collegeId: string;
+  collegeName: string;
 }
 
-export default function CollegeApplicationManager({ collegeId, collegeName }: ApplicationManagerProps) {
-  const [applications, setApplications] = useState<StudentApplication[]>([])
-  const [loading, setLoading] = useState(true)
-  const [selectedApplication, setSelectedApplication] = useState<StudentApplication | null>(null)
-  const [statusFilter, setStatusFilter] = useState('all')
-  const [searchQuery, setSearchQuery] = useState('')
-  const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
-  const [totalApplications, setTotalApplications] = useState(0)
-  const [processingStatus, setProcessingStatus] = useState<string | null>(null)
-  const [feedback, setFeedback] = useState('')
+export default function CollegeApplicationManager({
+  collegeName,
+}: ApplicationManagerProps) {
+  const [applications, setApplications] = useState<StudentApplication[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedApplication, setSelectedApplication] =
+    useState<StudentApplication | null>(null);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalApplications, setTotalApplications] = useState(0);
+  const [processingStatus, setProcessingStatus] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState("");
 
-  const fetchApplications = async () => {
+  const fetchApplications = useCallback(async () => {
     try {
-      setLoading(true)
+      setLoading(true);
       const params = new URLSearchParams({
         page: currentPage.toString(),
-        limit: '10',
-        ...(statusFilter !== 'all' && { status: statusFilter }),
-        ...(searchQuery && { search: searchQuery })
-      })
+        limit: "10",
+        ...(statusFilter !== "all" && { status: statusFilter }),
+        ...(searchQuery && { search: searchQuery }),
+      });
 
-      const response = await fetch(`/api/colleges/admin/applications?${params}`)
-      
+      const response = await fetch(
+        `/api/colleges/admin/applications?${params}`,
+      );
+
       if (!response.ok) {
-        throw new Error('Failed to fetch applications')
+        throw new Error("Failed to fetch applications");
       }
 
-      const data = await response.json()
-      setApplications(data.applications)
-      setTotalPages(data.pagination.totalPages)
-      setTotalApplications(data.pagination.total)
+      const data = await response.json();
+      setApplications(data.applications);
+      setTotalPages(data.pagination.totalPages);
+      setTotalApplications(data.pagination.total);
     } catch (error) {
-      console.error('Error fetching applications:', error)
+      console.error("Error fetching applications:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  }, [currentPage, statusFilter, searchQuery]);
 
   useEffect(() => {
-    fetchApplications()
-  }, [currentPage, statusFilter, searchQuery])
+    fetchApplications();
+  }, [fetchApplications]);
 
-  const handleStatusUpdate = async (applicationId: string, newStatus: 'approved' | 'rejected') => {
+  const handleStatusUpdate = async (
+    applicationId: string,
+    newStatus: "approved" | "rejected",
+  ) => {
     try {
-      setProcessingStatus(applicationId)
-      
-      const response = await fetch(`/api/colleges/admin/applications/${applicationId}/status`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
+      setProcessingStatus(applicationId);
+
+      const response = await fetch(
+        `/api/colleges/admin/applications/${applicationId}/status`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            status: newStatus,
+            feedback: feedback.trim() || undefined,
+          }),
         },
-        body: JSON.stringify({
-          status: newStatus,
-          feedback: feedback.trim() || undefined
-        })
-      })
+      );
 
       if (!response.ok) {
-        throw new Error('Failed to update application status')
+        throw new Error("Failed to update application status");
       }
 
-      const data = await response.json()
-      
+      await response.json();
+
       // Update the application in the list
-      setApplications(prev => 
-        prev.map(app => 
-          app.id === applicationId 
-            ? { ...app, status: newStatus, feedback: feedback.trim() || undefined, reviewed_at: new Date().toISOString() }
-            : app
-        )
-      )
+      setApplications((prev) =>
+        prev.map((app) =>
+          app.id === applicationId
+            ? {
+                ...app,
+                status: newStatus,
+                feedback: feedback.trim() || undefined,
+                reviewed_at: new Date().toISOString(),
+              }
+            : app,
+        ),
+      );
 
       // Update selected application if it's the one being updated
       if (selectedApplication?.id === applicationId) {
-        setSelectedApplication(prev => prev ? {
-          ...prev,
-          status: newStatus,
-          feedback: feedback.trim() || undefined,
-          reviewed_at: new Date().toISOString()
-        } : null)
+        setSelectedApplication((prev) =>
+          prev
+            ? {
+                ...prev,
+                status: newStatus,
+                feedback: feedback.trim() || undefined,
+                reviewed_at: new Date().toISOString(),
+              }
+            : null,
+        );
       }
 
-      setFeedback('')
-      
+      setFeedback("");
     } catch (error) {
-      console.error('Error updating application status:', error)
-      alert('Failed to update application status. Please try again.')
+      console.error("Error updating application status:", error);
+      alert("Failed to update application status. Please try again.");
     } finally {
-      setProcessingStatus(null)
+      setProcessingStatus(null);
     }
-  }
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'approved':
-        return <Badge className="bg-green-100 text-green-800"><CheckCircle className="h-3 w-3 mr-1" />Approved</Badge>
-      case 'rejected':
-        return <Badge className="bg-red-100 text-red-800"><XCircle className="h-3 w-3 mr-1" />Rejected</Badge>
+      case "approved":
+        return (
+          <Badge className="bg-green-100 text-green-800">
+            <CheckCircle className="h-3 w-3 mr-1" />
+            Approved
+          </Badge>
+        );
+      case "rejected":
+        return (
+          <Badge className="bg-red-100 text-red-800">
+            <XCircle className="h-3 w-3 mr-1" />
+            Rejected
+          </Badge>
+        );
       default:
-        return <Badge className="bg-yellow-100 text-yellow-800"><Clock className="h-3 w-3 mr-1" />Pending</Badge>
+        return (
+          <Badge className="bg-yellow-100 text-yellow-800">
+            <Clock className="h-3 w-3 mr-1" />
+            Pending
+          </Badge>
+        );
     }
-  }
+  };
 
   const handleDocumentView = (url: string) => {
-    window.open(url, '_blank')
-  }
+    window.open(url, "_blank");
+  };
 
   if (selectedApplication) {
     return (
@@ -171,9 +215,9 @@ export default function CollegeApplicationManager({ collegeId, collegeName }: Ap
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setSelectedApplication(null)}
                 >
                   <ChevronLeft className="h-4 w-4" />
@@ -214,12 +258,18 @@ export default function CollegeApplicationManager({ collegeId, collegeName }: Ap
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4" />
-                  <span>Applied: {format(new Date(selectedApplication.submitted_at), 'PPP')}</span>
+                  <span>
+                    Applied:{" "}
+                    {format(new Date(selectedApplication.submitted_at), "PPP")}
+                  </span>
                 </div>
                 {selectedApplication.reviewed_at && (
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
-                    <span>Reviewed: {format(new Date(selectedApplication.reviewed_at), 'PPP')}</span>
+                    <span>
+                      Reviewed:{" "}
+                      {format(new Date(selectedApplication.reviewed_at), "PPP")}
+                    </span>
                   </div>
                 )}
               </div>
@@ -235,10 +285,14 @@ export default function CollegeApplicationManager({ collegeId, collegeName }: Ap
                 {selectedApplication.documents.marksheet_10th && (
                   <div className="flex items-center justify-between p-2 border rounded">
                     <span>10th Marksheet</span>
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       variant="outline"
-                      onClick={() => handleDocumentView(selectedApplication.documents.marksheet_10th!)}
+                      onClick={() =>
+                        handleDocumentView(
+                          selectedApplication.documents.marksheet_10th!,
+                        )
+                      }
                     >
                       <Eye className="h-4 w-4 mr-1" />
                       View
@@ -248,29 +302,38 @@ export default function CollegeApplicationManager({ collegeId, collegeName }: Ap
                 {selectedApplication.documents.marksheet_12th && (
                   <div className="flex items-center justify-between p-2 border rounded">
                     <span>12th Marksheet</span>
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       variant="outline"
-                      onClick={() => handleDocumentView(selectedApplication.documents.marksheet_12th!)}
+                      onClick={() =>
+                        handleDocumentView(
+                          selectedApplication.documents.marksheet_12th!,
+                        )
+                      }
                     >
                       <Eye className="h-4 w-4 mr-1" />
                       View
                     </Button>
                   </div>
                 )}
-                {selectedApplication.documents.other_documents?.map((doc, index) => (
-                  <div key={index} className="flex items-center justify-between p-2 border rounded">
-                    <span>Other Document {index + 1}</span>
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      onClick={() => handleDocumentView(doc)}
+                {selectedApplication.documents.other_documents?.map(
+                  (doc, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-2 border rounded"
                     >
-                      <Eye className="h-4 w-4 mr-1" />
-                      View
-                    </Button>
-                  </div>
-                ))}
+                      <span>Other Document {index + 1}</span>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleDocumentView(doc)}
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        View
+                      </Button>
+                    </div>
+                  ),
+                )}
               </div>
             </div>
           </div>
@@ -286,7 +349,7 @@ export default function CollegeApplicationManager({ collegeId, collegeName }: Ap
           )}
 
           {/* Action Section */}
-          {selectedApplication.status === 'pending' && (
+          {selectedApplication.status === "pending" && (
             <div className="space-y-4 border-t pt-4">
               <h3 className="text-lg font-semibold">Review Application</h3>
               <div className="space-y-3">
@@ -303,7 +366,9 @@ export default function CollegeApplicationManager({ collegeId, collegeName }: Ap
                 </div>
                 <div className="flex gap-3">
                   <Button
-                    onClick={() => handleStatusUpdate(selectedApplication.id, 'approved')}
+                    onClick={() =>
+                      handleStatusUpdate(selectedApplication.id, "approved")
+                    }
                     disabled={processingStatus === selectedApplication.id}
                     className="bg-green-600 hover:bg-green-700"
                   >
@@ -311,7 +376,9 @@ export default function CollegeApplicationManager({ collegeId, collegeName }: Ap
                     Approve Application
                   </Button>
                   <Button
-                    onClick={() => handleStatusUpdate(selectedApplication.id, 'rejected')}
+                    onClick={() =>
+                      handleStatusUpdate(selectedApplication.id, "rejected")
+                    }
                     disabled={processingStatus === selectedApplication.id}
                     variant="destructive"
                   >
@@ -324,7 +391,7 @@ export default function CollegeApplicationManager({ collegeId, collegeName }: Ap
           )}
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -400,15 +467,18 @@ export default function CollegeApplicationManager({ collegeId, collegeName }: Ap
                       </div>
                     </div>
                     <div className="mt-2 text-xs text-gray-500">
-                      Applied: {format(new Date(application.submitted_at), 'PPP')}
+                      Applied:{" "}
+                      {format(new Date(application.submitted_at), "PPP")}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    {application.status === 'pending' && (
+                    {application.status === "pending" && (
                       <>
                         <Button
                           size="sm"
-                          onClick={() => handleStatusUpdate(application.id, 'approved')}
+                          onClick={() =>
+                            handleStatusUpdate(application.id, "approved")
+                          }
                           disabled={processingStatus === application.id}
                           className="bg-green-600 hover:bg-green-700"
                         >
@@ -417,7 +487,9 @@ export default function CollegeApplicationManager({ collegeId, collegeName }: Ap
                         <Button
                           size="sm"
                           variant="destructive"
-                          onClick={() => handleStatusUpdate(application.id, 'rejected')}
+                          onClick={() =>
+                            handleStatusUpdate(application.id, "rejected")
+                          }
                           disabled={processingStatus === application.id}
                         >
                           <XCircle className="h-4 w-4" />
@@ -448,7 +520,7 @@ export default function CollegeApplicationManager({ collegeId, collegeName }: Ap
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -457,7 +529,9 @@ export default function CollegeApplicationManager({ collegeId, collegeName }: Ap
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                }
                 disabled={currentPage === totalPages}
               >
                 Next
@@ -468,5 +542,5 @@ export default function CollegeApplicationManager({ collegeId, collegeName }: Ap
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

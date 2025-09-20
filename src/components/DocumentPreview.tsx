@@ -1,73 +1,103 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Eye, Download, Trash2, FileText, Image, AlertCircle, Loader2, X } from "lucide-react"
-import { Button, Card, CardContent, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Alert, AlertDescription } from "@/components/ui"
-import { documentStorageService, type DocumentMetadata, type StorageBucket } from "@/lib/services/document-storage-service"
-import { formatFileSize, isImageFile, isPDFFile } from "@/lib/utils/file-validation"
+import { useState, useEffect, useCallback } from "react";
+import NextImage from "next/image";
+import {
+  Eye,
+  Download,
+  Trash2,
+  FileText,
+  Image,
+  AlertCircle,
+  Loader2,
+  X,
+} from "lucide-react";
+import {
+  Button,
+  Card,
+  CardContent,
+  Alert,
+  AlertDescription,
+} from "@/components/ui";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  documentStorageService,
+  type DocumentMetadata,
+  type StorageBucket,
+} from "@/lib/services/document-storage-service";
+import {
+  formatFileSize,
+  isImageFile,
+  isPDFFile,
+} from "@/lib/utils/file-validation";
 
 interface DocumentPreviewProps {
-  document: DocumentMetadata
-  onDelete?: (documentId: string) => void
-  onDownload?: (document: DocumentMetadata) => void
-  showActions?: boolean
-  compact?: boolean
+  document: DocumentMetadata;
+  onDelete?: (documentId: string) => void;
+  onDownload?: (document: DocumentMetadata) => void;
+  showActions?: boolean;
+  compact?: boolean;
 }
 
 interface DocumentViewerProps {
-  document: DocumentMetadata
-  isOpen: boolean
-  onClose: () => void
+  document: DocumentMetadata;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProps) {
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+function DocumentViewer({ document: doc, isOpen, onClose }: DocumentViewerProps) {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (isOpen && document) {
-      loadPreview()
-    }
-  }, [isOpen, document])
-
-  const loadPreview = async () => {
-    setLoading(true)
-    setError(null)
+  const loadPreview = useCallback(async () => {
+    setLoading(true);
+    setError(null);
 
     try {
       // For images, get a preview URL with optimization
-      if (isImageFile({ type: document.file_type } as File)) {
+      if (isImageFile({ type: doc.file_type } as File)) {
         const { url, error } = await documentStorageService.getPreviewUrl(
-          document.file_path,
-          document.bucket_name as StorageBucket,
-          { width: 800, quality: 80 }
-        )
-        
+          doc.file_path,
+          doc.bucket_name as StorageBucket,
+          { width: 800, quality: 80 },
+        );
+
         if (error) {
-          setError(error)
+          setError(error);
         } else {
-          setPreviewUrl(url)
+          setPreviewUrl(url);
         }
       } else {
         // For other files, get signed URL for secure access
         const { url, error } = await documentStorageService.getSignedUrl(
-          document.file_path,
-          document.bucket_name as StorageBucket
-        )
-        
+          doc.file_path,
+          doc.bucket_name as StorageBucket,
+        );
+
         if (error) {
-          setError(error)
+          setError(error);
         } else {
-          setPreviewUrl(url)
+          setPreviewUrl(url);
         }
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load preview')
+      setError(err instanceof Error ? err.message : "Failed to load preview");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  }, [doc]);
+
+  useEffect(() => {
+    if (isOpen && doc) {
+      loadPreview();
+    }
+  }, [isOpen, doc, loadPreview]);
 
   const renderPreview = () => {
     if (loading) {
@@ -76,7 +106,7 @@ function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProps) {
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <span className="ml-2">Loading preview...</span>
         </div>
-      )
+      );
     }
 
     if (error) {
@@ -87,7 +117,7 @@ function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProps) {
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         </div>
-      )
+      );
     }
 
     if (!previewUrl) {
@@ -98,34 +128,36 @@ function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProps) {
             <p className="text-gray-500">Preview not available</p>
           </div>
         </div>
-      )
+      );
     }
 
     // Render based on file type
-    if (isImageFile({ type: document.file_type } as File)) {
+    if (isImageFile({ type: doc.file_type } as File)) {
       return (
         <div className="flex justify-center">
-          <img
+          <NextImage
             src={previewUrl}
-            alt={document.file_name}
+            alt={doc.file_name}
+            width={400}
+            height={400}
             className="max-w-full max-h-96 object-contain rounded-lg"
-            onError={() => setError('Failed to load image')}
+            onError={() => setError("Failed to load image")}
           />
         </div>
-      )
+      );
     }
 
-    if (isPDFFile({ type: document.file_type } as File)) {
+    if (isPDFFile({ type: doc.file_type } as File)) {
       return (
         <div className="w-full h-96">
           <iframe
             src={`${previewUrl}#toolbar=0`}
             className="w-full h-full border rounded-lg"
-            title={document.file_name}
-            onError={() => setError('Failed to load PDF')}
+            title={doc.file_name}
+            onError={() => setError("Failed to load PDF")}
           />
         </div>
-      )
+      );
     }
 
     // For other document types, show download option
@@ -133,9 +165,11 @@ function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProps) {
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
           <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-700 mb-4">Preview not available for this file type</p>
+          <p className="text-gray-700 mb-4">
+            Preview not available for this file type
+          </p>
           <Button
-            onClick={() => window.open(previewUrl, '_blank')}
+            onClick={() => window.open(previewUrl, "_blank")}
             className="flex items-center gap-2"
           >
             <Download className="h-4 w-4" />
@@ -143,8 +177,8 @@ function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProps) {
           </Button>
         </div>
       </div>
-    )
-  }
+    );
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -152,111 +186,113 @@ function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProps) {
         <DialogHeader>
           <div className="flex items-center justify-between">
             <DialogTitle className="flex items-center gap-2">
-              {isImageFile({ type: document.file_type } as File) ? (
+              {isImageFile({ type: doc.file_type } as File) ? (
                 <Image className="h-5 w-5" />
               ) : (
                 <FileText className="h-5 w-5" />
               )}
-              {document.file_name}
+              {doc.file_name}
             </DialogTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-            >
+            <Button variant="ghost" size="sm" onClick={onClose}>
               <X className="h-4 w-4" />
             </Button>
           </div>
           <div className="flex items-center gap-4 text-sm text-gray-500">
-            <span>{formatFileSize(document.file_size)}</span>
+            <span>{formatFileSize(doc.file_size)}</span>
             <span>•</span>
-            <span>Uploaded {new Date(document.uploaded_at).toLocaleDateString()}</span>
+            <span>
+              Uploaded {new Date(doc.uploaded_at).toLocaleDateString()}
+            </span>
           </div>
         </DialogHeader>
-        
-        <div className="mt-4">
-          {renderPreview()}
-        </div>
+
+        <div className="mt-4">{renderPreview()}</div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
-export default function DocumentPreview({ 
-  document, 
-  onDelete, 
-  onDownload, 
-  showActions = true, 
-  compact = false 
+export default function DocumentPreview({
+  document: doc,
+  onDelete,
+  onDownload,
+  showActions = true,
+  compact = false,
 }: DocumentPreviewProps) {
-  const [isViewerOpen, setIsViewerOpen] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const handleDelete = async () => {
-    if (!onDelete) return
+    if (!onDelete) return;
 
-    setIsDeleting(true)
-    setDeleteError(null)
+    setIsDeleting(true);
+    setDeleteError(null);
 
     try {
-      const result = await documentStorageService.deleteFile(document.id)
+      const result = await documentStorageService.deleteFile(doc.id);
       if (result.success) {
-        onDelete(document.id)
+        onDelete(doc.id);
       } else {
-        setDeleteError(result.error || 'Failed to delete document')
+        setDeleteError(result.error || "Failed to delete document");
       }
     } catch (error) {
-      setDeleteError(error instanceof Error ? error.message : 'Failed to delete document')
+      setDeleteError(
+        error instanceof Error ? error.message : "Failed to delete document",
+      );
     } finally {
-      setIsDeleting(false)
+      setIsDeleting(false);
     }
-  }
+  };
 
   const handleDownload = async () => {
     try {
       const { url, error } = await documentStorageService.getSignedUrl(
-        document.file_path,
-        document.bucket_name as StorageBucket
-      )
+        doc.file_path,
+        doc.bucket_name as StorageBucket,
+      );
 
       if (error) {
-        console.error('Download error:', error)
-        return
+        console.error("Download error:", error);
+        return;
       }
 
       if (url) {
         // Create a temporary link to trigger download
-        const link = document.createElement('a')
-        link.href = url
-        link.download = document.file_name
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = doc.file_name;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
       }
 
-      onDownload?.(document)
+      onDownload?.(doc);
     } catch (error) {
-      console.error('Download error:', error)
+      console.error("Download error:", error);
     }
-  }
+  };
 
   const getFileIcon = () => {
-    if (isImageFile({ type: document.file_type } as File)) {
-      return <Image className="h-4 w-4 text-blue-500" />
+    if (isImageFile({ type: doc.file_type } as File)) {
+      return <Image className="h-4 w-4 text-blue-500" />;
     }
-    return <FileText className="h-4 w-4 text-gray-500" />
-  }
+    return <FileText className="h-4 w-4 text-gray-500" />;
+  };
 
   if (compact) {
     return (
       <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {getFileIcon()}
-          <span className="text-sm text-gray-700 truncate">{document.file_name}</span>
-          <span className="text-xs text-gray-500">{formatFileSize(document.file_size)}</span>
+          <span className="text-sm text-gray-700 truncate">
+            {doc.file_name}
+          </span>
+          <span className="text-xs text-gray-500">
+            {formatFileSize(doc.file_size)}
+          </span>
         </div>
-        
+
         {showActions && (
           <div className="flex items-center gap-1">
             <Button
@@ -295,12 +331,12 @@ export default function DocumentPreview({
         )}
 
         <DocumentViewer
-          document={document}
+          document={doc}
           isOpen={isViewerOpen}
           onClose={() => setIsViewerOpen(false)}
         />
       </div>
-    )
+    );
   }
 
   return (
@@ -311,16 +347,20 @@ export default function DocumentPreview({
             {getFileIcon()}
             <div className="flex-1 min-w-0">
               <h4 className="text-sm font-medium text-gray-900 truncate">
-                {document.file_name}
+                {doc.file_name}
               </h4>
               <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
-                <span>{formatFileSize(document.file_size)}</span>
+                <span>{formatFileSize(doc.file_size)}</span>
                 <span>•</span>
-                <span>Uploaded {new Date(document.uploaded_at).toLocaleDateString()}</span>
-                {document.document_type && (
+                <span>
+                  Uploaded {new Date(doc.uploaded_at).toLocaleDateString()}
+                </span>
+                {doc.document_type && (
                   <>
                     <span>•</span>
-                    <span className="capitalize">{document.document_type.replace('_', ' ')}</span>
+                    <span className="capitalize">
+                      {doc.document_type.replace("_", " ")}
+                    </span>
                   </>
                 )}
               </div>
@@ -375,11 +415,11 @@ export default function DocumentPreview({
         )}
 
         <DocumentViewer
-          document={document}
+          document={doc}
           isOpen={isViewerOpen}
           onClose={() => setIsViewerOpen(false)}
         />
       </CardContent>
     </Card>
-  )
+  );
 }

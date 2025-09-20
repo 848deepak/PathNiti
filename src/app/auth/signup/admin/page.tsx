@@ -1,12 +1,28 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { Button, Input, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui"
-import { Shield, Mail, Lock, Eye, EyeOff, User, ArrowLeft, AlertTriangle } from "lucide-react"
-import { useAuth } from "../../../providers"
-import { PathNitiLogo } from "@/components/PathNitiLogo"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import {
+  Button,
+  Input,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui";
+import {
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  User,
+  ArrowLeft,
+  AlertTriangle,
+} from "lucide-react";
+import { useAuth } from "../../../providers";
+import { PathNitiLogo } from "@/components/PathNitiLogo";
 
 export default function AdminSignupPage() {
   const [formData, setFormData] = useState({
@@ -16,85 +32,94 @@ export default function AdminSignupPage() {
     password: "",
     confirmPassword: "",
     adminCode: "",
-  })
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [error, setError] = useState("")
-  const [success, setSuccess] = useState(false)
-  const router = useRouter()
-  const { signUpAdmin, signInWithOAuth, loading } = useAuth()
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+  const router = useRouter();
+  const { signUpAdmin, signInWithOAuth, loading } = useAuth();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
-    })
-  }
+    });
+  };
 
   const handleEmailSignup = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
+    e.preventDefault();
+    setError("");
 
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match")
-      return
+      setError("Passwords do not match");
+      return;
     }
 
     if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters")
-      return
+      setError("Password must be at least 6 characters");
+      return;
     }
 
     // In production, you would validate the admin code against a secure system
     if (formData.adminCode !== "ADMIN2024") {
-      setError("Invalid admin code")
-      return
+      setError("Invalid admin code");
+      return;
     }
 
     try {
-      const { data, error } = await signUpAdmin(formData.email, formData.password, {
-        first_name: formData.firstName,
-        last_name: formData.lastName,
-      })
+      const { data, error } = await signUpAdmin(
+        formData.email,
+        formData.password,
+        {
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+        },
+      );
 
-      if (error) throw error
+      if (error) throw error;
 
       if (data?.user) {
-        setSuccess(true)
+        setSuccess(true);
         // Redirect to admin dashboard
         setTimeout(() => {
-          router.push("/admin")
-        }, 2000)
+          router.push("/admin");
+        }, 2000);
       }
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : 'An error occurred')
+      setError(error instanceof Error ? error.message : "An error occurred");
     }
-  }
+  };
 
   const handleGoogleSignup = async () => {
-    setError("")
+    setError("");
 
     try {
-      const { error } = await signInWithOAuth("google")
+      const { error } = await signInWithOAuth("google");
 
       if (error) {
         // Handle specific error cases
-        if (error.message.includes('Invalid URL') || error.message.includes('URL')) {
-          setError('Configuration error. Please try again or contact support if the issue persists.')
-          console.error('OAuth URL configuration error:', error)
+        if (
+          error.message.includes("Invalid URL") ||
+          error.message.includes("URL")
+        ) {
+          setError(
+            "Configuration error. Please try again or contact support if the issue persists.",
+          );
+          console.error("OAuth URL configuration error:", error);
         } else {
-          throw error
+          throw error;
         }
       }
     } catch (error: unknown) {
-      console.error('Google OAuth error:', error)
-      if (error instanceof Error && error.message.includes('URL')) {
-        setError('Configuration error. Please refresh the page and try again.')
+      console.error("Google OAuth error:", error);
+      if (error instanceof Error && error.message.includes("URL")) {
+        setError("Configuration error. Please refresh the page and try again.");
       } else {
-        setError(error instanceof Error ? error.message : 'An error occurred')
+        setError(error instanceof Error ? error.message : "An error occurred");
       }
     }
-  }
+  };
 
   if (success) {
     return (
@@ -102,13 +127,26 @@ export default function AdminSignupPage() {
         <Card className="w-full max-w-md">
           <CardContent className="pt-6 text-center">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              <svg
+                className="w-8 h-8 text-green-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Admin Account Created!</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Admin Account Created!
+            </h2>
             <p className="text-gray-600 mb-4">
-              Please check your email to verify your account. You&apos;ll be redirected to the admin dashboard.
+              Please check your email to verify your account. You&apos;ll be
+              redirected to the admin dashboard.
             </p>
             <Button asChild>
               <Link href="/admin">Go to Admin Dashboard</Link>
@@ -116,7 +154,7 @@ export default function AdminSignupPage() {
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   return (
@@ -152,7 +190,10 @@ export default function AdminSignupPage() {
               <AlertTriangle className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
               <div>
                 <p className="font-medium">Admin Access Required</p>
-                <p className="text-xs mt-1">Admin accounts have full system access. Only create an admin account if you have proper authorization.</p>
+                <p className="text-xs mt-1">
+                  Admin accounts have full system access. Only create an admin
+                  account if you have proper authorization.
+                </p>
               </div>
             </div>
 
@@ -267,7 +308,10 @@ export default function AdminSignupPage() {
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="confirmPassword" className="text-sm font-medium">
+                <label
+                  htmlFor="confirmPassword"
+                  className="text-sm font-medium"
+                >
                   Confirm Password
                 </label>
                 <div className="relative">
@@ -348,11 +392,5 @@ export default function AdminSignupPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
-
-
-
-
-
-

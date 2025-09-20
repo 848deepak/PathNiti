@@ -3,47 +3,52 @@
  * Handles sending email notifications for college updates
  */
 
-import { Resend } from 'resend'
-import type { CollegeProfileData } from '@/lib/types/college-profile'
+import { Resend } from "resend";
+import type { CollegeProfileData } from "@/lib/types/college-profile";
 
-const resend = new Resend('re_iZL5TtxG_Je4eMGCM8EmNTXmrzXkm663s')
+const resend = new Resend("re_iZL5TtxG_Je4eMGCM8EmNTXmrzXkm663s");
 
 export interface EmailNotificationOptions {
-  to: string[]
-  subject: string
-  html: string
-  text?: string
+  to: string[];
+  subject: string;
+  html: string;
+  text?: string;
 }
 
 export interface CollegeUpdateNotification {
-  type: 'created' | 'updated' | 'deleted'
-  college: CollegeProfileData
-  changes?: string[]
+  type: "created" | "updated" | "deleted";
+  college: CollegeProfileData;
+  changes?: string[];
 }
 
 /**
  * Send email notification using Resend API
  */
-export async function sendEmailNotification(options: EmailNotificationOptions): Promise<{ success: boolean; error?: string }> {
+export async function sendEmailNotification(
+  options: EmailNotificationOptions,
+): Promise<{ success: boolean; error?: string }> {
   try {
     const result = await resend.emails.send({
-      from: 'PathNiti <notifications@pathniti.com>',
+      from: "PathNiti <notifications@pathniti.com>",
       to: options.to,
       subject: options.subject,
       html: options.html,
-      text: options.text
-    })
+      text: options.text,
+    });
 
     if (result.error) {
-      console.error('Resend API error:', result.error)
-      return { success: false, error: result.error.message }
+      console.error("Resend API error:", result.error);
+      return { success: false, error: result.error.message };
     }
 
-    console.log('Email sent successfully:', result.data?.id)
-    return { success: true }
+    console.log("Email sent successfully:", result.data?.id);
+    return { success: true };
   } catch (error) {
-    console.error('Failed to send email:', error)
-    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+    console.error("Failed to send email:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
   }
 }
 
@@ -52,47 +57,47 @@ export async function sendEmailNotification(options: EmailNotificationOptions): 
  */
 export async function sendCollegeUpdateNotification(
   notification: CollegeUpdateNotification,
-  subscribers: string[]
+  subscribers: string[],
 ): Promise<{ success: boolean; error?: string }> {
   if (subscribers.length === 0) {
-    return { success: true }
+    return { success: true };
   }
 
-  const { type, college, changes } = notification
-  
-  let subject: string
-  let html: string
-  let text: string
+  const { type, college, changes } = notification;
+
+  let subject: string;
+  let html: string;
+  let text: string;
 
   switch (type) {
-    case 'created':
-      subject = `New College Added: ${college.name}`
-      html = generateNewCollegeEmailHTML(college)
-      text = generateNewCollegeEmailText(college)
-      break
-    
-    case 'updated':
-      subject = `College Updated: ${college.name}`
-      html = generateCollegeUpdateEmailHTML(college, changes || [])
-      text = generateCollegeUpdateEmailText(college, changes || [])
-      break
-    
-    case 'deleted':
-      subject = `College Removed: ${college.name}`
-      html = generateCollegeDeletedEmailHTML(college)
-      text = generateCollegeDeletedEmailText(college)
-      break
-    
+    case "created":
+      subject = `New College Added: ${college.name}`;
+      html = generateNewCollegeEmailHTML(college);
+      text = generateNewCollegeEmailText(college);
+      break;
+
+    case "updated":
+      subject = `College Updated: ${college.name}`;
+      html = generateCollegeUpdateEmailHTML(college, changes || []);
+      text = generateCollegeUpdateEmailText(college, changes || []);
+      break;
+
+    case "deleted":
+      subject = `College Removed: ${college.name}`;
+      html = generateCollegeDeletedEmailHTML(college);
+      text = generateCollegeDeletedEmailText(college);
+      break;
+
     default:
-      return { success: false, error: 'Invalid notification type' }
+      return { success: false, error: "Invalid notification type" };
   }
 
   return await sendEmailNotification({
     to: subscribers,
     subject,
     html,
-    text
-  })
+    text,
+  });
 }
 
 /**
@@ -127,19 +132,26 @@ function generateNewCollegeEmailHTML(college: CollegeProfileData): string {
           <div class="college-card">
             <h2>${college.name}</h2>
             <p><strong>📍 Location:</strong> ${college.location.city}, ${college.location.state}</p>
-            <p><strong>🏛️ Type:</strong> ${college.type.replace('_', ' ').toUpperCase()}</p>
-            ${college.established_year ? `<p><strong>📅 Established:</strong> ${college.established_year}</p>` : ''}
-            ${college.is_verified ? '<span class="badge">✅ Verified</span>' : ''}
+            <p><strong>🏛️ Type:</strong> ${college.type.replace("_", " ").toUpperCase()}</p>
+            ${college.established_year ? `<p><strong>📅 Established:</strong> ${college.established_year}</p>` : ""}
+            ${college.is_verified ? '<span class="badge">✅ Verified</span>' : ""}
             
-            ${college.courses && college.courses.length > 0 ? `
+            ${
+              college.courses && college.courses.length > 0
+                ? `
               <div style="margin-top: 15px;">
                 <strong>📚 Available Courses:</strong><br>
-                ${college.courses.slice(0, 5).map(course => `<span class="badge">${course.name}</span>`).join('')}
-                ${college.courses.length > 5 ? `<span class="badge">+${college.courses.length - 5} more</span>` : ''}
+                ${college.courses
+                  .slice(0, 5)
+                  .map((course) => `<span class="badge">${course.name}</span>`)
+                  .join("")}
+                ${college.courses.length > 5 ? `<span class="badge">+${college.courses.length - 5} more</span>` : ""}
               </div>
-            ` : ''}
+            `
+                : ""
+            }
             
-            ${college.about ? `<p style="margin-top: 15px;"><strong>About:</strong> ${college.about.substring(0, 200)}${college.about.length > 200 ? '...' : ''}</p>` : ''}
+            ${college.about ? `<p style="margin-top: 15px;"><strong>About:</strong> ${college.about.substring(0, 200)}${college.about.length > 200 ? "..." : ""}</p>` : ""}
             
             <a href="https://pathniti.com/colleges/${college.slug || college.id}" class="button">View College Details</a>
           </div>
@@ -152,7 +164,7 @@ function generateNewCollegeEmailHTML(college: CollegeProfileData): string {
       </div>
     </body>
     </html>
-  `
+  `;
 }
 
 /**
@@ -165,17 +177,24 @@ function generateNewCollegeEmailText(college: CollegeProfileData): string {
 ${college.name}
 
 📍 Location: ${college.location.city}, ${college.location.state}
-🏛️ Type: ${college.type.replace('_', ' ').toUpperCase()}
-${college.established_year ? `📅 Established: ${college.established_year}` : ''}
-${college.is_verified ? '✅ Verified College' : ''}
+🏛️ Type: ${college.type.replace("_", " ").toUpperCase()}
+${college.established_year ? `📅 Established: ${college.established_year}` : ""}
+${college.is_verified ? "✅ Verified College" : ""}
 
-${college.courses && college.courses.length > 0 ? `
+${
+  college.courses && college.courses.length > 0
+    ? `
 📚 Available Courses:
-${college.courses.slice(0, 5).map(course => `• ${course.name}`).join('\n')}
-${college.courses.length > 5 ? `... and ${college.courses.length - 5} more courses` : ''}
-` : ''}
+${college.courses
+  .slice(0, 5)
+  .map((course) => `• ${course.name}`)
+  .join("\n")}
+${college.courses.length > 5 ? `... and ${college.courses.length - 5} more courses` : ""}
+`
+    : ""
+}
 
-${college.about ? `About: ${college.about.substring(0, 300)}${college.about.length > 300 ? '...' : ''}` : ''}
+${college.about ? `About: ${college.about.substring(0, 300)}${college.about.length > 300 ? "..." : ""}` : ""}
 
 View full details: https://pathniti.com/colleges/${college.slug || college.id}
 
@@ -183,13 +202,16 @@ View full details: https://pathniti.com/colleges/${college.slug || college.id}
 Stay updated with PathNiti!
 Browse all colleges: https://pathniti.com/colleges
 Unsubscribe: https://pathniti.com/unsubscribe
-  `.trim()
+  `.trim();
 }
 
 /**
  * Generate HTML email for college update
  */
-function generateCollegeUpdateEmailHTML(college: CollegeProfileData, changes: string[]): string {
+function generateCollegeUpdateEmailHTML(
+  college: CollegeProfileData,
+  changes: string[],
+): string {
   return `
     <!DOCTYPE html>
     <html>
@@ -219,14 +241,18 @@ function generateCollegeUpdateEmailHTML(college: CollegeProfileData, changes: st
             <h2>${college.name}</h2>
             <p><strong>📍 Location:</strong> ${college.location.city}, ${college.location.state}</p>
             
-            ${changes.length > 0 ? `
+            ${
+              changes.length > 0
+                ? `
               <div class="changes">
                 <strong>🔄 Recent Changes:</strong>
                 <ul>
-                  ${changes.map(change => `<li>${change}</li>`).join('')}
+                  ${changes.map((change) => `<li>${change}</li>`).join("")}
                 </ul>
               </div>
-            ` : ''}
+            `
+                : ""
+            }
             
             <a href="https://pathniti.com/colleges/${college.slug || college.id}" class="button">View Updated Details</a>
           </div>
@@ -239,23 +265,30 @@ function generateCollegeUpdateEmailHTML(college: CollegeProfileData, changes: st
       </div>
     </body>
     </html>
-  `
+  `;
 }
 
 /**
  * Generate text email for college update
  */
-function generateCollegeUpdateEmailText(college: CollegeProfileData, changes: string[]): string {
+function generateCollegeUpdateEmailText(
+  college: CollegeProfileData,
+  changes: string[],
+): string {
   return `
 📝 COLLEGE UPDATED - PathNiti
 
 ${college.name}
 📍 ${college.location.city}, ${college.location.state}
 
-${changes.length > 0 ? `
+${
+  changes.length > 0
+    ? `
 🔄 Recent Changes:
-${changes.map(change => `• ${change}`).join('\n')}
-` : ''}
+${changes.map((change) => `• ${change}`).join("\n")}
+`
+    : ""
+}
 
 View updated details: https://pathniti.com/colleges/${college.slug || college.id}
 
@@ -263,7 +296,7 @@ View updated details: https://pathniti.com/colleges/${college.slug || college.id
 Stay informed with PathNiti!
 Browse all colleges: https://pathniti.com/colleges
 Unsubscribe: https://pathniti.com/unsubscribe
-  `.trim()
+  `.trim();
 }
 
 /**
@@ -310,7 +343,7 @@ function generateCollegeDeletedEmailHTML(college: CollegeProfileData): string {
       </div>
     </body>
     </html>
-  `
+  `;
 }
 
 /**
@@ -331,7 +364,7 @@ Browse other colleges: https://pathniti.com/colleges
 Stay updated with PathNiti!
 Browse all colleges: https://pathniti.com/colleges
 Unsubscribe: https://pathniti.com/unsubscribe
-  `.trim()
+  `.trim();
 }
 
 /**
@@ -341,14 +374,13 @@ Unsubscribe: https://pathniti.com/unsubscribe
 export async function getCollegeNotificationSubscribers(): Promise<string[]> {
   // In a real implementation, this would query a database for subscribers
   // For now, return a placeholder list
-  return [
-    'admin@pathniti.com',
-    'notifications@pathniti.com'
-  ]
+  return ["admin@pathniti.com", "notifications@pathniti.com"];
 }
 
-export default {
+const emailNotificationService = {
   sendEmailNotification,
   sendCollegeUpdateNotification,
-  getCollegeNotificationSubscribers
-}
+  getCollegeNotificationSubscribers,
+};
+
+export default emailNotificationService;

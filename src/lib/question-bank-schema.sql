@@ -25,7 +25,7 @@ CREATE TABLE public.questions (
     competency_codes TEXT[], -- Learning objectives/competencies
     version INTEGER DEFAULT 1,
     pending_review BOOLEAN DEFAULT TRUE,
-    generated_by TEXT DEFAULT 'kiro-auto',
+    generated_by TEXT DEFAULT 'sarthi-auto',
     generated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     approved_by UUID REFERENCES public.profiles(id),
     approved_at TIMESTAMP WITH TIME ZONE,

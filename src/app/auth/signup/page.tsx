@@ -1,15 +1,15 @@
-"use client"
+"use client";
 
-import { useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function SignupPage() {
-  const router = useRouter()
+  const router = useRouter();
 
   useEffect(() => {
     // Redirect to role selection page
-    router.replace('/auth/signup/role-selection')
-  }, [router])
+    router.replace("/auth/signup/role-selection");
+  }, [router]);
 
-  return null
+  return null;
 }

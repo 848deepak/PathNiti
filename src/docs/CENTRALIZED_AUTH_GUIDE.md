@@ -41,15 +41,15 @@ The authentication system has been enhanced with centralized redirect helpers an
 
 ```tsx
 export default function ProtectedPage() {
-  const { user, profile, loading, requireAuth } = useAuth()
+  const { user, profile, loading, requireAuth } = useAuth();
 
   useEffect(() => {
-    requireAuth()
-  }, [requireAuth])
+    requireAuth();
+  }, [requireAuth]);
 
-  if (loading) return <AuthPageLoading />
+  if (loading) return <AuthPageLoading />;
 
-  return <div>Protected content</div>
+  return <div>Protected content</div>;
 }
 ```
 
@@ -57,11 +57,11 @@ export default function ProtectedPage() {
 
 ```tsx
 export default function DashboardPage() {
-  const { user, profile, loading, isReady } = useRequireAuth()
+  const { user, profile, loading, isReady } = useRequireAuth();
 
-  if (loading) return <AuthPageLoading />
+  if (loading) return <AuthPageLoading />;
 
-  return <div>Welcome, {profile?.first_name}!</div>
+  return <div>Welcome, {profile?.first_name}!</div>;
 }
 ```
 
@@ -69,11 +69,11 @@ export default function DashboardPage() {
 
 ```tsx
 const ProtectedPage = withAuth(() => {
-  const { profile } = useAuth()
-  return <div>Welcome, {profile?.first_name}!</div>
-})
+  const { profile } = useAuth();
+  return <div>Welcome, {profile?.first_name}!</div>;
+});
 
-export default ProtectedPage
+export default ProtectedPage;
 ```
 
 ### Pattern 4: Role-Based Access
@@ -81,17 +81,17 @@ export default ProtectedPage
 ```tsx
 // Admin-only page
 export default function AdminPage() {
-  const { profile, loading } = useRequireAdmin()
+  const { profile, loading } = useRequireAdmin();
 
-  if (loading) return <AuthPageLoading />
+  if (loading) return <AuthPageLoading />;
 
-  return <div>Admin Dashboard</div>
+  return <div>Admin Dashboard</div>;
 }
 
 // Or using HOC
 const AdminPage = withAdminAuth(() => {
-  return <div>Admin Dashboard</div>
-})
+  return <div>Admin Dashboard</div>;
+});
 ```
 
 ### Pattern 5: Conditional Rendering
@@ -101,16 +101,16 @@ export default function MixedPage() {
   return (
     <div>
       <h1>Public Content</h1>
-      
+
       <AuthGate fallback={<p>Please log in</p>}>
         <div>Protected content</div>
       </AuthGate>
-      
+
       <AuthGate requireRole="admin" fallback={<p>Admin only</p>}>
         <div>Admin content</div>
       </AuthGate>
     </div>
-  )
+  );
 }
 ```
 
@@ -120,36 +120,38 @@ export default function MixedPage() {
 
 ```tsx
 export default function OldDashboard() {
-  const [user, setUser] = useState(null)
-  const [profile, setProfile] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const router = useRouter()
+  const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) {
-        router.push('/auth/login')
-        return
+        router.push("/auth/login");
+        return;
       }
-      
+
       const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single()
-      
-      setUser(user)
-      setProfile(profile)
-      setLoading(false)
-    }
-    
-    checkAuth()
-  }, [])
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
 
-  if (loading) return <div>Loading...</div>
+      setUser(user);
+      setProfile(profile);
+      setLoading(false);
+    };
 
-  return <div>Dashboard content</div>
+    checkAuth();
+  }, []);
+
+  if (loading) return <div>Loading...</div>;
+
+  return <div>Dashboard content</div>;
 }
 ```
 
@@ -157,11 +159,11 @@ export default function OldDashboard() {
 
 ```tsx
 export default function NewDashboard() {
-  const { user, profile, loading } = useRequireAuth()
+  const { user, profile, loading } = useRequireAuth();
 
-  if (loading) return <AuthPageLoading />
+  if (loading) return <AuthPageLoading />;
 
-  return <div>Dashboard content</div>
+  return <div>Dashboard content</div>;
 }
 ```
 
@@ -174,6 +176,7 @@ The system includes an `AuthErrorBoundary` that automatically catches and handle
 - Critical authentication failures
 
 The error boundary provides:
+
 - User-friendly error messages
 - Retry functionality
 - Automatic redirect to login for critical errors
@@ -207,15 +210,15 @@ The authentication system is designed to be testable:
 
 ```tsx
 // Mock the auth context for testing
-jest.mock('@/app/providers', () => ({
+jest.mock("@/app/providers", () => ({
   useAuth: () => ({
     user: mockUser,
     profile: mockProfile,
     loading: false,
     requireAuth: jest.fn(),
     requireRole: jest.fn(),
-  })
-}))
+  }),
+}));
 ```
 
 ## Performance Benefits

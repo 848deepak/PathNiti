@@ -3,25 +3,25 @@
  * Provides secure session storage with expiration handling
  */
 
-import { 
-  CollegeSignupFormData, 
-  SignupSession, 
-  SessionStorageOptions, 
-  SignupStep 
-} from '../types/signup-session'
+import {
+  CollegeSignupFormData,
+  SignupSession,
+  SessionStorageOptions,
+  SignupStep,
+} from "../types/signup-session";
 
 export class SignupSessionManager {
-  private readonly storageKey: string
-  private readonly expirationMinutes: number
-  private cleanupInterval: NodeJS.Timeout | null = null
+  private readonly storageKey: string;
+  private readonly expirationMinutes: number;
+  private cleanupInterval: NodeJS.Timeout | null = null;
 
   constructor(options: SessionStorageOptions = {}) {
-    this.storageKey = options.storageKey || 'college_signup_session'
-    this.expirationMinutes = options.expirationMinutes || 30 // 30 minutes default
-    
+    this.storageKey = options.storageKey || "college_signup_session";
+    this.expirationMinutes = options.expirationMinutes || 30; // 30 minutes default
+
     // Start cleanup interval for browser environment
-    if (typeof window !== 'undefined') {
-      this.startCleanupInterval()
+    if (typeof window !== "undefined") {
+      this.startCleanupInterval();
     }
   }
 
@@ -30,29 +30,32 @@ export class SignupSessionManager {
    */
   saveFormData(data: Partial<CollegeSignupFormData>, step?: SignupStep): void {
     try {
-      const now = Date.now()
-      const expiresAt = now + (this.expirationMinutes * 60 * 1000)
-      
-      const existingSession = this.getSession()
-      const mergedData = existingSession 
+      const now = Date.now();
+      const expiresAt = now + this.expirationMinutes * 60 * 1000;
+
+      const existingSession = this.getSession();
+      const mergedData = existingSession
         ? { ...existingSession.formData, ...data }
-        : data as CollegeSignupFormData
+        : (data as CollegeSignupFormData);
 
       const session: SignupSession = {
         formData: mergedData,
         timestamp: now,
-        step: step || existingSession?.step || 'college-selection',
-        expiresAt
-      }
+        step: step || existingSession?.step || "college-selection",
+        expiresAt,
+      };
 
       // Sanitize sensitive data before storing
-      const sanitizedSession = this.sanitizeSessionData(session)
-      
-      if (typeof window !== 'undefined') {
-        sessionStorage.setItem(this.storageKey, JSON.stringify(sanitizedSession))
+      const sanitizedSession = this.sanitizeSessionData(session);
+
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem(
+          this.storageKey,
+          JSON.stringify(sanitizedSession),
+        );
       }
     } catch (error) {
-      console.error('Failed to save form data to session:', error)
+      console.error("Failed to save form data to session:", error);
     }
   }
 
@@ -60,8 +63,8 @@ export class SignupSessionManager {
    * Retrieve form data from session storage
    */
   getFormData(): CollegeSignupFormData | null {
-    const session = this.getSession()
-    return session?.formData || null
+    const session = this.getSession();
+    return session?.formData || null;
   }
 
   /**
@@ -69,28 +72,28 @@ export class SignupSessionManager {
    */
   getSession(): SignupSession | null {
     try {
-      if (typeof window === 'undefined') {
-        return null
+      if (typeof window === "undefined") {
+        return null;
       }
 
-      const sessionData = sessionStorage.getItem(this.storageKey)
+      const sessionData = sessionStorage.getItem(this.storageKey);
       if (!sessionData) {
-        return null
+        return null;
       }
 
-      const session: SignupSession = JSON.parse(sessionData)
-      
+      const session: SignupSession = JSON.parse(sessionData);
+
       // Check if session has expired
       if (this.isSessionExpired(session)) {
-        this.clearSession()
-        return null
+        this.clearSession();
+        return null;
       }
 
-      return session
+      return session;
     } catch (error) {
-      console.error('Failed to retrieve session data:', error)
-      this.clearSession() // Clear corrupted data
-      return null
+      console.error("Failed to retrieve session data:", error);
+      this.clearSession(); // Clear corrupted data
+      return null;
     }
   }
 
@@ -99,11 +102,11 @@ export class SignupSessionManager {
    */
   clearSession(): void {
     try {
-      if (typeof window !== 'undefined') {
-        sessionStorage.removeItem(this.storageKey)
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem(this.storageKey);
       }
     } catch (error) {
-      console.error('Failed to clear session data:', error)
+      console.error("Failed to clear session data:", error);
     }
   }
 
@@ -111,17 +114,17 @@ export class SignupSessionManager {
    * Set current step in the signup flow
    */
   setStep(step: SignupStep): void {
-    const session = this.getSession()
+    const session = this.getSession();
     if (session) {
-      session.step = step
-      session.timestamp = Date.now()
-      
+      session.step = step;
+      session.timestamp = Date.now();
+
       try {
-        if (typeof window !== 'undefined') {
-          sessionStorage.setItem(this.storageKey, JSON.stringify(session))
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem(this.storageKey, JSON.stringify(session));
         }
       } catch (error) {
-        console.error('Failed to update session step:', error)
+        console.error("Failed to update session step:", error);
       }
     }
   }
@@ -130,45 +133,45 @@ export class SignupSessionManager {
    * Get current step in the signup flow
    */
   getStep(): SignupStep | null {
-    const session = this.getSession()
-    return session?.step || null
+    const session = this.getSession();
+    return session?.step || null;
   }
 
   /**
    * Check if session exists and is valid
    */
   hasValidSession(): boolean {
-    const session = this.getSession()
-    return session !== null && !this.isSessionExpired(session)
+    const session = this.getSession();
+    return session !== null && !this.isSessionExpired(session);
   }
 
   /**
    * Get time remaining until session expires (in minutes)
    */
   getTimeUntilExpiration(): number {
-    const session = this.getSession()
-    if (!session) return 0
+    const session = this.getSession();
+    if (!session) return 0;
 
-    const now = Date.now()
-    const timeRemaining = Math.max(0, session.expiresAt - now)
-    return Math.floor(timeRemaining / (60 * 1000)) // Convert to minutes
+    const now = Date.now();
+    const timeRemaining = Math.max(0, session.expiresAt - now);
+    return Math.floor(timeRemaining / (60 * 1000)); // Convert to minutes
   }
 
   /**
    * Extend session expiration time
    */
   extendSession(additionalMinutes: number = 30): void {
-    const session = this.getSession()
+    const session = this.getSession();
     if (session) {
-      session.expiresAt = Date.now() + (additionalMinutes * 60 * 1000)
-      session.timestamp = Date.now()
-      
+      session.expiresAt = Date.now() + additionalMinutes * 60 * 1000;
+      session.timestamp = Date.now();
+
       try {
-        if (typeof window !== 'undefined') {
-          sessionStorage.setItem(this.storageKey, JSON.stringify(session))
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem(this.storageKey, JSON.stringify(session));
         }
       } catch (error) {
-        console.error('Failed to extend session:', error)
+        console.error("Failed to extend session:", error);
       }
     }
   }
@@ -177,8 +180,8 @@ export class SignupSessionManager {
    * Check if session is about to expire (within specified minutes)
    */
   isSessionExpiringSoon(withinMinutes: number = 5): boolean {
-    const timeRemaining = this.getTimeUntilExpiration()
-    return timeRemaining > 0 && timeRemaining <= withinMinutes
+    const timeRemaining = this.getTimeUntilExpiration();
+    return timeRemaining > 0 && timeRemaining <= withinMinutes;
   }
 
   /**
@@ -186,9 +189,12 @@ export class SignupSessionManager {
    */
   private startCleanupInterval(): void {
     // Clean up expired sessions every 5 minutes
-    this.cleanupInterval = setInterval(() => {
-      this.performCleanup()
-    }, 5 * 60 * 1000)
+    this.cleanupInterval = setInterval(
+      () => {
+        this.performCleanup();
+      },
+      5 * 60 * 1000,
+    );
   }
 
   /**
@@ -196,8 +202,8 @@ export class SignupSessionManager {
    */
   stopCleanupInterval(): void {
     if (this.cleanupInterval) {
-      clearInterval(this.cleanupInterval)
-      this.cleanupInterval = null
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
     }
   }
 
@@ -206,38 +212,38 @@ export class SignupSessionManager {
    */
   private performCleanup(): void {
     try {
-      if (typeof window === 'undefined') return
+      if (typeof window === "undefined") return;
 
       // Check if current session is expired
-      const session = this.getSession()
+      const session = this.getSession();
       if (!session) {
         // Session was already cleaned up by getSession()
-        return
+        return;
       }
 
       // Clean up other expired sessions with different keys
       const keysToCheck = [
-        'college_signup_session',
-        'student_signup_session',
-        'admin_signup_session'
-      ]
+        "college_signup_session",
+        "student_signup_session",
+        "admin_signup_session",
+      ];
 
       for (const key of keysToCheck) {
         try {
-          const sessionData = sessionStorage.getItem(key)
+          const sessionData = sessionStorage.getItem(key);
           if (sessionData) {
-            const session = JSON.parse(sessionData)
+            const session = JSON.parse(sessionData);
             if (session.expiresAt && Date.now() > session.expiresAt) {
-              sessionStorage.removeItem(key)
+              sessionStorage.removeItem(key);
             }
           }
-        } catch (error) {
+        } catch {
           // Remove corrupted session data
-          sessionStorage.removeItem(key)
+          sessionStorage.removeItem(key);
         }
       }
     } catch (error) {
-      console.error('Error during session cleanup:', error)
+      console.error("Error during session cleanup:", error);
     }
   }
 
@@ -248,127 +254,95 @@ export class SignupSessionManager {
     try {
       // Check required fields
       if (!session.formData || !session.timestamp || !session.expiresAt) {
-        return false
+        return false;
       }
 
       // Check timestamp validity
-      if (typeof session.timestamp !== 'number' || session.timestamp <= 0) {
-        return false
+      if (typeof session.timestamp !== "number" || session.timestamp <= 0) {
+        return false;
       }
 
       // Check expiration validity
-      if (typeof session.expiresAt !== 'number' || session.expiresAt <= 0) {
-        return false
+      if (typeof session.expiresAt !== "number" || session.expiresAt <= 0) {
+        return false;
       }
 
       // Check if session is from the future (clock skew protection)
-      if (session.timestamp > Date.now() + 60000) { // Allow 1 minute skew
-        return false
+      if (session.timestamp > Date.now() + 60000) {
+        // Allow 1 minute skew
+        return false;
       }
 
       // Validate form data structure
-      if (typeof session.formData !== 'object') {
-        return false
+      if (typeof session.formData !== "object") {
+        return false;
       }
 
-      return true
-    } catch (error) {
-      return false
+      return true;
+    } catch {
+      return false;
     }
   }
 
-  /**
-   * Enhanced session retrieval with validation
-   */
-  getSession(): SignupSession | null {
-    try {
-      if (typeof window === 'undefined') {
-        return null
-      }
-
-      const sessionData = sessionStorage.getItem(this.storageKey)
-      if (!sessionData) {
-        return null
-      }
-
-      const session: SignupSession = JSON.parse(sessionData)
-      
-      // Validate session data structure
-      if (!this.validateSessionData(session)) {
-        this.clearSession()
-        return null
-      }
-      
-      // Check if session has expired
-      if (this.isSessionExpired(session)) {
-        this.clearSession()
-        return null
-      }
-
-      return session
-    } catch (error) {
-      console.error('Failed to retrieve session data:', error)
-      this.clearSession() // Clear corrupted data
-      return null
-    }
-  }
 
   /**
    * Get session recovery information
    */
   getRecoveryInfo(): {
-    hasRecoverableData: boolean
-    sessionAge: number
-    timeUntilExpiration: number
-    isExpiringSoon: boolean
-    dataFields: string[]
+    hasRecoverableData: boolean;
+    sessionAge: number;
+    timeUntilExpiration: number;
+    isExpiringSoon: boolean;
+    dataFields: string[];
   } {
-    const session = this.getSession()
-    
+    const session = this.getSession();
+
     if (!session) {
       return {
         hasRecoverableData: false,
         sessionAge: 0,
         timeUntilExpiration: 0,
         isExpiringSoon: false,
-        dataFields: []
-      }
+        dataFields: [],
+      };
     }
 
-    const sessionAge = Math.floor((Date.now() - session.timestamp) / (60 * 1000))
-    const timeUntilExpiration = this.getTimeUntilExpiration()
-    const isExpiringSoon = this.isSessionExpiringSoon()
-    
+    const sessionAge = Math.floor(
+      (Date.now() - session.timestamp) / (60 * 1000),
+    );
+    const timeUntilExpiration = this.getTimeUntilExpiration();
+    const isExpiringSoon = this.isSessionExpiringSoon();
+
     // Check which fields have data
     const dataFields = Object.entries(session.formData)
-      .filter(([_, value]) => value && value.toString().trim() !== '')
-      .map(([key, _]) => key)
+      .filter(([, value]) => value && value.toString().trim() !== "")
+      .map(([key]) => key);
 
     return {
       hasRecoverableData: dataFields.length > 0,
       sessionAge,
       timeUntilExpiration,
       isExpiringSoon,
-      dataFields
-    }
+      dataFields,
+    };
   }
 
   /**
    * Create a backup of current session data
    */
   createBackup(): string | null {
-    const session = this.getSession()
-    if (!session) return null
+    const session = this.getSession();
+    if (!session) return null;
 
     try {
       const backup = {
         ...session,
-        backupTimestamp: Date.now()
-      }
-      return JSON.stringify(backup)
+        backupTimestamp: Date.now(),
+      };
+      return JSON.stringify(backup);
     } catch (error) {
-      console.error('Failed to create session backup:', error)
-      return null
+      console.error("Failed to create session backup:", error);
+      return null;
     }
   }
 
@@ -377,31 +351,34 @@ export class SignupSessionManager {
    */
   restoreFromBackup(backupData: string): boolean {
     try {
-      const backup = JSON.parse(backupData)
-      
+      const backup = JSON.parse(backupData);
+
       // Validate backup structure
       if (!backup.formData || !backup.timestamp) {
-        throw new Error('Invalid backup format')
+        throw new Error("Invalid backup format");
       }
 
       // Create new session from backup
       const session: SignupSession = {
         formData: backup.formData,
         timestamp: Date.now(),
-        step: backup.step || 'college-selection',
-        expiresAt: Date.now() + (this.expirationMinutes * 60 * 1000)
+        step: backup.step || "college-selection",
+        expiresAt: Date.now() + this.expirationMinutes * 60 * 1000,
+      };
+
+      const sanitizedSession = this.sanitizeSessionData(session);
+
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem(
+          this.storageKey,
+          JSON.stringify(sanitizedSession),
+        );
       }
 
-      const sanitizedSession = this.sanitizeSessionData(session)
-      
-      if (typeof window !== 'undefined') {
-        sessionStorage.setItem(this.storageKey, JSON.stringify(sanitizedSession))
-      }
-
-      return true
+      return true;
     } catch (error) {
-      console.error('Failed to restore from backup:', error)
-      return false
+      console.error("Failed to restore from backup:", error);
+      return false;
     }
   }
 
@@ -409,29 +386,29 @@ export class SignupSessionManager {
    * Check if session has expired
    */
   private isSessionExpired(session: SignupSession): boolean {
-    return Date.now() > session.expiresAt
+    return Date.now() > session.expiresAt;
   }
 
   /**
    * Sanitize session data by removing sensitive information
    */
   private sanitizeSessionData(session: SignupSession): SignupSession {
-    const sanitized = { ...session }
-    
+    const sanitized = { ...session };
+
     // Never store passwords in session storage
     if (sanitized.formData.password) {
-      sanitized.formData = { ...sanitized.formData }
-      delete sanitized.formData.password
-    }
-    
-    if (sanitized.formData.confirmPassword) {
-      sanitized.formData = { ...sanitized.formData }
-      delete sanitized.formData.confirmPassword
+      sanitized.formData = { ...sanitized.formData };
+      delete (sanitized.formData as { password?: string }).password;
     }
 
-    return sanitized
+    if (sanitized.formData.confirmPassword) {
+      sanitized.formData = { ...sanitized.formData };
+      delete (sanitized.formData as { confirmPassword?: string }).confirmPassword;
+    }
+
+    return sanitized;
   }
 }
 
 // Export singleton instance for convenience
-export const signupSessionManager = new SignupSessionManager()
+export const signupSessionManager = new SignupSessionManager();

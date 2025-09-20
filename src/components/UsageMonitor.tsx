@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { AlertTriangle, CheckCircle, Clock } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { AlertTriangle, CheckCircle, Clock } from "lucide-react";
 
 interface UsageStats {
   requestsToday: number;
@@ -24,7 +24,7 @@ export default function UsageMonitor() {
       setUsage({
         requestsToday: 3,
         remainingToday: 12,
-        isApproachingLimit: false
+        isApproachingLimit: false,
       });
       setLoading(false);
     };
@@ -53,7 +53,8 @@ export default function UsageMonitor() {
 
   if (!usage) return null;
 
-  const usagePercent = (usage.requestsToday / (usage.requestsToday + usage.remainingToday)) * 100;
+  const usagePercent =
+    (usage.requestsToday / (usage.requestsToday + usage.remainingToday)) * 100;
   const isNearLimit = usagePercent > 80;
   const isAtLimit = usage.remainingToday === 0;
 
@@ -69,7 +70,11 @@ export default function UsageMonitor() {
             <CheckCircle className="h-5 w-5 text-green-500" />
           )}
           AI Usage Monitor
-          <Badge variant={isAtLimit ? "destructive" : isNearLimit ? "secondary" : "default"}>
+          <Badge
+            variant={
+              isAtLimit ? "destructive" : isNearLimit ? "secondary" : "default"
+            }
+          >
             Free Tier
           </Badge>
         </CardTitle>
@@ -79,15 +84,18 @@ export default function UsageMonitor() {
           <div className="flex justify-between text-sm mb-2">
             <span>Requests Today</span>
             <span className="font-medium">
-              {usage.requestsToday} / {usage.requestsToday + usage.remainingToday}
+              {usage.requestsToday} /{" "}
+              {usage.requestsToday + usage.remainingToday}
             </span>
           </div>
-          <Progress 
-            value={usagePercent} 
+          <Progress
+            value={usagePercent}
             className={`h-2 ${
-              isAtLimit ? 'bg-red-100' : 
-              isNearLimit ? 'bg-yellow-100' : 
-              'bg-green-100'
+              isAtLimit
+                ? "bg-red-100"
+                : isNearLimit
+                  ? "bg-yellow-100"
+                  : "bg-green-100"
             }`}
           />
         </div>
@@ -95,20 +103,24 @@ export default function UsageMonitor() {
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
             <p className="text-gray-600">Remaining Today</p>
-            <p className="font-semibold text-lg">
-              {usage.remainingToday}
-            </p>
+            <p className="font-semibold text-lg">{usage.remainingToday}</p>
           </div>
           <div>
             <p className="text-gray-600">Status</p>
-            <p className={`font-semibold ${
-              isAtLimit ? 'text-red-600' : 
-              isNearLimit ? 'text-yellow-600' : 
-              'text-green-600'
-            }`}>
-              {isAtLimit ? 'Limit Reached' : 
-               isNearLimit ? 'Near Limit' : 
-               'Available'}
+            <p
+              className={`font-semibold ${
+                isAtLimit
+                  ? "text-red-600"
+                  : isNearLimit
+                    ? "text-yellow-600"
+                    : "text-green-600"
+              }`}
+            >
+              {isAtLimit
+                ? "Limit Reached"
+                : isNearLimit
+                  ? "Near Limit"
+                  : "Available"}
             </p>
           </div>
         </div>
@@ -116,8 +128,9 @@ export default function UsageMonitor() {
         {isNearLimit && (
           <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
             <p className="text-sm text-yellow-800">
-              <strong>Note:</strong> You're approaching your daily AI usage limit. 
-              Basic recommendations will still work even if the limit is reached.
+              <strong>Note:</strong> You&apos;re approaching your daily AI usage
+              limit. Basic recommendations will still work even if the limit is
+              reached.
             </p>
           </div>
         )}
@@ -125,8 +138,8 @@ export default function UsageMonitor() {
         {isAtLimit && (
           <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
             <p className="text-sm text-red-800">
-              <strong>Daily limit reached.</strong> AI features will use fallback recommendations. 
-              Your limit will reset tomorrow.
+              <strong>Daily limit reached.</strong> AI features will use
+              fallback recommendations. Your limit will reset tomorrow.
             </p>
           </div>
         )}
@@ -140,8 +153,3 @@ export default function UsageMonitor() {
     </Card>
   );
 }
-
-
-
-
-

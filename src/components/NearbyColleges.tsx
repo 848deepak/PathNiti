@@ -1,159 +1,183 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback } from 'react'
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input } from '@/components/ui'
-import { LocationService, Location, LocationError } from '@/lib/location'
-import CollegeMap from './CollegeMap'
-import { 
-  MapPin, 
-  Search, 
-  Navigation, 
-  Star, 
-  Users, 
+import { useState, useCallback } from "react";
+import Image from "next/image";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Input,
+} from "@/components/ui";
+import { LocationService, Location, LocationError } from "@/lib/location";
+import CollegeMap from "./CollegeMap";
+import {
+  MapPin,
+  Search,
+  Navigation,
+  Star,
+  Users,
   ExternalLink,
   RefreshCw,
   AlertCircle,
-  Loader2
-} from 'lucide-react'
+  Loader2,
+} from "lucide-react";
 
 interface College {
-  id: string
-  name: string
-  address: string
-  lat: number
-  lng: number
-  rating: number
-  user_ratings_total: number
-  place_id: string
-  types: string[]
-  business_status?: string
-  price_level?: number
+  id: string;
+  name: string;
+  address: string;
+  lat: number;
+  lng: number;
+  rating: number;
+  user_ratings_total: number;
+  place_id: string;
+  types: string[];
+  business_status?: string;
+  price_level?: number;
   photos: Array<{
-    photo_reference: string
-    height: number
-    width: number
-  }>
+    photo_reference: string;
+    height: number;
+    width: number;
+  }>;
 }
 
 interface NearbyCollegesProps {
-  className?: string
+  className?: string;
 }
 
-export default function NearbyColleges({ className = '' }: NearbyCollegesProps) {
-  const [colleges, setColleges] = useState<College[]>([])
-  const [loading, setLoading] = useState(false)
-  const [location, setLocation] = useState<Location | null>(null)
-  const [locationError, setLocationError] = useState<string | null>(null)
-  const [manualAddress, setManualAddress] = useState('')
-  const [showManualInput, setShowManualInput] = useState(false)
-  const [nextPageToken, setNextPageToken] = useState<string | null>(null)
-  const [loadingMore, setLoadingMore] = useState(false)
-  const [isFallbackData, setIsFallbackData] = useState(false)
-  const [apiWarning, setApiWarning] = useState<string | null>(null)
+export default function NearbyColleges({
+  className = "",
+}: NearbyCollegesProps) {
+  const [colleges, setColleges] = useState<College[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [location, setLocation] = useState<Location | null>(null);
+  const [locationError, setLocationError] = useState<string | null>(null);
+  const [manualAddress, setManualAddress] = useState("");
+  const [showManualInput, setShowManualInput] = useState(false);
+  const [nextPageToken, setNextPageToken] = useState<string | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [isFallbackData, setIsFallbackData] = useState(false);
+  const [apiWarning, setApiWarning] = useState<string | null>(null);
 
-  const fetchNearbyColleges = useCallback(async (lat: number, lng: number, pageToken?: string) => {
-    try {
-      const params = new URLSearchParams({
-        lat: lat.toString(),
-        lng: lng.toString(),
-        radius: '10000' // 10km radius
-      })
+  const fetchNearbyColleges = useCallback(
+    async (lat: number, lng: number, pageToken?: string) => {
+      try {
+        const params = new URLSearchParams({
+          lat: lat.toString(),
+          lng: lng.toString(),
+          radius: "10000", // 10km radius
+        });
 
-      if (pageToken) {
-        params.append('page_token', pageToken)
+        if (pageToken) {
+          params.append("page_token", pageToken);
+        }
+
+        const response = await fetch(`/api/colleges/nearby?${params}`);
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch nearby colleges");
+        }
+
+        const data = await response.json();
+
+        // Check if this is fallback data
+        if (data.fallback) {
+          console.log(
+            "Using fallback data - Google Maps API key issue detected",
+          );
+          setIsFallbackData(true);
+          setApiWarning(data.warning);
+        } else {
+          setIsFallbackData(false);
+          setApiWarning(null);
+        }
+
+        return data;
+      } catch (error) {
+        console.error("Error fetching nearby colleges:", error);
+        throw error;
       }
-
-      const response = await fetch(`/api/colleges/nearby?${params}`)
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch nearby colleges')
-      }
-
-      const data = await response.json()
-      
-      // Check if this is fallback data
-      if (data.fallback) {
-        console.log('Using fallback data - Google Maps API key issue detected')
-        setIsFallbackData(true)
-        setApiWarning(data.warning)
-      } else {
-        setIsFallbackData(false)
-        setApiWarning(null)
-      }
-      
-      return data
-    } catch (error) {
-      console.error('Error fetching nearby colleges:', error)
-      throw error
-    }
-  }, [])
+    },
+    [],
+  );
 
   const handleGetCurrentLocation = useCallback(async () => {
-    setLoading(true)
-    setLocationError(null)
-    setColleges([])
+    setLoading(true);
+    setLocationError(null);
+    setColleges([]);
 
     try {
-      const currentLocation = await LocationService.getCurrentLocation()
-      setLocation(currentLocation)
-      
-      const data = await fetchNearbyColleges(currentLocation.lat, currentLocation.lng)
-      setColleges(data.colleges || [])
-      setNextPageToken(data.next_page_token || null)
+      const currentLocation = await LocationService.getCurrentLocation();
+      setLocation(currentLocation);
+
+      const data = await fetchNearbyColleges(
+        currentLocation.lat,
+        currentLocation.lng,
+      );
+      setColleges(data.colleges || []);
+      setNextPageToken(data.next_page_token || null);
     } catch (error) {
-      const locationError = error as LocationError
-      setLocationError(locationError.message)
-      setShowManualInput(true)
+      const locationError = error as LocationError;
+      setLocationError(locationError.message);
+      setShowManualInput(true);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [fetchNearbyColleges])
+  }, [fetchNearbyColleges]);
 
   const handleManualLocationSearch = useCallback(async () => {
-    if (!manualAddress.trim()) return
+    if (!manualAddress.trim()) return;
 
-    setLoading(true)
-    setLocationError(null)
-    setColleges([])
+    setLoading(true);
+    setLocationError(null);
+    setColleges([]);
 
     try {
-      const location = await LocationService.getLocationFromAddress(manualAddress)
-      setLocation(location)
-      
-      const data = await fetchNearbyColleges(location.lat, location.lng)
-      setColleges(data.colleges || [])
-      setNextPageToken(data.next_page_token || null)
-      setShowManualInput(false)
-    } catch (error) {
-      setLocationError('Address not found. Please try a different address.')
+      const location =
+        await LocationService.getLocationFromAddress(manualAddress);
+      setLocation(location);
+
+      const data = await fetchNearbyColleges(location.lat, location.lng);
+      setColleges(data.colleges || []);
+      setNextPageToken(data.next_page_token || null);
+      setShowManualInput(false);
+    } catch {
+      setLocationError("Address not found. Please try a different address.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [manualAddress, fetchNearbyColleges])
+  }, [manualAddress, fetchNearbyColleges]);
 
   const handleLoadMore = useCallback(async () => {
-    if (!nextPageToken || !location) return
+    if (!nextPageToken || !location) return;
 
-    setLoadingMore(true)
+    setLoadingMore(true);
     try {
-      const data = await fetchNearbyColleges(location.lat, location.lng, nextPageToken)
-      setColleges(prev => [...prev, ...(data.colleges || [])])
-      setNextPageToken(data.next_page_token || null)
+      const data = await fetchNearbyColleges(
+        location.lat,
+        location.lng,
+        nextPageToken,
+      );
+      setColleges((prev) => [...prev, ...(data.colleges || [])]);
+      setNextPageToken(data.next_page_token || null);
     } catch (error) {
-      console.error('Error loading more colleges:', error)
+      console.error("Error loading more colleges:", error);
     } finally {
-      setLoadingMore(false)
+      setLoadingMore(false);
     }
-  }, [nextPageToken, location, fetchNearbyColleges])
+  }, [nextPageToken, location, fetchNearbyColleges]);
 
   const getGoogleMapsUrl = (placeId: string) => {
-    return `https://www.google.com/maps/place/?q=place_id:${placeId}`
-  }
+    return `https://www.google.com/maps/place/?q=place_id:${placeId}`;
+  };
 
   const getPhotoUrl = (photoReference: string) => {
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-    return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${photoReference}&key=${apiKey}`
-  }
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${photoReference}&key=${apiKey}`;
+  };
 
   return (
     <div className={`space-y-6 ${className}`}>
@@ -173,7 +197,7 @@ export default function NearbyColleges({ className = '' }: NearbyCollegesProps) 
           <div className="space-y-4">
             {!showManualInput ? (
               <div className="text-center space-y-4">
-                <Button 
+                <Button
                   onClick={handleGetCurrentLocation}
                   disabled={loading}
                   className="w-full sm:w-auto"
@@ -183,15 +207,13 @@ export default function NearbyColleges({ className = '' }: NearbyCollegesProps) 
                   ) : (
                     <Navigation className="h-4 w-4 mr-2" />
                   )}
-                  {loading ? 'Getting Location...' : 'Use Current Location'}
+                  {loading ? "Getting Location..." : "Use Current Location"}
                 </Button>
-                
-                <div className="text-sm text-gray-500">
-                  or
-                </div>
-                
-                <Button 
-                  variant="outline" 
+
+                <div className="text-sm text-gray-500">or</div>
+
+                <Button
+                  variant="outline"
                   onClick={() => setShowManualInput(true)}
                   className="w-full sm:w-auto"
                 >
@@ -206,10 +228,12 @@ export default function NearbyColleges({ className = '' }: NearbyCollegesProps) 
                     placeholder="Enter city, address, or landmark..."
                     value={manualAddress}
                     onChange={(e) => setManualAddress(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleManualLocationSearch()}
+                    onKeyPress={(e) =>
+                      e.key === "Enter" && handleManualLocationSearch()
+                    }
                     className="flex-1"
                   />
-                  <Button 
+                  <Button
                     onClick={handleManualLocationSearch}
                     disabled={loading || !manualAddress.trim()}
                   >
@@ -220,13 +244,13 @@ export default function NearbyColleges({ className = '' }: NearbyCollegesProps) 
                     )}
                   </Button>
                 </div>
-                
-                <Button 
-                  variant="outline" 
+
+                <Button
+                  variant="outline"
                   onClick={() => {
-                    setShowManualInput(false)
-                    setManualAddress('')
-                    setLocationError(null)
+                    setShowManualInput(false);
+                    setManualAddress("");
+                    setLocationError(null);
                   }}
                   className="w-full"
                 >
@@ -247,7 +271,9 @@ export default function NearbyColleges({ className = '' }: NearbyCollegesProps) 
                 <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700">
                   <MapPin className="h-4 w-4" />
                   <span className="text-sm">
-                    Location: {location.address || `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`}
+                    Location:{" "}
+                    {location.address ||
+                      `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}`}
                   </span>
                 </div>
                 {isFallbackData && apiWarning && (
@@ -280,9 +306,13 @@ export default function NearbyColleges({ className = '' }: NearbyCollegesProps) 
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <CollegeMap 
+              <CollegeMap
                 colleges={colleges}
-                center={location ? { lat: location.lat, lng: location.lng } : undefined}
+                center={
+                  location
+                    ? { lat: location.lat, lng: location.lng }
+                    : undefined
+                }
                 height="400px"
               />
             </CardContent>
@@ -310,13 +340,16 @@ export default function NearbyColleges({ className = '' }: NearbyCollegesProps) 
             <CardContent>
               <div className="space-y-4">
                 {colleges.map((college) => (
-                  <div key={college.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                  <div
+                    key={college.id}
+                    className="border rounded-lg p-4 hover:shadow-md transition-shadow"
+                  >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <h3 className="font-semibold text-gray-900 mb-1">
                           {college.name}
                         </h3>
-                        
+
                         <div className="flex items-center text-sm text-gray-600 mb-2">
                           <MapPin className="h-4 w-4 mr-1" />
                           <span>{college.address}</span>
@@ -325,7 +358,9 @@ export default function NearbyColleges({ className = '' }: NearbyCollegesProps) 
                         {college.rating > 0 && (
                           <div className="flex items-center text-sm mb-2">
                             <Star className="h-4 w-4 text-yellow-400 fill-current mr-1" />
-                            <span className="font-medium">{college.rating.toFixed(1)}</span>
+                            <span className="font-medium">
+                              {college.rating.toFixed(1)}
+                            </span>
                             {college.user_ratings_total > 0 && (
                               <span className="text-gray-500 ml-1">
                                 ({college.user_ratings_total} reviews)
@@ -336,9 +371,13 @@ export default function NearbyColleges({ className = '' }: NearbyCollegesProps) 
 
                         {college.photos.length > 0 && (
                           <div className="mt-2">
-                            <img
-                              src={getPhotoUrl(college.photos[0].photo_reference)}
+                            <Image
+                              src={getPhotoUrl(
+                                college.photos[0].photo_reference,
+                              )}
                               alt={college.name}
+                              width={300}
+                              height={128}
                               className="w-full h-32 object-cover rounded"
                             />
                           </div>
@@ -346,11 +385,7 @@ export default function NearbyColleges({ className = '' }: NearbyCollegesProps) 
                       </div>
 
                       <div className="ml-4 flex flex-col gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          asChild
-                        >
+                        <Button size="sm" variant="outline" asChild>
                           <a
                             href={getGoogleMapsUrl(college.place_id)}
                             target="_blank"
@@ -377,7 +412,7 @@ export default function NearbyColleges({ className = '' }: NearbyCollegesProps) 
                       ) : (
                         <RefreshCw className="h-4 w-4 mr-2" />
                       )}
-                      {loadingMore ? 'Loading...' : 'Load More Colleges'}
+                      {loadingMore ? "Loading..." : "Load More Colleges"}
                     </Button>
                   </div>
                 )}
@@ -391,13 +426,16 @@ export default function NearbyColleges({ className = '' }: NearbyCollegesProps) 
         <Card>
           <CardContent className="p-6 text-center">
             <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No colleges found</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              No colleges found
+            </h3>
             <p className="text-gray-600">
-              No universities or colleges were found near your location. Try expanding your search area or using a different location.
+              No universities or colleges were found near your location. Try
+              expanding your search area or using a different location.
             </p>
           </CardContent>
         </Card>
       )}
     </div>
-  )
+  );
 }

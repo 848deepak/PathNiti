@@ -1,6 +1,6 @@
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -8,17 +8,24 @@ const __dirname = path.dirname(__filename);
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // For Next.js 15, serverComponentsExternalPackages moved to root level
-  serverExternalPackages: ['@supabase/ssr', '@supabase/supabase-js', '@supabase/realtime-js'],
+  serverExternalPackages: [
+    "@supabase/ssr",
+    "@supabase/supabase-js",
+    "@supabase/realtime-js",
+  ],
   images: {
-    domains: ['localhost'],
+    domains: ["localhost"],
   },
   // Explicitly define environment variables for client-side access
   env: {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME || 'PathNiti',
-    NEXT_PUBLIC_APP_DESCRIPTION: process.env.NEXT_PUBLIC_APP_DESCRIPTION || 'One-Stop Personalized Career & Education Advisor for Indian Students',
-    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+    NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME || "PathNiti",
+    NEXT_PUBLIC_APP_DESCRIPTION:
+      process.env.NEXT_PUBLIC_APP_DESCRIPTION ||
+      "One-Stop Personalized Career & Education Advisor for Indian Students",
+    NEXT_PUBLIC_APP_URL:
+      process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
   },
   eslint: {
     ignoreDuringBuilds: false,
@@ -31,27 +38,54 @@ const nextConfig = {
   webpack: (config, { isServer }) => {
     // Create missing CSS file during build to prevent ENOENT errors
     if (isServer) {
-      
       // Create CSS file in all possible locations
       const locations = [
-        path.join(__dirname, '.next', 'browser', 'default-stylesheet.css'),
-        path.join(__dirname, '.next', 'server', 'app', 'auth', 'browser', 'default-stylesheet.css'),
-        path.join(__dirname, '.next', 'server', 'app', 'auth', 'signup', 'college', 'browser', 'default-stylesheet.css'),
-        path.join(__dirname, '.next', 'server', 'app', 'api', 'colleges', 'register', 'browser', 'default-stylesheet.css')
+        path.join(__dirname, ".next", "browser", "default-stylesheet.css"),
+        path.join(
+          __dirname,
+          ".next",
+          "server",
+          "app",
+          "auth",
+          "browser",
+          "default-stylesheet.css",
+        ),
+        path.join(
+          __dirname,
+          ".next",
+          "server",
+          "app",
+          "auth",
+          "signup",
+          "college",
+          "browser",
+          "default-stylesheet.css",
+        ),
+        path.join(
+          __dirname,
+          ".next",
+          "server",
+          "app",
+          "api",
+          "colleges",
+          "register",
+          "browser",
+          "default-stylesheet.css",
+        ),
       ];
-      
-      locations.forEach(cssFile => {
+
+      locations.forEach((cssFile) => {
         const cssDir = path.dirname(cssFile);
         if (!fs.existsSync(cssDir)) {
           fs.mkdirSync(cssDir, { recursive: true });
         }
-        
+
         if (!fs.existsSync(cssFile)) {
-          fs.writeFileSync(cssFile, '/* Default stylesheet placeholder */');
+          fs.writeFileSync(cssFile, "/* Default stylesheet placeholder */");
         }
       });
     }
-    
+
     return config;
   },
 };

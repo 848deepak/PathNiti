@@ -29,27 +29,27 @@ Core utility functions for authentication operations:
 
 ```typescript
 // Role checking
-hasRole(profile, 'admin') // boolean
-isAuthenticated(user, session) // boolean
-hasCompleteProfile(profile) // boolean
+hasRole(profile, "admin"); // boolean
+isAuthenticated(user, session); // boolean
+hasCompleteProfile(profile); // boolean
 
 // User information
-getUserDisplayName(profile) // string
-getUserInitials(profile) // string
-getDashboardUrl(profile) // string
+getUserDisplayName(profile); // string
+getUserInitials(profile); // string
+getDashboardUrl(profile); // string
 
 // Route protection
-isProtectedRoute(pathname) // boolean
-getRequiredRole(pathname) // 'student' | 'admin' | 'college' | null
+isProtectedRoute(pathname); // boolean
+getRequiredRole(pathname); // 'student' | 'admin' | 'college' | null
 
 // Error handling
-parseAuthError(error) // AuthErrorType
-getAuthErrorMessage(errorType) // string
+parseAuthError(error); // AuthErrorType
+getAuthErrorMessage(errorType); // string
 
 // Validation
-isValidEmail(email) // boolean
-isValidPassword(password) // boolean
-getPasswordStrength(password) // 'weak' | 'medium' | 'strong'
+isValidEmail(email); // boolean
+isValidPassword(password); // boolean
+getPasswordStrength(password); // 'weak' | 'medium' | 'strong'
 ```
 
 ## Authentication Components
@@ -80,7 +80,7 @@ import { AuthGuard, AdminGuard, StudentGuard, CollegeGuard } from '@/components/
 </CollegeGuard>
 
 // Custom fallback
-<AuthGuard 
+<AuthGuard
   requiredRole="admin"
   fallback={<div>Access denied</div>}
   loadingComponent={<CustomLoader />}
@@ -94,23 +94,28 @@ import { AuthGuard, AdminGuard, StudentGuard, CollegeGuard } from '@/components/
 Higher-order component for page-level authentication:
 
 ```tsx
-import { withAuth, withAdminAuth, withStudentAuth, withCollegeAuth } from '@/components/withAuth'
+import {
+  withAuth,
+  withAdminAuth,
+  withStudentAuth,
+  withCollegeAuth,
+} from "@/components/withAuth";
 
 // Basic page protection
-const ProtectedPage = withAuth(MyPage)
+const ProtectedPage = withAuth(MyPage);
 
 // Role-specific page protection
-const AdminPage = withAdminAuth(MyAdminPage)
-const StudentPage = withStudentAuth(MyStudentPage)
-const CollegePage = withCollegeAuth(MyCollegePage)
+const AdminPage = withAdminAuth(MyAdminPage);
+const StudentPage = withStudentAuth(MyStudentPage);
+const CollegePage = withCollegeAuth(MyCollegePage);
 
 // Custom options
 const CustomProtectedPage = withAuth(MyPage, {
   requireAuth: true,
-  requiredRole: 'admin',
+  requiredRole: "admin",
   loadingComponent: CustomLoader,
-  fallbackComponent: CustomFallback
-})
+  fallbackComponent: CustomFallback,
+});
 ```
 
 ### AuthLoading (`src/components/AuthLoading.tsx`)
@@ -118,14 +123,14 @@ const CustomProtectedPage = withAuth(MyPage, {
 Comprehensive loading components for different authentication states:
 
 ```tsx
-import { 
-  AuthLoading, 
-  AuthInitialLoading, 
-  AuthSessionLoading, 
+import {
+  AuthLoading,
+  AuthInitialLoading,
+  AuthSessionLoading,
   AuthProfileLoading,
   AuthPageLoading,
   AuthInlineLoading,
-  AuthButtonLoading 
+  AuthButtonLoading
 } from '@/components/AuthLoading'
 
 // Different loading variants
@@ -166,21 +171,24 @@ import { AuthStatus, AuthIndicator, AuthPanel, AuthDebugStatus } from '@/compone
 Error boundary for authentication errors:
 
 ```tsx
-import { AuthErrorBoundary, useAuthErrorHandler } from '@/components/AuthErrorBoundary'
+import {
+  AuthErrorBoundary,
+  useAuthErrorHandler,
+} from "@/components/AuthErrorBoundary";
 
 // Wrap your app or components
 <AuthErrorBoundary fallback={<CustomErrorUI />}>
   <MyApp />
-</AuthErrorBoundary>
+</AuthErrorBoundary>;
 
 // Use error handler hook
 function MyComponent() {
-  const { handleAuthError } = useAuthErrorHandler()
-  
+  const { handleAuthError } = useAuthErrorHandler();
+
   try {
     // authentication operation
   } catch (error) {
-    handleAuthError(error)
+    handleAuthError(error);
   }
 }
 ```
@@ -192,22 +200,27 @@ function MyComponent() {
 Basic authentication guard hook:
 
 ```tsx
-import { useAuthGuard, useRequireAuth, useRequireRole, useRequireAdmin } from '@/hooks/useAuthGuard'
+import {
+  useAuthGuard,
+  useRequireAuth,
+  useRequireRole,
+  useRequireAdmin,
+} from "@/hooks/useAuthGuard";
 
 function MyComponent() {
   const { user, loading, isAuthenticated, isReady } = useAuthGuard({
     requireAuth: true,
-    requiredRole: 'admin'
-  })
-  
+    requiredRole: "admin",
+  });
+
   // Or use specific hooks
-  const auth = useRequireAuth()
-  const adminAuth = useRequireAdmin()
-  
-  if (loading) return <Loading />
-  if (!isReady) return null
-  
-  return <div>Protected content</div>
+  const auth = useRequireAuth();
+  const adminAuth = useRequireAdmin();
+
+  if (loading) return <Loading />;
+  if (!isReady) return null;
+
+  return <div>Protected content</div>;
 }
 ```
 
@@ -216,7 +229,11 @@ function MyComponent() {
 Enhanced authentication hook with additional helpers:
 
 ```tsx
-import { useAuthHelpers, useRequireAuth, useRequireRole } from '@/hooks/useAuthHelpers'
+import {
+  useAuthHelpers,
+  useRequireAuth,
+  useRequireRole,
+} from "@/hooks/useAuthHelpers";
 
 function MyComponent() {
   const {
@@ -224,35 +241,35 @@ function MyComponent() {
     isAuthenticated,
     hasCompleteProfile,
     isReady,
-    
+
     // Role checks
     isAdmin,
     isStudent,
     isCollege,
-    
+
     // User information
     displayName,
     initials,
     dashboardUrl,
-    
+
     // Navigation helpers
     goToDashboard,
     goToLogin,
-    
+
     // Error handling
     handleAuthError,
-    
+
     // Guards
     requireAuthentication,
-    requireAdmin
-  } = useAuthHelpers()
-  
+    requireAdmin,
+  } = useAuthHelpers();
+
   useEffect(() => {
-    if (!requireAuthentication()) return
+    if (!requireAuthentication()) return;
     // Component logic here
-  }, [requireAuthentication])
-  
-  return <div>Welcome, {displayName()}!</div>
+  }, [requireAuthentication]);
+
+  return <div>Welcome, {displayName()}!</div>;
 }
 ```
 
@@ -262,23 +279,23 @@ function MyComponent() {
 
 ```tsx
 // Method 1: HOC (Recommended for pages)
-import { withAuth } from '@/lib/auth'
+import { withAuth } from "@/lib/auth";
 
 function DashboardPage() {
-  return <div>Dashboard content</div>
+  return <div>Dashboard content</div>;
 }
 
-export default withAuth(DashboardPage)
+export default withAuth(DashboardPage);
 
 // Method 2: Hook-based
-import { useRequireAuth } from '@/lib/auth'
+import { useRequireAuth } from "@/lib/auth";
 
 function DashboardPage() {
-  const { isReady } = useRequireAuth()
-  
-  if (!isReady) return null
-  
-  return <div>Dashboard content</div>
+  const { isReady } = useRequireAuth();
+
+  if (!isReady) return null;
+
+  return <div>Dashboard content</div>;
 }
 ```
 
@@ -286,7 +303,7 @@ function DashboardPage() {
 
 ```tsx
 // Method 1: AuthGuard component
-import { AuthGuard } from '@/lib/auth'
+import { AuthGuard } from "@/lib/auth";
 
 function MyComponent() {
   return (
@@ -296,77 +313,75 @@ function MyComponent() {
         <AdminOnlyContent />
       </AuthGuard>
     </div>
-  )
+  );
 }
 
 // Method 2: Conditional rendering with hooks
-import { useAuth } from '@/lib/auth'
+import { useAuth } from "@/lib/auth";
 
 function MyComponent() {
-  const { isAdmin } = useAuth()
-  
+  const { isAdmin } = useAuth();
+
   return (
     <div>
       <PublicContent />
       {isAdmin() && <AdminOnlyContent />}
     </div>
-  )
+  );
 }
 ```
 
 ### Error Handling
 
 ```tsx
-import { AuthErrorBoundary, useAuthErrorHandler } from '@/lib/auth'
+import { AuthErrorBoundary, useAuthErrorHandler } from "@/lib/auth";
 
 // App-level error boundary
 function App() {
   return (
     <AuthErrorBoundary>
       <Router>
-        <Routes>
-          {/* Your routes */}
-        </Routes>
+        <Routes>{/* Your routes */}</Routes>
       </Router>
     </AuthErrorBoundary>
-  )
+  );
 }
 
 // Component-level error handling
 function MyComponent() {
-  const { handleAuthError } = useAuthErrorHandler()
-  
+  const { handleAuthError } = useAuthErrorHandler();
+
   const handleAction = async () => {
     try {
-      await someAuthenticatedAction()
+      await someAuthenticatedAction();
     } catch (error) {
-      const { errorType, message } = handleAuthError(error)
+      const { errorType, message } = handleAuthError(error);
       // Error is automatically handled (redirects, etc.)
       // You can also show user-friendly messages
-      toast.error(message)
+      toast.error(message);
     }
-  }
+  };
 }
 ```
 
 ### Loading States
 
 ```tsx
-import { AuthLoading, AuthInlineLoading } from '@/lib/auth'
+import { AuthLoading, AuthInlineLoading } from "@/lib/auth";
 
 function MyComponent() {
-  const { loading } = useAuth()
-  
+  const { loading } = useAuth();
+
   if (loading) {
-    return <AuthLoading variant="skeleton" size="full" />
+    return <AuthLoading variant="skeleton" size="full" />;
   }
-  
+
   return (
     <div>
       <h1>My Page</h1>
       {someCondition && <AuthInlineLoading message="Loading data..." />}
     </div>
-  )
+  );
 }
 ```
 
@@ -376,14 +391,14 @@ function MyComponent() {
 
 ```tsx
 // ✅ Good - Use HOC for entire pages
-export default withAuth(DashboardPage)
+export default withAuth(DashboardPage);
 
 // ❌ Avoid - Manual authentication checks in pages
 function DashboardPage() {
-  const { user } = useAuth()
+  const { user } = useAuth();
   useEffect(() => {
-    if (!user) router.push('/login')
-  }, [user])
+    if (!user) router.push("/login");
+  }, [user]);
 }
 ```
 
@@ -393,10 +408,12 @@ function DashboardPage() {
 // ✅ Good - Use AuthGuard for conditional rendering
 <AuthGuard requiredRole="admin">
   <AdminPanel />
-</AuthGuard>
+</AuthGuard>;
 
 // ❌ Avoid - Manual role checks everywhere
-{isAdmin() && <AdminPanel />}
+{
+  isAdmin() && <AdminPanel />;
+}
 ```
 
 ### 3. Centralize Error Handling
@@ -405,10 +422,10 @@ function DashboardPage() {
 // ✅ Good - Use error boundary at app level
 <AuthErrorBoundary>
   <App />
-</AuthErrorBoundary>
+</AuthErrorBoundary>;
 
 // ✅ Good - Use error handler hook for specific errors
-const { handleAuthError } = useAuthErrorHandler()
+const { handleAuthError } = useAuthErrorHandler();
 ```
 
 ### 4. Use Appropriate Loading Components
@@ -424,12 +441,12 @@ const { handleAuthError } = useAuthErrorHandler()
 
 ```tsx
 // ✅ Good - Use utility functions
-const displayName = getUserDisplayName(profile)
-const initials = getUserInitials(profile)
-const isProtected = isProtectedRoute(pathname)
+const displayName = getUserDisplayName(profile);
+const initials = getUserInitials(profile);
+const isProtected = isProtectedRoute(pathname);
 
 // ❌ Avoid - Reimplementing logic
-const displayName = profile?.first_name + ' ' + profile?.last_name
+const displayName = profile?.first_name + " " + profile?.last_name;
 ```
 
 ## Migration Guide
@@ -440,40 +457,42 @@ To migrate existing pages to use the new authentication utilities:
 
 ```tsx
 function DashboardPage() {
-  const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const router = useRouter()
-  
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) {
-        router.push('/login')
-        return
+        router.push("/login");
+        return;
       }
-      setUser(user)
-      setLoading(false)
-    }
-    checkAuth()
-  }, [])
-  
-  if (loading) return <div>Loading...</div>
-  if (!user) return null
-  
-  return <div>Dashboard</div>
+      setUser(user);
+      setLoading(false);
+    };
+    checkAuth();
+  }, []);
+
+  if (loading) return <div>Loading...</div>;
+  if (!user) return null;
+
+  return <div>Dashboard</div>;
 }
 ```
 
 ### After (Using Authentication Utilities)
 
 ```tsx
-import { withAuth } from '@/lib/auth'
+import { withAuth } from "@/lib/auth";
 
 function DashboardPage() {
-  return <div>Dashboard</div>
+  return <div>Dashboard</div>;
 }
 
-export default withAuth(DashboardPage)
+export default withAuth(DashboardPage);
 ```
 
 ## Testing
@@ -498,7 +517,7 @@ npm test AuthUtilities
 Use the `AuthDebugStatus` component in development to see authentication state:
 
 ```tsx
-import { AuthDebugStatus } from '@/lib/auth'
+import { AuthDebugStatus } from "@/lib/auth";
 
 function App() {
   return (
@@ -506,7 +525,7 @@ function App() {
       <AuthDebugStatus />
       {/* Your app */}
     </div>
-  )
+  );
 }
 ```
 

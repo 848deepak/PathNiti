@@ -1,192 +1,202 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui"
-import { supabase } from "@/lib/supabase"
-import { Bell, X, CheckCircle, AlertCircle, Calendar } from "lucide-react"
+import { useState, useEffect, useCallback } from "react";
+import { Button } from "@/components/ui";
+import { supabase } from "@/lib/supabase";
+import { Bell, X, CheckCircle, AlertCircle, Calendar } from "lucide-react";
 
 interface Notification {
-  id: string
-  title: string
-  message: string
-  type: 'admission_deadline' | 'scholarship' | 'exam_reminder' | 'general'
-  data?: Record<string, unknown>
-  is_read: boolean
-  sent_at: string
-  created_at: string
+  id: string;
+  title: string;
+  message: string;
+  type: "admission_deadline" | "scholarship" | "exam_reminder" | "general";
+  data?: Record<string, unknown>;
+  is_read: boolean;
+  sent_at: string;
+  created_at: string;
 }
 
 interface NotificationSystemProps {
-  userId: string
+  userId: string;
 }
 
-export default function NotificationSystem({ userId }: NotificationSystemProps) {
-  const [notifications, setNotifications] = useState<Notification[]>([])
-  const [unreadCount, setUnreadCount] = useState(0)
-  const [showNotifications, setShowNotifications] = useState(false)
-  const [loading, setLoading] = useState(true)
+export default function NotificationSystem({
+  userId,
+}: NotificationSystemProps) {
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!userId) return
-
-    fetchNotifications()
-    
-    // Set up real-time subscription
-    const subscription = supabase
-      .channel('notifications')
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'notifications',
-        filter: `user_id=eq.${userId}`
-      }, (payload: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
-        const newNotification = payload.new as Notification
-        setNotifications(prev => [newNotification, ...prev])
-        setUnreadCount(prev => prev + 1)
-      })
-      .subscribe()
-
-    return () => {
-      subscription.unsubscribe()
-    }
-  }, [userId])
-
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     try {
-      const { data, error } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(50)
+      const { data, error } = await (supabase as any)
+        .from("notifications")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(50);
 
       if (error) {
-        console.error('Error fetching notifications:', error)
-        return
+        console.error("Error fetching notifications:", error);
+        return;
       }
 
-      setNotifications(data || [])
-      setUnreadCount(data?.filter(n => !n.is_read).length || 0)
+      setNotifications(data || []);
+      setUnreadCount((data as Notification[])?.filter((n) => !n.is_read).length || 0);
     } catch (error) {
-      console.error("Error fetching notifications:", error)
+      console.error("Error fetching notifications:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  }, [userId]);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    fetchNotifications();
+
+    // Set up real-time subscription
+    const subscription = supabase
+      .channel("notifications")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload: { new: Notification }) => {
+          const newNotification = payload.new as Notification;
+          setNotifications((prev) => [newNotification, ...prev]);
+          setUnreadCount((prev) => prev + 1);
+        },
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [userId, fetchNotifications]);
 
   const markAsRead = async (notificationId: string) => {
     try {
-      const { error } = await supabase
-        .from('notifications')
+      const { error } = await (supabase as any)
+        .from("notifications")
         .update({ is_read: true })
-        .eq('id', notificationId)
+        .eq("id", notificationId);
 
       if (error) {
-        console.error("Error marking notification as read:", error)
-        return
+        console.error("Error marking notification as read:", error);
+        return;
       }
 
-      setNotifications(prev => prev.map(notification =>
-        notification.id === notificationId
-          ? { ...notification, is_read: true }
-          : notification
-      ))
-      setUnreadCount(prev => Math.max(0, prev - 1))
+      setNotifications((prev) =>
+        prev.map((notification) =>
+          notification.id === notificationId
+            ? { ...notification, is_read: true }
+            : notification,
+        ),
+      );
+      setUnreadCount((prev) => Math.max(0, prev - 1));
     } catch (error) {
-      console.error("Error marking notification as read:", error)
+      console.error("Error marking notification as read:", error);
     }
-  }
+  };
 
   const markAllAsRead = async () => {
     try {
-      const { error } = await supabase
-        .from('notifications')
+      const { error } = await (supabase as any)
+        .from("notifications")
         .update({ is_read: true })
-        .eq('user_id', userId)
+        .eq("user_id", userId);
 
       if (error) {
-        console.error("Error marking all notifications as read:", error)
-        return
+        console.error("Error marking all notifications as read:", error);
+        return;
       }
 
-      setNotifications(prev => prev.map(notification => ({
-        ...notification,
-        is_read: true
-      })))
-      setUnreadCount(0)
+      setNotifications((prev) =>
+        prev.map((notification) => ({
+          ...notification,
+          is_read: true,
+        })),
+      );
+      setUnreadCount(0);
     } catch (error) {
-      console.error("Error marking all notifications as read:", error)
+      console.error("Error marking all notifications as read:", error);
     }
-  }
+  };
 
   const deleteNotification = async (notificationId: string) => {
     try {
-      const { error } = await supabase
-        .from('notifications')
+      const { error } = await (supabase as any)
+        .from("notifications")
         .delete()
-        .eq('id', notificationId)
+        .eq("id", notificationId);
 
       if (error) {
-        console.error("Error deleting notification:", error)
-        return
+        console.error("Error deleting notification:", error);
+        return;
       }
 
-      setNotifications(prev => {
-        const notification = prev.find(n => n.id === notificationId)
+      setNotifications((prev) => {
+        const notification = prev.find((n) => n.id === notificationId);
         if (notification && !notification.is_read) {
-          setUnreadCount(prev => Math.max(0, prev - 1))
+          setUnreadCount((prev) => Math.max(0, prev - 1));
         }
-        return prev.filter(n => n.id !== notificationId)
-      })
+        return prev.filter((n) => n.id !== notificationId);
+      });
     } catch (error) {
-      console.error("Error deleting notification:", error)
+      console.error("Error deleting notification:", error);
     }
-  }
+  };
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
-      case 'admission_deadline':
-        return <Calendar className="h-4 w-4 text-blue-600" />
-      case 'scholarship':
-        return <CheckCircle className="h-4 w-4 text-green-600" />
-      case 'exam_reminder':
-        return <AlertCircle className="h-4 w-4 text-orange-600" />
+      case "admission_deadline":
+        return <Calendar className="h-4 w-4 text-blue-600" />;
+      case "scholarship":
+        return <CheckCircle className="h-4 w-4 text-green-600" />;
+      case "exam_reminder":
+        return <AlertCircle className="h-4 w-4 text-orange-600" />;
       default:
-        return <Bell className="h-4 w-4 text-gray-600" />
+        return <Bell className="h-4 w-4 text-gray-600" />;
     }
-  }
+  };
 
   const getNotificationColor = (type: string) => {
     switch (type) {
-      case 'admission_deadline':
-        return 'border-l-blue-500 bg-blue-50'
-      case 'scholarship':
-        return 'border-l-green-500 bg-green-50'
-      case 'exam_reminder':
-        return 'border-l-orange-500 bg-orange-50'
+      case "admission_deadline":
+        return "border-l-blue-500 bg-blue-50";
+      case "scholarship":
+        return "border-l-green-500 bg-green-50";
+      case "exam_reminder":
+        return "border-l-orange-500 bg-orange-50";
       default:
-        return 'border-l-gray-500 bg-gray-50'
+        return "border-l-gray-500 bg-gray-50";
     }
-  }
+  };
 
   const formatTime = (dateString: string) => {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffTime = now.getTime() - date.getTime()
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
-    const diffHours = Math.floor(diffTime / (1000 * 60 * 60))
-    const diffMinutes = Math.floor(diffTime / (1000 * 60))
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+    const diffMinutes = Math.floor(diffTime / (1000 * 60));
 
     if (diffDays > 0) {
-      return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`
+      return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
     } else if (diffHours > 0) {
-      return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`
+      return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
     } else if (diffMinutes > 0) {
-      return `${diffMinutes} minute${diffMinutes > 1 ? 's' : ''} ago`
+      return `${diffMinutes} minute${diffMinutes > 1 ? "s" : ""} ago`;
     } else {
-      return 'Just now'
+      return "Just now";
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -196,7 +206,7 @@ export default function NotificationSystem({ userId }: NotificationSystemProps) 
           Loading...
         </Button>
       </div>
-    )
+    );
   }
 
   return (
@@ -211,7 +221,7 @@ export default function NotificationSystem({ userId }: NotificationSystemProps) 
         Notifications
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-            {unreadCount > 9 ? '9+' : unreadCount}
+            {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
       </Button>
@@ -250,16 +260,20 @@ export default function NotificationSystem({ userId }: NotificationSystemProps) 
                   <div
                     key={notification.id}
                     className={`p-4 border-l-4 ${getNotificationColor(notification.type)} ${
-                      !notification.is_read ? 'bg-white' : 'bg-gray-50'
+                      !notification.is_read ? "bg-white" : "bg-gray-50"
                     }`}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center space-x-2 mb-1">
                           {getNotificationIcon(notification.type)}
-                          <h4 className={`text-sm font-medium ${
-                            !notification.is_read ? 'text-gray-900' : 'text-gray-700'
-                          }`}>
+                          <h4
+                            className={`text-sm font-medium ${
+                              !notification.is_read
+                                ? "text-gray-900"
+                                : "text-gray-700"
+                            }`}
+                          >
                             {notification.title}
                           </h4>
                           {!notification.is_read && (
@@ -310,5 +324,5 @@ export default function NotificationSystem({ userId }: NotificationSystemProps) 
         </div>
       )}
     </div>
-  )
+  );
 }

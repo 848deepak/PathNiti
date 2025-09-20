@@ -5,6 +5,7 @@ This document outlines the comprehensive security measures implemented for the P
 ## Overview
 
 The security implementation includes:
+
 - Row Level Security (RLS) policies
 - Authentication and authorization middleware
 - File upload security and virus scanning
@@ -40,6 +41,7 @@ The security implementation includes:
 Location: `src/lib/migrations/003_security_policies.sql`
 
 To apply the security policies:
+
 ```bash
 node run-security-migration.js
 ```
@@ -49,6 +51,7 @@ node run-security-migration.js
 ### Security Middleware (`src/lib/auth/security-middleware.ts`)
 
 Features:
+
 - **Role-based access control (RBAC)**
 - **Resource ownership validation**
 - **Rate limiting**
@@ -58,32 +61,33 @@ Features:
 #### Usage Example
 
 ```typescript
-import { withAuth, withRateLimit } from '@/lib/auth/security-middleware'
+import { withAuth, withRateLimit } from "@/lib/auth/security-middleware";
 
 export const POST = withAuth(
   withRateLimit(
     async (request, authContext, params) => {
       // Your handler logic
-      if (!authContext.hasRole('admin')) {
-        return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      if (!authContext.hasRole("admin")) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       }
       // ... rest of handler
     },
     {
       maxRequests: 10,
       windowMs: 60000, // 1 minute
-    }
+    },
   ),
   {
-    roles: ['admin', 'college'],
-    requireAuth: true
-  }
-)
+    roles: ["admin", "college"],
+    requireAuth: true,
+  },
+);
 ```
 
 ### Authentication Context
 
 The `AuthContext` provides:
+
 - `user`: Current user information with role
 - `isAuthenticated`: Boolean authentication status
 - `hasRole(roles)`: Check if user has required role(s)
@@ -94,6 +98,7 @@ The `AuthContext` provides:
 ### File Security (`src/lib/security/file-security.ts`)
 
 Features:
+
 - **File type validation** (MIME type and extension)
 - **File size limits**
 - **Virus scanning** (basic pattern detection)
@@ -122,17 +127,23 @@ export const FILE_SECURITY_CONFIGS = {
 #### Usage Example
 
 ```typescript
-import { secureFileUpload, FILE_SECURITY_CONFIGS } from '@/lib/security/file-security'
+import {
+  secureFileUpload,
+  FILE_SECURITY_CONFIGS,
+} from "@/lib/security/file-security";
 
 const result = await secureFileUpload(file, FILE_SECURITY_CONFIGS.documents, {
-  generateUniqueFileName: true
-})
+  generateUniqueFileName: true,
+});
 
 if (!result.success) {
-  return NextResponse.json({ 
-    error: 'File security validation failed',
-    details: result.errors 
-  }, { status: 400 })
+  return NextResponse.json(
+    {
+      error: "File security validation failed",
+      details: result.errors,
+    },
+    { status: 400 },
+  );
 }
 ```
 
@@ -141,6 +152,7 @@ if (!result.success) {
 ### Audit Logger (`src/lib/security/audit-logger.ts`)
 
 Features:
+
 - **Comprehensive event logging**
 - **User activity tracking**
 - **Security event monitoring**
@@ -178,28 +190,28 @@ Features:
 #### Usage Example
 
 ```typescript
-import { auditLogger, extractAuditContext } from '@/lib/security/audit-logger'
+import { auditLogger, extractAuditContext } from "@/lib/security/audit-logger";
 
-const auditContext = extractAuditContext(request, userId)
+const auditContext = extractAuditContext(request, userId);
 
 // Log authentication
-await auditLogger.logAuth('login', auditContext, { method: 'email' })
+await auditLogger.logAuth("login", auditContext, { method: "email" });
 
 // Log data modification
 await auditLogger.logDataModification(
-  'create',
-  'student_applications',
+  "create",
+  "student_applications",
   applicationId,
   auditContext,
   undefined,
-  newApplicationData
-)
+  newApplicationData,
+);
 
 // Log security event
-await auditLogger.logSecurityEvent('suspicious_activity', auditContext, {
-  reason: 'Multiple failed login attempts',
-  attempts: 5
-})
+await auditLogger.logSecurityEvent("suspicious_activity", auditContext, {
+  reason: "Multiple failed login attempts",
+  attempts: 5,
+});
 ```
 
 ## ⚙️ Security Configuration
@@ -220,19 +232,21 @@ export const SECURITY_CONFIG = {
       default: { maxRequests: 100, windowMs: 15 * 60 * 1000 },
       auth: { maxRequests: 10, windowMs: 15 * 60 * 1000 },
       upload: { maxRequests: 20, windowMs: 60 * 60 * 1000 },
-    }
+    },
   },
   fileUpload: {
     maxFileSize: 10 * 1024 * 1024,
     scanForViruses: true,
-    allowedMimeTypes: [/* ... */],
+    allowedMimeTypes: [
+      /* ... */
+    ],
   },
   features: {
     enableAuditLogging: true,
     enableRateLimiting: true,
     enableFileScanning: true,
-  }
-}
+  },
+};
 ```
 
 ## 🔐 Enhanced API Routes
@@ -240,6 +254,7 @@ export const SECURITY_CONFIG = {
 ### Secure Upload Route (`src/app/api/upload/route-secure.ts`)
 
 Features:
+
 - **Multi-layer file validation**
 - **Virus scanning**
 - **Role-based access control**
@@ -249,6 +264,7 @@ Features:
 ### Secure Application Route (`src/app/api/colleges/[slug]/apply/route-secure.ts`)
 
 Features:
+
 - **Student role validation**
 - **Duplicate application prevention**
 - **File security validation**
@@ -260,6 +276,7 @@ Features:
 ### Security Tests (`src/__tests__/security-implementation.test.ts`)
 
 Test coverage includes:
+
 - Authentication middleware functionality
 - Rate limiting behavior
 - File security validation
@@ -268,6 +285,7 @@ Test coverage includes:
 - Security configuration validation
 
 Run tests:
+
 ```bash
 npm test src/__tests__/security-implementation.test.ts
 ```
@@ -289,6 +307,7 @@ node verify-security-implementation.js
 ### 3. Environment Variables
 
 Ensure these are set:
+
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
@@ -312,20 +331,22 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 ### Audit Log Monitoring
 
 Query audit logs for security events:
+
 ```sql
-SELECT * FROM audit_logs 
-WHERE action LIKE 'security.%' 
-ORDER BY created_at DESC 
+SELECT * FROM audit_logs
+WHERE action LIKE 'security.%'
+ORDER BY created_at DESC
 LIMIT 100;
 ```
 
 ### Performance Monitoring
 
 Monitor rate limiting effectiveness:
+
 ```sql
-SELECT action, COUNT(*) as count 
-FROM audit_logs 
-WHERE action = 'security.rate_limit_exceeded' 
+SELECT action, COUNT(*) as count
+FROM audit_logs
+WHERE action = 'security.rate_limit_exceeded'
 AND created_at > NOW() - INTERVAL '1 hour'
 GROUP BY action;
 ```
@@ -333,9 +354,10 @@ GROUP BY action;
 ### File Security Monitoring
 
 Check virus scan results:
+
 ```sql
-SELECT * FROM audit_logs 
-WHERE action = 'security.malware_detected' 
+SELECT * FROM audit_logs
+WHERE action = 'security.malware_detected'
 ORDER BY created_at DESC;
 ```
 
@@ -365,6 +387,7 @@ ORDER BY created_at DESC;
 ## 🤝 Contributing
 
 When adding new security features:
+
 1. Update the security configuration
 2. Add appropriate tests
 3. Update this documentation

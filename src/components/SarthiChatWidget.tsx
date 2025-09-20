@@ -1,22 +1,22 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/app/providers';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MessageSquare, X, Bot, Send, Loader2 } from 'lucide-react';
-import { SarthiChat } from './SarthiChat';
+import React, { useState, useEffect } from "react";
+import { useAuth } from "@/app/providers";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { MessageSquare, X, Bot } from "lucide-react";
+import { SarthiChat } from "./SarthiChat";
 
 interface SarthiChatWidgetProps {
   className?: string;
   initialMessage?: string;
-  position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
+  position?: "bottom-right" | "bottom-left" | "top-right" | "top-left";
 }
 
-export function SarthiChatWidget({ 
-  className = '', 
+export function SarthiChatWidget({
+  className = "",
   initialMessage,
-  position = 'bottom-right'
+  position = "bottom-right",
 }: SarthiChatWidgetProps) {
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
@@ -24,10 +24,10 @@ export function SarthiChatWidget({
   const [hasNewMessage, setHasNewMessage] = useState(false);
 
   const positionClasses = {
-    'bottom-right': 'bottom-4 right-4',
-    'bottom-left': 'bottom-4 left-4',
-    'top-right': 'top-4 right-4',
-    'top-left': 'top-4 left-4',
+    "bottom-right": "bottom-4 right-4",
+    "bottom-left": "bottom-4 left-4",
+    "top-right": "top-4 right-4",
+    "top-left": "top-4 left-4",
   };
 
   const toggleChat = () => {
@@ -49,10 +49,10 @@ export function SarthiChatWidget({
   // Show notification for new users
   useEffect(() => {
     if (user && !isOpen) {
-      const hasSeenChat = localStorage.getItem('sarthi-chat-seen');
+      const hasSeenChat = localStorage.getItem("sarthi-chat-seen");
       if (!hasSeenChat) {
         setHasNewMessage(true);
-        localStorage.setItem('sarthi-chat-seen', 'true');
+        localStorage.setItem("sarthi-chat-seen", "true");
       }
     }
   }, [user, isOpen]);
@@ -79,10 +79,12 @@ export function SarthiChatWidget({
         </Button>
       ) : (
         // Chat Window
-        <div className={`w-96 h-[600px] bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden ${isMinimized ? 'h-14' : ''} transition-all duration-300`}>
+        <div
+          className={`w-96 h-[600px] bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden ${isMinimized ? "h-14" : ""} transition-all duration-300`}
+        >
           {isMinimized ? (
             // Minimized Header
-            <div 
+            <div
               className="p-4 cursor-pointer hover:bg-gray-50 transition-colors duration-200"
               onClick={expandChat}
             >
@@ -92,7 +94,9 @@ export function SarthiChatWidget({
                     <Bot className="w-4 h-4 text-white" />
                   </div>
                   <div>
-                    <span className="text-sm font-semibold text-gray-900">Sarthi</span>
+                    <span className="text-sm font-semibold text-gray-900">
+                      Sarthi
+                    </span>
                     <p className="text-xs text-gray-500">Click to expand</p>
                   </div>
                 </div>
@@ -120,7 +124,9 @@ export function SarthiChatWidget({
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900">Sarthi</h3>
-                      <p className="text-xs text-gray-600">Education Counselor</p>
+                      <p className="text-xs text-gray-600">
+                        Education Counselor
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -144,7 +150,7 @@ export function SarthiChatWidget({
                 </div>
               </div>
               <div className="flex-1">
-                <SarthiChat 
+                <SarthiChat
                   className="border-0 shadow-none h-full"
                   initialMessage={initialMessage}
                 />
@@ -158,7 +164,13 @@ export function SarthiChatWidget({
 }
 
 // Compact version for embedding in pages
-export function SarthiChatCompact({ className = '', initialMessage }: { className?: string; initialMessage?: string }) {
+export function SarthiChatCompact({
+  className = "",
+  initialMessage,
+}: {
+  className?: string;
+  initialMessage?: string;
+}) {
   const { user } = useAuth();
 
   if (!user) {
@@ -188,7 +200,7 @@ export function SarthiChatCompact({ className = '', initialMessage }: { classNam
       </CardHeader>
       <CardContent className="p-0">
         <div className="h-96">
-          <SarthiChat 
+          <SarthiChat
             className="border-0 shadow-none h-full"
             initialMessage={initialMessage}
           />

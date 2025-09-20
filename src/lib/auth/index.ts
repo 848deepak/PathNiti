@@ -4,29 +4,59 @@
  */
 
 // Core authentication utilities
-export * from '../auth-utils'
+export * from "../auth-utils";
 
 // Authentication hooks
-export { useAuthGuard, useRequireAuth, useRequireRole, useRequireAdmin, useRequireStudent, useRequireCollege } from '../../hooks/useAuthGuard'
-export { useAuthHelpers } from '../../hooks/useAuthHelpers'
+export {
+  useAuthGuard,
+  useRequireAuth,
+  useRequireRole,
+  useRequireAdmin,
+  useRequireStudent,
+  useRequireCollege,
+} from "../../hooks/useAuthGuard";
+export { useAuthHelpers } from "../../hooks/useAuthHelpers";
 
 // Authentication components
-export { withAuth, withAdminAuth, withStudentAuth, withCollegeAuth } from '../../components/withAuth'
-export { AuthErrorBoundary, useAuthErrorHandler } from '../../components/AuthErrorBoundary'
-export { AuthStatusIndicator, AuthLoadingSpinner, AuthPageLoading, AuthGate } from '../../components/AuthStatusIndicator'
-export { AuthGuard, AdminGuard, StudentGuard, CollegeGuard } from '../../components/AuthGuard'
-export { 
-  AuthLoading, 
-  AuthInitialLoading, 
-  AuthSessionLoading, 
-  AuthProfileLoading, 
-  AuthInlineLoading, 
-  AuthButtonLoading 
-} from '../../components/AuthLoading'
-export { AuthStatus, AuthIndicator, AuthPanel, AuthDebugStatus } from '../../components/AuthStatus'
+export {
+  withAuth,
+  withAdminAuth,
+  withStudentAuth,
+  withCollegeAuth,
+} from "../../components/withAuth";
+export {
+  AuthErrorBoundary,
+  useAuthErrorHandler,
+} from "../../components/AuthErrorBoundary";
+export {
+  AuthStatusIndicator,
+  AuthLoadingSpinner,
+  AuthPageLoading,
+  AuthGate,
+} from "../../components/AuthStatusIndicator";
+export {
+  AuthGuard,
+  AdminGuard,
+  StudentGuard,
+  CollegeGuard,
+} from "../../components/AuthGuard";
+export {
+  AuthLoading,
+  AuthInitialLoading,
+  AuthSessionLoading,
+  AuthProfileLoading,
+  AuthInlineLoading,
+  AuthButtonLoading,
+} from "../../components/AuthLoading";
+export {
+  AuthStatus,
+  AuthIndicator,
+  AuthPanel,
+  AuthDebugStatus,
+} from "../../components/AuthStatus";
 
 // Main authentication provider and hook
-export { useAuth } from '../../app/providers'
+export { useAuth } from "../../app/providers";
 
 /**
  * Common authentication patterns and examples
@@ -41,7 +71,7 @@ function MyPage() {
 }
 
 export default withAuth(MyPage)
-`
+`;
 
 // Example: Component with role-based access
 export const authGuardExample = `
@@ -54,7 +84,7 @@ function MyComponent() {
     </AuthGuard>
   )
 }
-`
+`;
 
 // Example: Using authentication hooks
 export const authHookExample = `
@@ -71,7 +101,7 @@ function MyComponent() {
   
   return <div>Welcome, {displayName()}!</div>
 }
-`
+`;
 
 // Example: Error handling
 export const errorHandlingExample = `
@@ -84,4 +114,4 @@ function App() {
     </AuthErrorBoundary>
   )
 }
-`
+`;

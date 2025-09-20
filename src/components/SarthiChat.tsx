@@ -1,154 +1,157 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useAuth } from '@/app/providers';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
-import { Loader2, Send, RotateCcw, MessageSquare, Bot, User, Wifi, WifiOff } from 'lucide-react';
-import { offlineSarthiAI } from '@/lib/offline-sarthi-ai';
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useAuth } from "@/app/providers";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+// import { Badge } from "@/components/ui/badge"; // Temporarily unused
+import {
+  Loader2,
+  Send,
+  RotateCcw,
+  MessageSquare,
+  Bot,
+  User,
+  Wifi,
+  WifiOff,
+} from "lucide-react";
+import { offlineSarthiAI } from "@/lib/offline-sarthi-ai";
 
 interface Message {
   id: string;
-  type: 'user' | 'assistant' | 'system';
+  session_id: string;
+  type: "user" | "assistant" | "system";
   content: string;
-  timestamp: Date;
+  timestamp: string;
   metadata?: {
     capability_used?: string;
     confidence_score?: number;
     processing_time_ms?: number;
+    is_offline_response?: boolean;
   };
 }
 
-interface ChatSession {
-  id: string;
-  name: string;
-  messages: Message[];
-  isActive: boolean;
-}
 
 interface SarthiChatProps {
   className?: string;
   initialMessage?: string;
 }
 
-export function SarthiChat({ className = '', initialMessage }: SarthiChatProps) {
+export function SarthiChat({
+  className = "",
+  initialMessage,
+}: SarthiChatProps) {
   const { user, profile } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isTyping, setIsTyping] = useState(false);
-  const [isOnline, setIsOnline] = useState(typeof window !== 'undefined' ? navigator.onLine : true);
+  const [isOnline, setIsOnline] = useState(
+    typeof window !== "undefined" ? navigator.onLine : true,
+  );
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Scroll to bottom when new messages are added
   const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages, scrollToBottom]);
 
-  // Initialize chat session
-  useEffect(() => {
-    if (user && !sessionId) {
-      initializeSession();
-    }
-  }, [user, sessionId]);
-
-  // Listen for online/offline status changes
-  useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
-
-  // Send initial message if provided
-  useEffect(() => {
-    if (initialMessage && sessionId && messages.length === 0) {
-      handleSendMessage(initialMessage);
-    }
-  }, [initialMessage, sessionId, messages.length]);
-
-  const initializeSession = async () => {
+  const initializeSession = useCallback(async () => {
     try {
-      const response = await fetch('/api/chat/session', {
-        method: 'POST',
+      const response = await fetch("/api/chat/session", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           user_id: user?.id,
-          session_name: 'Chat with Sarthi',
+          session_name: "Chat with Sarthi",
         }),
       });
 
       if (response.ok) {
         const data = await response.json();
         setSessionId(data.session_id);
-        
-        // Add welcome message
-        const welcomeMessage: Message = {
-          id: 'welcome',
-          type: 'assistant',
-          content: `Hi! I'm Sarthi, your education counselor. I can help with course recommendations, practice questions, college info, and career guidance. What would you like to know?`,
-          timestamp: new Date(),
-        };
-        setMessages([welcomeMessage]);
+      } else {
+        console.error("Failed to initialize chat session");
       }
     } catch (error) {
-      console.error('Failed to initialize chat session:', error);
+      console.error("Error initializing chat session:", error);
     }
-  };
+  }, [user?.id]);
 
-  const handleSendMessage = async (messageContent?: string) => {
+  // Initialize chat session
+  useEffect(() => {
+    if (user && !sessionId) {
+      initializeSession();
+    }
+  }, [user, sessionId, initializeSession]);
+
+  // Listen for online/offline status changes
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
+  const handleSendMessage = useCallback(async (messageContent?: string) => {
     const content = messageContent || inputValue.trim();
     if (!content || !sessionId) return;
 
     // Add user message
     const userMessage: Message = {
       id: Date.now().toString(),
-      type: 'user',
+      session_id: sessionId || "",
+      type: "user",
       content,
-      timestamp: new Date(),
+      timestamp: new Date().toISOString(),
     };
 
-    setMessages(prev => [...prev, userMessage]);
-    setInputValue('');
+    setMessages((prev) => [...prev, userMessage]);
+    setInputValue("");
     setIsLoading(true);
     setIsTyping(true);
 
     try {
       // Use offline-first Sarthi AI
-      const sarthiResponse = await offlineSarthiAI.processMessage(content, sessionId, {
-        user_profile: profile ? {
-          user_id: user?.id,
-          class_level: profile.class_level,
-          stream: profile.stream,
-          interests: profile.interests,
-          location: profile.location,
-        } : undefined,
-        conversation_history: messages,
-      });
+      const sarthiResponse = await offlineSarthiAI.processMessage(
+        content,
+        sessionId,
+        {
+          user_profile: profile
+            ? {
+                user_id: user?.id || "",
+                class_level: (profile as { class_level?: string }).class_level || "",
+                stream: (profile as { stream?: string }).stream || "",
+                interests: (profile as { interests?: string[] }).interests || [],
+                location: (profile as { location?: Record<string, unknown> }).location || {},
+              }
+            : undefined,
+          conversation_history: messages,
+        },
+      );
 
       // Add assistant response
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
-        type: 'assistant',
+        session_id: sessionId,
+        type: "assistant",
         content: sarthiResponse.response,
-        timestamp: new Date(),
+        timestamp: new Date().toISOString(),
         metadata: {
           capability_used: sarthiResponse.capability_used,
           confidence_score: sarthiResponse.confidence_score,
@@ -157,43 +160,51 @@ export function SarthiChat({ className = '', initialMessage }: SarthiChatProps) 
         },
       };
 
-      setMessages(prev => [...prev, assistantMessage]);
+      setMessages((prev) => [...prev, assistantMessage]);
 
       // Save messages to offline storage
       await offlineSarthiAI.saveMessage(userMessage);
       await offlineSarthiAI.saveMessage(assistantMessage);
-
     } catch (error) {
-      console.error('Error sending message:', error);
-      
+      console.error("Error sending message:", error);
+
       // Add error message
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        type: 'assistant',
-        content: 'I apologize, but I encountered an error processing your request. Please try again or rephrase your question.',
-        timestamp: new Date(),
+        session_id: sessionId,
+        type: "assistant",
+        content:
+          "I apologize, but I encountered an error processing your request. Please try again or rephrase your question.",
+        timestamp: new Date().toISOString(),
         metadata: {
-          capability_used: 'error_handling',
+          capability_used: "error_handling",
           confidence_score: 0.1,
           processing_time_ms: 0,
           is_offline_response: true,
         },
       };
-      setMessages(prev => [...prev, errorMessage]);
+      setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
       setIsTyping(false);
     }
-  };
+  }, [inputValue, sessionId, user, profile, messages]);
+
+  // Send initial message if provided
+  useEffect(() => {
+    if (initialMessage && sessionId && messages.length === 0) {
+      handleSendMessage(initialMessage);
+    }
+  }, [initialMessage, sessionId, messages.length, handleSendMessage]);
 
   const handleResetConversation = async () => {
     if (!sessionId) return;
 
     try {
-      await fetch('/api/chat/session/reset', {
-        method: 'POST',
+      await fetch("/api/chat/session/reset", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ session_id: sessionId }),
       });
@@ -201,45 +212,29 @@ export function SarthiChat({ className = '', initialMessage }: SarthiChatProps) 
       setMessages([]);
       await initializeSession();
     } catch (error) {
-      console.error('Failed to reset conversation:', error);
+      console.error("Failed to reset conversation:", error);
     }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
   };
 
-  const formatTimestamp = (timestamp: Date) => {
-    return timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
-
-  const getCapabilityBadge = (capability?: string) => {
-    if (!capability) return null;
-    
-    const capabilityColors = {
-      recommendation: 'bg-blue-100 text-blue-800',
-      question_generation: 'bg-green-100 text-green-800',
-      college_info: 'bg-purple-100 text-purple-800',
-      general_chat: 'bg-gray-100 text-gray-800',
-    };
-
-    return (
-      <Badge className={`text-xs ${capabilityColors[capability as keyof typeof capabilityColors] || 'bg-gray-100 text-gray-800'}`}>
-        {capability.replace('_', ' ')}
-      </Badge>
-    );
-  };
 
   if (!user) {
     return (
       <Card className={`w-full max-w-4xl mx-auto ${className}`}>
         <CardContent className="p-8 text-center">
           <MessageSquare className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-          <h3 className="text-lg font-semibold mb-2">Sign in to chat with Sarthi</h3>
-          <p className="text-gray-600">Please sign in to start your conversation with AI Sarthi.</p>
+          <h3 className="text-lg font-semibold mb-2">
+            Sign in to chat with Sarthi
+          </h3>
+          <p className="text-gray-600">
+            Please sign in to start your conversation with AI Sarthi.
+          </p>
         </CardContent>
       </Card>
     );
@@ -291,29 +286,37 @@ export function SarthiChat({ className = '', initialMessage }: SarthiChatProps) 
           {messages.map((message) => (
             <div
               key={message.id}
-              className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+              className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}
             >
-              <div className={`flex gap-4 max-w-[85%] ${message.type === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+              <div
+                className={`flex gap-4 max-w-[85%] ${message.type === "user" ? "flex-row-reverse" : "flex-row"}`}
+              >
                 {/* Avatar */}
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                  message.type === 'user' 
-                    ? 'bg-blue-500' 
-                    : 'bg-gradient-to-r from-blue-500 to-purple-600'
-                }`}>
-                  {message.type === 'user' ? (
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    message.type === "user"
+                      ? "bg-blue-500"
+                      : "bg-gradient-to-r from-blue-500 to-purple-600"
+                  }`}
+                >
+                  {message.type === "user" ? (
                     <User className="w-5 h-5 text-white" />
                   ) : (
                     <Bot className="w-5 h-5 text-white" />
                   )}
                 </div>
-                
+
                 {/* Message */}
-                <div className={`rounded-2xl px-5 py-3 shadow-sm ${
-                  message.type === 'user'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 text-gray-900'
-                }`}>
-                  <div className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</div>
+                <div
+                  className={`rounded-2xl px-5 py-3 shadow-sm ${
+                    message.type === "user"
+                      ? "bg-blue-500 text-white"
+                      : "bg-gray-100 text-gray-900"
+                  }`}
+                >
+                  <div className="text-sm leading-relaxed whitespace-pre-wrap">
+                    {message.content}
+                  </div>
                 </div>
               </div>
             </div>
@@ -327,11 +330,22 @@ export function SarthiChat({ className = '', initialMessage }: SarthiChatProps) 
                 </div>
                 <div className="bg-gray-100 rounded-2xl px-5 py-3 shadow-sm">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600">Sarthi is typing</span>
+                    <span className="text-sm text-gray-600">
+                      Sarthi is typing
+                    </span>
                     <div className="flex gap-1">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                      <div
+                        className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                        style={{ animationDelay: "0ms" }}
+                      ></div>
+                      <div
+                        className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                        style={{ animationDelay: "150ms" }}
+                      ></div>
+                      <div
+                        className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                        style={{ animationDelay: "300ms" }}
+                      ></div>
                     </div>
                   </div>
                 </div>

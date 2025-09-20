@@ -1,44 +1,53 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { usageMonitor } from '@/lib/usage-monitor';
+import { NextRequest, NextResponse } from "next/server";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { usageMonitor } from "@/lib/usage-monitor";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-const model = genAI.getGenerativeModel({ 
-  model: 'gemini-1.5-flash',
+const model = genAI.getGenerativeModel({
+  model: "gemini-1.5-flash",
   generationConfig: {
     maxOutputTokens: 1000, // Limit output to stay within free tier
     temperature: 0.7,
-  }
+  },
 });
 
 export async function POST(request: NextRequest) {
   try {
-    const { prompt, context, type = 'general' } = await request.json();
+    const { prompt, context, type = "general" } = await request.json();
 
     if (!prompt) {
-      return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Prompt is required" },
+        { status: 400 },
+      );
     }
 
     if (!process.env.GEMINI_API_KEY) {
-      return NextResponse.json({ error: 'Gemini API key not configured' }, { status: 500 });
+      return NextResponse.json(
+        { error: "Gemini API key not configured" },
+        { status: 500 },
+      );
     }
 
     // Check if we can make a request without exceeding free tier limits
     if (!usageMonitor.canMakeRequest()) {
-      return NextResponse.json({ 
-        error: 'API usage limit reached. Please try again later.',
-        usage: usageMonitor.getUsageStats()
-      }, { status: 429 });
+      return NextResponse.json(
+        {
+          error: "API usage limit reached. Please try again later.",
+          usage: usageMonitor.getUsageStats(),
+        },
+        { status: 429 },
+      );
     }
 
     // Create enhanced prompt based on type
     let enhancedPrompt = prompt;
-    
-    if (type === 'career_advice') {
+
+    if (type === "career_advice") {
       enhancedPrompt = `
 You are an expert career counselor for Indian students. Provide personalized career advice based on the following context:
 
-Context: ${context || 'No additional context provided'}
+Context: ${context || "No additional context provided"}
 
 User Question: ${prompt}
 
@@ -51,11 +60,11 @@ Please provide:
 
 Format your response in a clear, structured way.
 `;
-    } else if (type === 'stream_selection') {
+    } else if (type === "stream_selection") {
       enhancedPrompt = `
 You are an expert academic counselor for Indian students. Help with stream selection based on:
 
-Context: ${context || 'No additional context provided'}
+Context: ${context || "No additional context provided"}
 
 User Question: ${prompt}
 
@@ -68,11 +77,11 @@ Please provide:
 
 Be specific and practical in your advice.
 `;
-    } else if (type === 'college_guidance') {
+    } else if (type === "college_guidance") {
       enhancedPrompt = `
 You are an expert college counselor for Indian students. Provide college guidance based on:
 
-Context: ${context || 'No additional context provided'}
+Context: ${context || "No additional context provided"}
 
 User Question: ${prompt}
 
@@ -93,7 +102,7 @@ Focus on Indian colleges and universities.
 
     // Record successful API usage
     usageMonitor.recordRequest();
-    
+
     // Get usage stats
     const stats = usageMonitor.getUsageStats();
     const remaining = usageMonitor.getRemainingRequestsToday();
@@ -105,23 +114,22 @@ Focus on Indian colleges and universities.
       usage: {
         requestsToday: stats.requestsToday,
         remainingToday: remaining,
-        isApproachingLimit: usageMonitor.isApproachingLimit()
-      }
+        isApproachingLimit: usageMonitor.isApproachingLimit(),
+      },
     });
-
   } catch (error) {
-    console.error('Gemini API error:', error);
+    console.error("Gemini API error:", error);
     return NextResponse.json(
-      { error: 'Failed to generate AI response' },
-      { status: 500 }
+      { error: "Failed to generate AI response" },
+      { status: 500 },
     );
   }
 }
 
 export async function GET() {
   return NextResponse.json({
-    message: 'Gemini AI API endpoint',
-    status: 'active',
-    model: 'gemini-1.5-flash'
+    message: "Gemini AI API endpoint",
+    status: "active",
+    model: "gemini-1.5-flash",
   });
 }

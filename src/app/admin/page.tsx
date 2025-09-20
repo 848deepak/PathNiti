@@ -1,14 +1,22 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
+import { useState, useEffect } from "react";
 // import { useRouter } from "next/navigation"
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input } from "@/components/ui"
-import { useAuth } from "../providers"
-import { 
-  GraduationCap, 
-  Users, 
-  Building, 
-  BookOpen, 
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Input,
+} from "@/components/ui";
+import { useAuth } from "../providers";
+import {
+  GraduationCap,
+  Users,
+  Building,
+  BookOpen,
   Calendar,
   Settings,
   Plus,
@@ -21,44 +29,44 @@ import {
   TrendingUp,
   AlertCircle,
   CheckCircle,
-  Clock
-} from "lucide-react"
-import Link from "next/link"
+  Clock,
+} from "lucide-react";
+import Link from "next/link";
 
 interface AdminStats {
-  totalUsers: number
-  totalColleges: number
-  totalPrograms: number
-  totalScholarships: number
-  pendingVerifications: number
-  recentActivity: number
+  totalUsers: number;
+  totalColleges: number;
+  totalPrograms: number;
+  totalScholarships: number;
+  pendingVerifications: number;
+  recentActivity: number;
 }
 
 interface College {
-  id: string
-  name: string
-  type: string
+  id: string;
+  name: string;
+  type: string;
   location: {
-    state: string
-    city: string
-  }
-  is_verified: boolean
-  created_at: string
-  programs_count: number
+    state: string;
+    city: string;
+  };
+  is_verified: boolean;
+  created_at: string;
+  programs_count: number;
 }
 
 interface User {
-  id: string
-  email: string
-  first_name: string
-  last_name: string
-  role: string
-  created_at: string
-  is_verified: boolean
+  id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  role: string;
+  created_at: string;
+  is_verified: boolean;
 }
 
 export default function AdminPage() {
-  const { user, profile, loading, requireRole, signOut } = useAuth()
+  const { user, profile, loading, requireRole, signOut } = useAuth();
   // const router = useRouter()
   const [stats, setStats] = useState<AdminStats>({
     totalUsers: 0,
@@ -66,27 +74,28 @@ export default function AdminPage() {
     totalPrograms: 0,
     totalScholarships: 0,
     pendingVerifications: 0,
-    recentActivity: 0
-  })
-  const [colleges, setColleges] = useState<College[]>([])
-  const [users, setUsers] = useState<User[]>([])
-  const [dataLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState("overview")
-  const [searchTerm, setSearchTerm] = useState("")
+    recentActivity: 0,
+  });
+  const [colleges, setColleges] = useState<College[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [activeTab, setActiveTab] = useState("overview");
+  const [searchTerm, setSearchTerm] = useState("");
+  // const [dataLoading, setDataLoading] = useState(false); // Temporarily unused
 
   // Use centralized authentication enforcement
   useEffect(() => {
-    requireRole('admin')
-  }, [requireRole])
+    requireRole("admin");
+  }, [requireRole]);
 
   // Fetch admin data only after authentication is confirmed
   useEffect(() => {
     if (!loading && user && profile) {
-      fetchAdminData()
+      fetchAdminData();
     }
-  }, [loading, user, profile])
+  }, [loading, user, profile]);
 
   const fetchAdminData = async () => {
+    // setDataLoading(true); // Temporarily disabled
     try {
       // For demo purposes, we'll use sample data
       // In production, this would fetch from the database
@@ -96,8 +105,8 @@ export default function AdminPage() {
         totalPrograms: 180,
         totalScholarships: 25,
         pendingVerifications: 8,
-        recentActivity: 156
-      }
+        recentActivity: 156,
+      };
 
       const sampleColleges: College[] = [
         {
@@ -107,7 +116,7 @@ export default function AdminPage() {
           location: { state: "Delhi", city: "New Delhi" },
           is_verified: true,
           created_at: "2024-01-01T00:00:00Z",
-          programs_count: 12
+          programs_count: 12,
         },
         {
           id: "2",
@@ -116,7 +125,7 @@ export default function AdminPage() {
           location: { state: "Delhi", city: "New Delhi" },
           is_verified: true,
           created_at: "2024-01-02T00:00:00Z",
-          programs_count: 8
+          programs_count: 8,
         },
         {
           id: "3",
@@ -125,7 +134,7 @@ export default function AdminPage() {
           location: { state: "Maharashtra", city: "Mumbai" },
           is_verified: false,
           created_at: "2024-01-03T00:00:00Z",
-          programs_count: 15
+          programs_count: 15,
         },
         {
           id: "4",
@@ -134,9 +143,9 @@ export default function AdminPage() {
           location: { state: "Tamil Nadu", city: "Chennai" },
           is_verified: true,
           created_at: "2024-01-04T00:00:00Z",
-          programs_count: 20
-        }
-      ]
+          programs_count: 20,
+        },
+      ];
 
       const sampleUsers: User[] = [
         {
@@ -146,7 +155,7 @@ export default function AdminPage() {
           last_name: "Doe",
           role: "student",
           created_at: "2024-01-01T00:00:00Z",
-          is_verified: true
+          is_verified: true,
         },
         {
           id: "2",
@@ -155,7 +164,7 @@ export default function AdminPage() {
           last_name: "Smith",
           role: "student",
           created_at: "2024-01-02T00:00:00Z",
-          is_verified: false
+          is_verified: false,
         },
         {
           id: "3",
@@ -164,68 +173,74 @@ export default function AdminPage() {
           last_name: "User",
           role: "admin",
           created_at: "2024-01-01T00:00:00Z",
-          is_verified: true
-        }
-      ]
+          is_verified: true,
+        },
+      ];
 
-      setStats(sampleStats)
-      setColleges(sampleColleges)
-      setUsers(sampleUsers)
+      setStats(sampleStats);
+      setColleges(sampleColleges);
+      setUsers(sampleUsers);
     } catch (error) {
-      console.error("Error fetching admin data:", error)
+      console.error("Error fetching admin data:", error);
     } finally {
-      setDataLoading(false)
+      // setDataLoading(false); // Temporarily disabled
     }
-  }
+  };
 
   const handleVerifyCollege = async (collegeId: string) => {
     try {
       // In production, this would update the database
-      setColleges(prev => prev.map(college => 
-        college.id === collegeId 
-          ? { ...college, is_verified: true }
-          : college
-      ))
+      setColleges((prev) =>
+        prev.map((college) =>
+          college.id === collegeId
+            ? { ...college, is_verified: true }
+            : college,
+        ),
+      );
     } catch (error) {
-      console.error("Error verifying college:", error)
+      console.error("Error verifying college:", error);
     }
-  }
+  };
 
   const handleDeleteCollege = async (collegeId: string) => {
     if (confirm("Are you sure you want to delete this college?")) {
       try {
         // In production, this would delete from the database
-        setColleges(prev => prev.filter(college => college.id !== collegeId))
+        setColleges((prev) =>
+          prev.filter((college) => college.id !== collegeId),
+        );
       } catch (error) {
-        console.error("Error deleting college:", error)
+        console.error("Error deleting college:", error);
       }
     }
-  }
+  };
 
   const handleVerifyUser = async (userId: string) => {
     try {
       // In production, this would update the database
-      setUsers(prev => prev.map(user => 
-        user.id === userId 
-          ? { ...user, is_verified: true }
-          : user
-      ))
+      setUsers((prev) =>
+        prev.map((user) =>
+          user.id === userId ? { ...user, is_verified: true } : user,
+        ),
+      );
     } catch (error) {
-      console.error("Error verifying user:", error)
+      console.error("Error verifying user:", error);
     }
-  }
+  };
 
-  const filteredColleges = colleges.filter(college =>
-    college.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    college.location.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    college.location.state.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const filteredColleges = colleges.filter(
+    (college) =>
+      college.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      college.location.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      college.location.state.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
 
-  const filteredUsers = users.filter(user =>
-    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.last_name.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const filteredUsers = users.filter(
+    (user) =>
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.last_name.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
 
   // Use central loading state for authentication
   if (loading) {
@@ -236,12 +251,12 @@ export default function AdminPage() {
           <p className="text-gray-600">Loading admin panel...</p>
         </div>
       </div>
-    )
+    );
   }
 
   // Don't render if user is not authenticated (requireRole will handle redirect)
   if (!user || !profile) {
-    return null
+    return null;
   }
 
   return (
@@ -249,9 +264,14 @@ export default function AdminPage() {
       {/* Navigation */}
       <nav className="bg-white border-b">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity duration-200">
+          <Link
+            href="/"
+            className="flex items-center space-x-2 hover:opacity-80 transition-opacity duration-200"
+          >
             <Settings className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold text-primary">PathNiti Admin</span>
+            <span className="text-2xl font-bold text-primary">
+              PathNiti Admin
+            </span>
           </Link>
           <div className="flex items-center space-x-4">
             <Button variant="outline" asChild>
@@ -287,9 +307,9 @@ export default function AdminPage() {
                 { id: "colleges", label: "Colleges", icon: Building },
                 { id: "users", label: "Users", icon: Users },
                 { id: "content", label: "Content", icon: BookOpen },
-                { id: "settings", label: "Settings", icon: Settings }
+                { id: "settings", label: "Settings", icon: Settings },
               ].map((tab) => {
-                const Icon = tab.icon
+                const Icon = tab.icon;
                 return (
                   <button
                     key={tab.id}
@@ -303,7 +323,7 @@ export default function AdminPage() {
                     <Icon className="h-4 w-4" />
                     <span>{tab.label}</span>
                   </button>
-                )
+                );
               })}
             </nav>
           </div>
@@ -321,8 +341,12 @@ export default function AdminPage() {
                       <Users className="h-6 w-6 text-blue-600" />
                     </div>
                     <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">Total Users</p>
-                      <p className="text-2xl font-bold text-gray-900">{stats.totalUsers.toLocaleString()}</p>
+                      <p className="text-sm font-medium text-gray-600">
+                        Total Users
+                      </p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {stats.totalUsers.toLocaleString()}
+                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -335,8 +359,12 @@ export default function AdminPage() {
                       <Building className="h-6 w-6 text-green-600" />
                     </div>
                     <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">Colleges</p>
-                      <p className="text-2xl font-bold text-gray-900">{stats.totalColleges}</p>
+                      <p className="text-sm font-medium text-gray-600">
+                        Colleges
+                      </p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {stats.totalColleges}
+                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -349,8 +377,12 @@ export default function AdminPage() {
                       <BookOpen className="h-6 w-6 text-purple-600" />
                     </div>
                     <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">Programs</p>
-                      <p className="text-2xl font-bold text-gray-900">{stats.totalPrograms}</p>
+                      <p className="text-sm font-medium text-gray-600">
+                        Programs
+                      </p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {stats.totalPrograms}
+                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -363,8 +395,12 @@ export default function AdminPage() {
                       <Calendar className="h-6 w-6 text-orange-600" />
                     </div>
                     <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">Scholarships</p>
-                      <p className="text-2xl font-bold text-gray-900">{stats.totalScholarships}</p>
+                      <p className="text-sm font-medium text-gray-600">
+                        Scholarships
+                      </p>
+                      <p className="text-2xl font-bold text-gray-900">
+                        {stats.totalScholarships}
+                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -385,19 +421,34 @@ export default function AdminPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {colleges.filter(c => !c.is_verified).slice(0, 3).map((college) => (
-                      <div key={college.id} className="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
-                        <div>
-                          <p className="font-medium text-gray-900">{college.name}</p>
-                          <p className="text-sm text-gray-600">{college.location.city}, {college.location.state}</p>
+                    {colleges
+                      .filter((c) => !c.is_verified)
+                      .slice(0, 3)
+                      .map((college) => (
+                        <div
+                          key={college.id}
+                          className="flex items-center justify-between p-3 bg-orange-50 rounded-lg"
+                        >
+                          <div>
+                            <p className="font-medium text-gray-900">
+                              {college.name}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {college.location.city}, {college.location.state}
+                            </p>
+                          </div>
+                          <Button
+                            size="sm"
+                            onClick={() => handleVerifyCollege(college.id)}
+                          >
+                            Verify
+                          </Button>
                         </div>
-                        <Button size="sm" onClick={() => handleVerifyCollege(college.id)}>
-                          Verify
-                        </Button>
-                      </div>
-                    ))}
-                    {colleges.filter(c => !c.is_verified).length === 0 && (
-                      <p className="text-gray-500 text-center py-4">No pending verifications</p>
+                      ))}
+                    {colleges.filter((c) => !c.is_verified).length === 0 && (
+                      <p className="text-gray-500 text-center py-4">
+                        No pending verifications
+                      </p>
                     )}
                   </div>
                 </CardContent>
@@ -409,16 +460,16 @@ export default function AdminPage() {
                     <TrendingUp className="h-5 w-5 text-green-600 mr-2" />
                     Recent Activity
                   </CardTitle>
-                  <CardDescription>
-                    Latest platform activity
-                  </CardDescription>
+                  <CardDescription>Latest platform activity</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div className="flex items-center space-x-3">
                       <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                       <div>
-                        <p className="text-sm font-medium">New user registered</p>
+                        <p className="text-sm font-medium">
+                          New user registered
+                        </p>
                         <p className="text-xs text-gray-500">2 minutes ago</p>
                       </div>
                     </div>
@@ -477,24 +528,36 @@ export default function AdminPage() {
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <div className="flex items-center space-x-3 mb-2">
-                          <h3 className="text-lg font-semibold text-gray-900">{college.name}</h3>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            college.is_verified 
-                              ? "bg-green-100 text-green-800" 
-                              : "bg-orange-100 text-orange-800"
-                          }`}>
+                          <h3 className="text-lg font-semibold text-gray-900">
+                            {college.name}
+                          </h3>
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              college.is_verified
+                                ? "bg-green-100 text-green-800"
+                                : "bg-orange-100 text-orange-800"
+                            }`}
+                          >
                             {college.is_verified ? (
-                              <><CheckCircle className="h-3 w-3 inline mr-1" />Verified</>
+                              <>
+                                <CheckCircle className="h-3 w-3 inline mr-1" />
+                                Verified
+                              </>
                             ) : (
-                              <><Clock className="h-3 w-3 inline mr-1" />Pending</>
+                              <>
+                                <Clock className="h-3 w-3 inline mr-1" />
+                                Pending
+                              </>
                             )}
                           </span>
                         </div>
                         <p className="text-gray-600 mb-2">
-                          {college.location.city}, {college.location.state} • {college.programs_count} programs
+                          {college.location.city}, {college.location.state} •{" "}
+                          {college.programs_count} programs
                         </p>
                         <p className="text-sm text-gray-500">
-                          Added on {new Date(college.created_at).toLocaleDateString()}
+                          Added on{" "}
+                          {new Date(college.created_at).toLocaleDateString()}
                         </p>
                       </div>
                       <div className="flex items-center space-x-2">
@@ -507,11 +570,18 @@ export default function AdminPage() {
                           Edit
                         </Button>
                         {!college.is_verified && (
-                          <Button size="sm" onClick={() => handleVerifyCollege(college.id)}>
+                          <Button
+                            size="sm"
+                            onClick={() => handleVerifyCollege(college.id)}
+                          >
                             Verify
                           </Button>
                         )}
-                        <Button size="sm" variant="outline" onClick={() => handleDeleteCollege(college.id)}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleDeleteCollege(college.id)}
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
@@ -556,24 +626,30 @@ export default function AdminPage() {
                           <h3 className="text-lg font-semibold text-gray-900">
                             {user.first_name} {user.last_name}
                           </h3>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            user.role === "admin" 
-                              ? "bg-purple-100 text-purple-800"
-                              : "bg-blue-100 text-blue-800"
-                          }`}>
-                            {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              user.role === "admin"
+                                ? "bg-purple-100 text-purple-800"
+                                : "bg-blue-100 text-blue-800"
+                            }`}
+                          >
+                            {user.role.charAt(0).toUpperCase() +
+                              user.role.slice(1)}
                           </span>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            user.is_verified 
-                              ? "bg-green-100 text-green-800" 
-                              : "bg-orange-100 text-orange-800"
-                          }`}>
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              user.is_verified
+                                ? "bg-green-100 text-green-800"
+                                : "bg-orange-100 text-orange-800"
+                            }`}
+                          >
                             {user.is_verified ? "Verified" : "Unverified"}
                           </span>
                         </div>
                         <p className="text-gray-600 mb-2">{user.email}</p>
                         <p className="text-sm text-gray-500">
-                          Joined on {new Date(user.created_at).toLocaleDateString()}
+                          Joined on{" "}
+                          {new Date(user.created_at).toLocaleDateString()}
                         </p>
                       </div>
                       <div className="flex items-center space-x-2">
@@ -582,7 +658,10 @@ export default function AdminPage() {
                           View
                         </Button>
                         {!user.is_verified && (
-                          <Button size="sm" onClick={() => handleVerifyUser(user.id)}>
+                          <Button
+                            size="sm"
+                            onClick={() => handleVerifyUser(user.id)}
+                          >
                             Verify
                           </Button>
                         )}
@@ -603,7 +682,9 @@ export default function AdminPage() {
                 <CardContent className="p-6 text-center">
                   <BookOpen className="h-12 w-12 text-blue-600 mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">Quiz Questions</h3>
-                  <p className="text-gray-600 mb-4">Manage aptitude and interest questions</p>
+                  <p className="text-gray-600 mb-4">
+                    Manage aptitude and interest questions
+                  </p>
                   <Button>Manage Questions</Button>
                 </CardContent>
               </Card>
@@ -612,7 +693,9 @@ export default function AdminPage() {
                 <CardContent className="p-6 text-center">
                   <Calendar className="h-12 w-12 text-green-600 mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">Scholarships</h3>
-                  <p className="text-gray-600 mb-4">Manage scholarship information</p>
+                  <p className="text-gray-600 mb-4">
+                    Manage scholarship information
+                  </p>
                   <Button>Manage Scholarships</Button>
                 </CardContent>
               </Card>
@@ -620,8 +703,12 @@ export default function AdminPage() {
               <Card className="cursor-pointer hover:shadow-lg transition-shadow">
                 <CardContent className="p-6 text-center">
                   <TrendingUp className="h-12 w-12 text-purple-600 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Career Pathways</h3>
-                  <p className="text-gray-600 mb-4">Manage career guidance content</p>
+                  <h3 className="text-lg font-semibold mb-2">
+                    Career Pathways
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    Manage career guidance content
+                  </p>
                   <Button>Manage Pathways</Button>
                 </CardContent>
               </Card>
@@ -678,5 +765,5 @@ export default function AdminPage() {
         )}
       </div>
     </div>
-  )
+  );
 }

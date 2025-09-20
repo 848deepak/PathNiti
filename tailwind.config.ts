@@ -1,5 +1,5 @@
-import type { Config } from "tailwindcss"
-import tailwindcssAnimate from "tailwindcss-animate"
+import type { Config } from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
 
 const config: Config = {
   darkMode: "class",
@@ -94,15 +94,15 @@ const config: Config = {
           "0%": { transform: "translateX(100%)" },
           "100%": { transform: "translateX(0)" },
         },
-        "gradient": {
+        gradient: {
           "0%, 100%": { backgroundPosition: "0% 50%" },
           "50%": { backgroundPosition: "100% 50%" },
         },
-        "float": {
+        float: {
           "0%, 100%": { transform: "translateY(0px)" },
           "50%": { transform: "translateY(-20px)" },
         },
-        "glow": {
+        glow: {
           "0%": { boxShadow: "0 0 20px rgba(59, 130, 246, 0.5)" },
           "100%": { boxShadow: "0 0 30px rgba(59, 130, 246, 0.8)" },
         },
@@ -115,9 +115,9 @@ const config: Config = {
         "slide-in-from-bottom": "slide-in-from-bottom 0.3s ease-out",
         "slide-in-from-left": "slide-in-from-left 0.3s ease-out",
         "slide-in-from-right": "slide-in-from-right 0.3s ease-out",
-        "gradient": "gradient 3s ease infinite",
-        "float": "float 6s ease-in-out infinite",
-        "glow": "glow 2s ease-in-out infinite alternate",
+        gradient: "gradient 3s ease infinite",
+        float: "float 6s ease-in-out infinite",
+        glow: "glow 2s ease-in-out infinite alternate",
       },
       boxShadow: {
         "3xl": "0 35px 60px -12px rgba(0, 0, 0, 0.25)",
@@ -125,6 +125,6 @@ const config: Config = {
     },
   },
   plugins: [tailwindcssAnimate],
-}
+};
 
-export default config
+export default config;

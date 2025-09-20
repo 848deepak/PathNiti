@@ -3,58 +3,59 @@
  * Provides efficient data loading with caching and pagination
  */
 
-import { supabase } from '@/lib/supabase'
+import { supabase } from "@/lib/supabase";
 
 export interface LazyLoadConfig {
-  pageSize: number
-  cacheTimeout: number // in milliseconds
-  preloadThreshold: number // items remaining before preloading next page
+  pageSize: number;
+  cacheTimeout: number; // in milliseconds
+  preloadThreshold: number; // items remaining before preloading next page
 }
 
 export interface LazyLoadResult<T> {
-  data: T[]
-  hasMore: boolean
-  nextCursor?: string
-  totalCount?: number
-  isLoading: boolean
-  error?: string
+  data: T[];
+  hasMore: boolean;
+  nextCursor?: string;
+  totalCount?: number;
+  isLoading: boolean;
+  error?: string;
 }
 
 export interface CollegeSearchOptions {
-  query?: string
-  state?: string
-  city?: string
-  type?: string
-  limit?: number
-  offset?: number
+  query?: string;
+  state?: string;
+  city?: string;
+  type?: string;
+  limit?: number;
+  offset?: number;
 }
 
 // Cache interface
 interface CacheEntry<T> {
-  data: T[]
-  timestamp: number
-  hasMore: boolean
-  totalCount?: number
+  data: T[];
+  timestamp: number;
+  hasMore: boolean;
+  totalCount?: number;
 }
 
 class LazyLoadCache<T> {
-  private cache = new Map<string, CacheEntry<T>>()
-  private timeout: number
+  private cache = new Map<string, CacheEntry<T>>();
+  private timeout: number;
 
-  constructor(timeout: number = 5 * 60 * 1000) { // 5 minutes default
-    this.timeout = timeout
+  constructor(timeout: number = 5 * 60 * 1000) {
+    // 5 minutes default
+    this.timeout = timeout;
   }
 
   get(key: string): CacheEntry<T> | null {
-    const entry = this.cache.get(key)
-    if (!entry) return null
+    const entry = this.cache.get(key);
+    if (!entry) return null;
 
     if (Date.now() - entry.timestamp > this.timeout) {
-      this.cache.delete(key)
-      return null
+      this.cache.delete(key);
+      return null;
     }
 
-    return entry
+    return entry;
   }
 
   set(key: string, data: T[], hasMore: boolean, totalCount?: number): void {
@@ -62,53 +63,56 @@ class LazyLoadCache<T> {
       data,
       timestamp: Date.now(),
       hasMore,
-      totalCount
-    })
+      totalCount,
+    });
   }
 
   invalidate(pattern?: string): void {
     if (!pattern) {
-      this.cache.clear()
-      return
+      this.cache.clear();
+      return;
     }
 
     for (const key of this.cache.keys()) {
       if (key.includes(pattern)) {
-        this.cache.delete(key)
+        this.cache.delete(key);
       }
     }
   }
 
   cleanup(): void {
-    const now = Date.now()
+    const now = Date.now();
     for (const [key, entry] of this.cache.entries()) {
       if (now - entry.timestamp > this.timeout) {
-        this.cache.delete(key)
+        this.cache.delete(key);
       }
     }
   }
 }
 
 // Global cache instances
-const collegeCache = new LazyLoadCache<any>(10 * 60 * 1000) // 10 minutes for colleges
-const searchCache = new LazyLoadCache<any>(2 * 60 * 1000) // 2 minutes for search results
+const collegeCache = new LazyLoadCache<unknown>(10 * 60 * 1000); // 10 minutes for colleges
+const searchCache = new LazyLoadCache<unknown>(2 * 60 * 1000); // 2 minutes for search results
 
 // Cleanup caches periodically
-setInterval(() => {
-  collegeCache.cleanup()
-  searchCache.cleanup()
-}, 5 * 60 * 1000) // Every 5 minutes
+setInterval(
+  () => {
+    collegeCache.cleanup();
+    searchCache.cleanup();
+  },
+  5 * 60 * 1000,
+); // Every 5 minutes
 
 export class CollegeLazyLoader {
-  private config: LazyLoadConfig
+  private config: LazyLoadConfig;
 
   constructor(config: Partial<LazyLoadConfig> = {}) {
     this.config = {
       pageSize: 50,
       cacheTimeout: 10 * 60 * 1000, // 10 minutes
       preloadThreshold: 10,
-      ...config
-    }
+      ...config,
+    };
   }
 
   /**
@@ -116,51 +120,52 @@ export class CollegeLazyLoader {
    */
   async loadColleges(
     options: CollegeSearchOptions = {},
-    useCache: boolean = true
-  ): Promise<LazyLoadResult<any>> {
-    const cacheKey = this.generateCacheKey('colleges', options)
-    
+    useCache: boolean = true,
+  ): Promise<LazyLoadResult<unknown>> {
+    const cacheKey = this.generateCacheKey("colleges", options);
+
     // Check cache first
     if (useCache) {
-      const cached = collegeCache.get(cacheKey)
+      const cached = collegeCache.get(cacheKey);
       if (cached) {
         return {
           data: cached.data,
           hasMore: cached.hasMore,
           totalCount: cached.totalCount,
-          isLoading: false
-        }
+          isLoading: false,
+        };
       }
     }
 
     try {
-      const { data, error, count } = await this.fetchColleges(options)
-      
+      const { data, error, count } = await this.fetchColleges(options);
+
       if (error) {
-        throw new Error(error.message)
+        throw new Error(error.message);
       }
 
-      const hasMore = (data?.length || 0) === this.config.pageSize
-      const result: LazyLoadResult<any> = {
+      const hasMore = (data?.length || 0) === this.config.pageSize;
+      const result: LazyLoadResult<unknown> = {
         data: data || [],
         hasMore,
         totalCount: count || undefined,
-        isLoading: false
-      }
+        isLoading: false,
+      };
 
       // Cache the result
       if (useCache && data) {
-        collegeCache.set(cacheKey, data, hasMore, count || undefined)
+        collegeCache.set(cacheKey, data, hasMore, count || undefined);
       }
 
-      return result
+      return result;
     } catch (error) {
       return {
         data: [],
         hasMore: false,
         isLoading: false,
-        error: error instanceof Error ? error.message : 'Failed to load colleges'
-      }
+        error:
+          error instanceof Error ? error.message : "Failed to load colleges",
+      };
     }
   }
 
@@ -169,57 +174,58 @@ export class CollegeLazyLoader {
    */
   async searchColleges(
     query: string,
-    options: Omit<CollegeSearchOptions, 'query'> = {},
-    useCache: boolean = true
-  ): Promise<LazyLoadResult<any>> {
+    options: Omit<CollegeSearchOptions, "query"> = {},
+    useCache: boolean = true,
+  ): Promise<LazyLoadResult<unknown>> {
     if (!query.trim()) {
-      return this.loadColleges(options, useCache)
+      return this.loadColleges(options, useCache);
     }
 
-    const searchOptions = { ...options, query: query.trim() }
-    const cacheKey = this.generateCacheKey('search', searchOptions)
+    const searchOptions = { ...options, query: query.trim() };
+    const cacheKey = this.generateCacheKey("search", searchOptions);
 
     // Check cache first
     if (useCache) {
-      const cached = searchCache.get(cacheKey)
+      const cached = searchCache.get(cacheKey);
       if (cached) {
         return {
           data: cached.data,
           hasMore: cached.hasMore,
           totalCount: cached.totalCount,
-          isLoading: false
-        }
+          isLoading: false,
+        };
       }
     }
 
     try {
-      const { data, error, count } = await this.fetchColleges(searchOptions)
-      
+      const { data, error, count } = await this.fetchColleges(searchOptions);
+
       if (error) {
-        throw new Error(error.message)
+        throw new Error(error.message);
       }
 
-      const hasMore = (data?.length || 0) === this.config.pageSize
-      const result: LazyLoadResult<any> = {
+      const hasMore = (data?.length || 0) === this.config.pageSize;
+      const result: LazyLoadResult<unknown> = {
         data: data || [],
         hasMore,
         totalCount: count || undefined,
-        isLoading: false
-      }
+        isLoading: false,
+      };
 
       // Cache the result
       if (useCache && data) {
-        searchCache.set(cacheKey, data, hasMore, count || undefined)
+        searchCache.set(cacheKey, data, hasMore, count || undefined);
       }
 
-      return result
+      return result;
     } catch (error) {
       return {
         data: [],
         hasMore: false,
         isLoading: false,
-        error: error instanceof Error ? error.message : 'Failed to search colleges'
-      }
+        error:
+          error instanceof Error ? error.message : "Failed to search colleges",
+      };
     }
   }
 
@@ -227,36 +233,36 @@ export class CollegeLazyLoader {
    * Load more colleges (pagination)
    */
   async loadMore(
-    currentData: any[],
-    options: CollegeSearchOptions = {}
-  ): Promise<LazyLoadResult<any>> {
+    currentData: Record<string, unknown>[],
+    options: CollegeSearchOptions = {},
+  ): Promise<LazyLoadResult<unknown>> {
     const nextOptions = {
       ...options,
-      offset: (options.offset || 0) + this.config.pageSize
-    }
+      offset: (options.offset || 0) + this.config.pageSize,
+    };
 
-    const result = await this.loadColleges(nextOptions, false) // Don't use cache for pagination
+    const result = await this.loadColleges(nextOptions, false); // Don't use cache for pagination
 
     return {
       ...result,
-      data: [...currentData, ...result.data]
-    }
+      data: [...currentData, ...result.data],
+    };
   }
 
   /**
    * Preload next page if threshold is reached
    */
   shouldPreload(currentIndex: number, totalLoaded: number): boolean {
-    const remaining = totalLoaded - currentIndex - 1 // -1 because currentIndex is 0-based
-    return remaining <= this.config.preloadThreshold
+    const remaining = totalLoaded - currentIndex - 1; // -1 because currentIndex is 0-based
+    return remaining <= this.config.preloadThreshold;
   }
 
   /**
    * Invalidate cache for colleges
    */
   invalidateCache(pattern?: string): void {
-    collegeCache.invalidate(pattern)
-    searchCache.invalidate(pattern)
+    collegeCache.invalidate(pattern);
+    searchCache.invalidate(pattern);
   }
 
   /**
@@ -264,53 +270,56 @@ export class CollegeLazyLoader {
    */
   private async fetchColleges(options: CollegeSearchOptions) {
     let query = supabase
-      .from('colleges')
-      .select('id, name, location, type, is_verified', { count: 'exact' })
-      .eq('is_active', true)
+      .from("colleges")
+      .select("id, name, location, type, is_verified", { count: "exact" })
+      .eq("is_active", true);
 
     // Apply search filters
     if (options.query) {
-      const searchTerm = `%${options.query}%`
-      query = query.or(`name.ilike.${searchTerm},location->>city.ilike.${searchTerm},location->>state.ilike.${searchTerm}`)
+      const searchTerm = `%${options.query}%`;
+      query = query.or(
+        `name.ilike.${searchTerm},location->>city.ilike.${searchTerm},location->>state.ilike.${searchTerm}`,
+      );
     }
 
     if (options.state) {
-      query = query.eq('location->>state', options.state)
+      query = query.eq("location->>state", options.state);
     }
 
     if (options.city) {
-      query = query.eq('location->>city', options.city)
+      query = query.eq("location->>city", options.city);
     }
 
     if (options.type) {
-      query = query.eq('type', options.type)
+      query = query.eq("type", options.type);
     }
 
     // Apply pagination
-    const limit = options.limit || this.config.pageSize
-    const offset = options.offset || 0
-    
-    query = query
-      .order('name')
-      .range(offset, offset + limit - 1)
+    const limit = options.limit || this.config.pageSize;
+    const offset = options.offset || 0;
 
-    return query
+    query = query.order("name").range(offset, offset + limit - 1);
+
+    return query;
   }
 
   /**
    * Generate cache key for options
    */
-  private generateCacheKey(prefix: string, options: CollegeSearchOptions): string {
-    const keyParts = [prefix]
-    
-    if (options.query) keyParts.push(`q:${options.query}`)
-    if (options.state) keyParts.push(`s:${options.state}`)
-    if (options.city) keyParts.push(`c:${options.city}`)
-    if (options.type) keyParts.push(`t:${options.type}`)
-    if (options.limit) keyParts.push(`l:${options.limit}`)
-    if (options.offset) keyParts.push(`o:${options.offset}`)
+  private generateCacheKey(
+    prefix: string,
+    options: CollegeSearchOptions,
+  ): string {
+    const keyParts = [prefix];
 
-    return keyParts.join('|')
+    if (options.query) keyParts.push(`q:${options.query}`);
+    if (options.state) keyParts.push(`s:${options.state}`);
+    if (options.city) keyParts.push(`c:${options.city}`);
+    if (options.type) keyParts.push(`t:${options.type}`);
+    if (options.limit) keyParts.push(`l:${options.limit}`);
+    if (options.offset) keyParts.push(`o:${options.offset}`);
+
+    return keyParts.join("|");
   }
 }
 
@@ -318,64 +327,77 @@ export class CollegeLazyLoader {
  * React hook for lazy loading colleges
  */
 export function useCollegeLazyLoader(config?: Partial<LazyLoadConfig>) {
-  const loader = new CollegeLazyLoader(config)
+  const loader = new CollegeLazyLoader(config);
 
   return {
     loadColleges: loader.loadColleges.bind(loader),
     searchColleges: loader.searchColleges.bind(loader),
     loadMore: loader.loadMore.bind(loader),
     shouldPreload: loader.shouldPreload.bind(loader),
-    invalidateCache: loader.invalidateCache.bind(loader)
-  }
+    invalidateCache: loader.invalidateCache.bind(loader),
+  };
 }
 
 /**
  * Virtualization helper for large lists
  */
 export class VirtualizedList {
-  private itemHeight: number
-  private containerHeight: number
-  private overscan: number
+  private itemHeight: number;
+  private containerHeight: number;
+  private overscan: number;
 
-  constructor(itemHeight: number, containerHeight: number, overscan: number = 5) {
-    this.itemHeight = itemHeight
-    this.containerHeight = containerHeight
-    this.overscan = overscan
+  constructor(
+    itemHeight: number,
+    containerHeight: number,
+    overscan: number = 5,
+  ) {
+    this.itemHeight = itemHeight;
+    this.containerHeight = containerHeight;
+    this.overscan = overscan;
   }
 
   /**
    * Calculate visible range for virtualization
    */
-  getVisibleRange(scrollTop: number, totalItems: number): {
-    startIndex: number
-    endIndex: number
-    visibleItems: number
+  getVisibleRange(
+    scrollTop: number,
+    totalItems: number,
+  ): {
+    startIndex: number;
+    endIndex: number;
+    visibleItems: number;
   } {
-    const visibleItems = Math.ceil(this.containerHeight / this.itemHeight)
-    const startIndex = Math.max(0, Math.floor(scrollTop / this.itemHeight) - this.overscan)
-    const endIndex = Math.min(totalItems - 1, startIndex + visibleItems + this.overscan * 2)
+    const visibleItems = Math.ceil(this.containerHeight / this.itemHeight);
+    const startIndex = Math.max(
+      0,
+      Math.floor(scrollTop / this.itemHeight) - this.overscan,
+    );
+    const endIndex = Math.min(
+      totalItems - 1,
+      startIndex + visibleItems + this.overscan * 2,
+    );
 
     return {
       startIndex,
       endIndex,
-      visibleItems
-    }
+      visibleItems,
+    };
   }
 
   /**
    * Calculate total height for virtual scrolling
    */
   getTotalHeight(totalItems: number): number {
-    return totalItems * this.itemHeight
+    return totalItems * this.itemHeight;
   }
 
   /**
    * Calculate offset for visible items
    */
   getOffsetY(startIndex: number): number {
-    return startIndex * this.itemHeight
+    return startIndex * this.itemHeight;
   }
 }
 
 // Export singleton instance for convenience
-export const collegeLazyLoader = new CollegeLazyLoader()
+export const collegeLazyLoader = new CollegeLazyLoader();

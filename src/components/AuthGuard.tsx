@@ -1,166 +1,185 @@
-"use client"
+"use client";
 
-import React from 'react'
-import { useAuth } from '@/app/providers'
-import { AuthPageLoading } from './AuthStatusIndicator'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { useEffect, useState } from "react";
+import { useAuth } from "@/app/providers";
+import { useRouter } from "next/navigation";
 
 interface AuthGuardProps {
-  children: React.ReactNode
-  requireAuth?: boolean
-  requiredRole?: 'student' | 'admin' | 'college'
-  fallback?: React.ReactNode
-  loadingComponent?: React.ReactNode
-  showLoginPrompt?: boolean
+  children: React.ReactNode;
+  requireAuth?: boolean;
+  requiredRole?: "student" | "admin" | "college";
+  fallback?: React.ReactNode;
 }
 
-/**
- * Component-based authentication guard that conditionally renders children
- * based on authentication state and role requirements
- */
 export function AuthGuard({
   children,
   requireAuth = true,
   requiredRole,
   fallback,
-  loadingComponent,
-  showLoginPrompt = true
 }: AuthGuardProps) {
-  const { user, profile, loading, hasRole } = useAuth()
+  const { user, session, profile, loading } = useAuth();
+  const router = useRouter();
+  const [isChecking, setIsChecking] = useState(true);
+  const [shouldRender, setShouldRender] = useState(false);
 
-  // Show loading state
-  if (loading) {
-    return loadingComponent || <AuthPageLoading />
-  }
+  useEffect(() => {
+    const checkAuth = async () => {
+      console.log("AuthGuard: Checking authentication state", {
+        loading,
+        hasUser: !!user,
+        hasSession: !!session,
+        hasProfile: !!profile,
+        requireAuth,
+        requiredRole,
+        userEmail: user?.email,
+        profileRole: profile?.role
+      });
 
-  // Check authentication requirement
-  if (requireAuth && (!user || !profile)) {
-    if (fallback) {
-      return <>{fallback}</>
-    }
+      // Wait for auth state to be fully loaded
+      if (loading) {
+        console.log("AuthGuard: Still loading, waiting...");
+        setIsChecking(true);
+        return;
+      }
 
-    if (showLoginPrompt) {
-      return <AuthLoginPrompt />
-    }
+      // If no auth required, render children
+      if (!requireAuth) {
+        console.log("AuthGuard: No auth required, rendering children");
+        setShouldRender(true);
+        setIsChecking(false);
+        return;
+      }
 
-    return null
-  }
+      // Check authentication - be more lenient
+      if (!user || !session) {
+        console.log("AuthGuard: User not authenticated, redirecting to login");
+        // Add a small delay to prevent rapid redirects
+        setTimeout(() => {
+          router.push("/auth/login");
+        }, 100);
+        return;
+      }
 
-  // Check role requirement
-  if (requiredRole && !hasRole(requiredRole)) {
-    if (fallback) {
-      return <>{fallback}</>
-    }
+      // Check profile completion - be more lenient
+      if (!profile) {
+        console.log("AuthGuard: User authenticated but no profile, redirecting to complete profile");
+        console.log("AuthGuard: User details:", { userId: user.id, userEmail: user.email });
+        console.log("AuthGuard: Profile state:", profile);
+        console.log("AuthGuard: Loading state:", loading);
+        
+        // Check if we're already on the complete profile page to prevent redirect loops
+        if (window.location.pathname === "/auth/complete-profile") {
+          console.log("AuthGuard: Already on complete profile page, allowing access");
+          setShouldRender(true);
+          setIsChecking(false);
+          return;
+        }
+        
+        // Add a small delay to prevent rapid redirects
+        setTimeout(() => {
+          router.push("/auth/complete-profile");
+        }, 100);
+        return;
+      }
 
-    return <AuthRoleError requiredRole={requiredRole} userRole={profile?.role} />
-  }
+      // Check role if required
+      if (requiredRole && profile.role !== requiredRole) {
+        console.log(`AuthGuard: User role '${profile.role}' does not match required role '${requiredRole}'`);
+        // Redirect to appropriate dashboard based on user's actual role
+        const redirectUrl = (() => {
+          switch (profile.role) {
+            case "admin":
+              return "/dashboard/admin";
+            case "college":
+              return "/dashboard/college";
+            case "student":
+            default:
+              return "/dashboard/student";
+          }
+        })();
+        
+        setTimeout(() => {
+          router.push(redirectUrl);
+        }, 100);
+        return;
+      }
 
-  return <>{children}</>
-}
+      // All checks passed
+      console.log("AuthGuard: All checks passed, rendering children");
+      setShouldRender(true);
+      setIsChecking(false);
+    };
 
-/**
- * Login prompt component for unauthenticated users
- */
-function AuthLoginPrompt() {
-  const handleLogin = () => {
-    if (typeof window !== 'undefined') {
-      window.location.href = '/auth/login'
-    }
-  }
+    // Add a longer delay to ensure auth state is fully settled
+    const timeoutId = setTimeout(checkAuth, 500);
+    
+    return () => clearTimeout(timeoutId);
+  }, [loading, user, session, profile, requireAuth, requiredRole, router]);
 
-  const handleSignup = () => {
-    if (typeof window !== 'undefined') {
-      window.location.href = '/auth/signup'
-    }
-  }
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="max-w-md w-full">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Authentication Required</CardTitle>
-          <CardDescription>
-            You need to be logged in to access this page.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Button onClick={handleLogin} className="w-full">
-            Log In
-          </Button>
-          <Button onClick={handleSignup} variant="outline" className="w-full">
-            Sign Up
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
-  )
-}
-
-/**
- * Role error component for insufficient permissions
- */
-function AuthRoleError({ 
-  requiredRole, 
-  userRole 
-}: { 
-  requiredRole: string
-  userRole?: string 
-}) {
-  const handleGoToDashboard = () => {
-    if (typeof window !== 'undefined') {
-      window.location.href = '/dashboard'
-    }
-  }
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="max-w-md w-full">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Access Denied</CardTitle>
-          <CardDescription>
-            You don't have permission to access this page.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="text-sm text-gray-600 text-center">
-            <p>Required role: <span className="font-medium capitalize">{requiredRole}</span></p>
-            {userRole && (
-              <p>Your role: <span className="font-medium capitalize">{userRole}</span></p>
-            )}
+  // Show loading state while checking
+  if (isChecking || loading) {
+    return (
+      fallback || (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-gray-600">Verifying authentication...</p>
           </div>
-          <Button onClick={handleGoToDashboard} className="w-full">
-            Go to Dashboard
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
-  )
+        </div>
+      )
+    );
+  }
+
+  // Render children if all checks passed
+  if (shouldRender) {
+    return <>{children}</>;
+  }
+
+  // Don't render anything while redirecting
+  return null;
 }
 
-/**
- * Specific guards for different roles
- */
-export function AdminGuard({ children, ...props }: Omit<AuthGuardProps, 'requiredRole'>) {
-  return (
-    <AuthGuard {...props} requiredRole="admin">
-      {children}
-    </AuthGuard>
-  )
+// Higher-order component version
+export function withAuthGuard<P extends object>(
+  Component: React.ComponentType<P>,
+  options?: {
+    requireAuth?: boolean;
+    requiredRole?: "student" | "admin" | "college";
+  }
+) {
+  return function AuthGuardedComponent(props: P) {
+    return (
+      <AuthGuard
+        requireAuth={options?.requireAuth}
+        requiredRole={options?.requiredRole}
+      >
+        <Component {...props} />
+      </AuthGuard>
+    );
+  };
 }
 
-export function StudentGuard({ children, ...props }: Omit<AuthGuardProps, 'requiredRole'>) {
+// Role-specific guard components for convenience
+export function AdminGuard({ children, fallback }: { children: React.ReactNode; fallback?: React.ReactNode }) {
   return (
-    <AuthGuard {...props} requiredRole="student">
+    <AuthGuard requireAuth={true} requiredRole="admin" fallback={fallback}>
       {children}
     </AuthGuard>
-  )
+  );
 }
 
-export function CollegeGuard({ children, ...props }: Omit<AuthGuardProps, 'requiredRole'>) {
+export function StudentGuard({ children, fallback }: { children: React.ReactNode; fallback?: React.ReactNode }) {
   return (
-    <AuthGuard {...props} requiredRole="college">
+    <AuthGuard requireAuth={true} requiredRole="student" fallback={fallback}>
       {children}
     </AuthGuard>
-  )
+  );
+}
+
+export function CollegeGuard({ children, fallback }: { children: React.ReactNode; fallback?: React.ReactNode }) {
+  return (
+    <AuthGuard requireAuth={true} requiredRole="college" fallback={fallback}>
+      {children}
+    </AuthGuard>
+  );
 }

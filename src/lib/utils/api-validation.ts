@@ -3,29 +3,29 @@
  * Provides server-side validation for all API endpoints
  */
 
-import { NextRequest, NextResponse } from 'next/server'
-import { InputSanitizer } from './input-sanitization'
+import { NextRequest, NextResponse } from "next/server";
+import { InputSanitizer } from "./input-sanitization";
 
 export interface ValidationRule {
-  required?: boolean
-  type?: 'string' | 'number' | 'email' | 'phone' | 'url' | 'array' | 'object'
-  minLength?: number
-  maxLength?: number
-  min?: number
-  max?: number
-  pattern?: RegExp
-  enum?: string[]
-  custom?: (value: any) => string | null
+  required?: boolean;
+  type?: "string" | "number" | "email" | "phone" | "url" | "array" | "object";
+  minLength?: number;
+  maxLength?: number;
+  min?: number;
+  max?: number;
+  pattern?: RegExp;
+  enum?: string[];
+  custom?: (value: unknown) => string | null;
 }
 
 export interface ValidationSchema {
-  [key: string]: ValidationRule
+  [key: string]: ValidationRule;
 }
 
 export interface ValidationResult {
-  isValid: boolean
-  errors: Record<string, string>
-  sanitizedData: Record<string, any>
+  isValid: boolean;
+  errors: Record<string, string>;
+  sanitizedData: Record<string, unknown>;
 }
 
 export class APIValidator {
@@ -34,43 +34,43 @@ export class APIValidator {
    */
   static async validateRequestBody(
     request: NextRequest,
-    schema: ValidationSchema
+    schema: ValidationSchema,
   ): Promise<ValidationResult> {
     try {
-      const body = await request.json()
-      return this.validateData(body, schema)
-    } catch (error) {
+      const body = await request.json();
+      return this.validateData(body, schema);
+    } catch {
       return {
         isValid: false,
-        errors: { _body: 'Invalid JSON in request body' },
-        sanitizedData: {}
-      }
+        errors: { _body: "Invalid JSON in request body" },
+        sanitizedData: {},
+      };
     }
   }
 
   /**
    * Validate data against schema
    */
-  static validateData(data: any, schema: ValidationSchema): ValidationResult {
-    const errors: Record<string, string> = {}
-    const sanitizedData: Record<string, any> = {}
+  static validateData(data: unknown, schema: ValidationSchema): ValidationResult {
+    const errors: Record<string, string> = {};
+    const sanitizedData: Record<string, unknown> = {};
 
     for (const [field, rules] of Object.entries(schema)) {
-      const value = data[field]
-      const validationResult = this.validateField(field, value, rules)
-      
+      const value = (data as { [key: string]: unknown })[field];
+      const validationResult = this.validateField(field, value, rules);
+
       if (validationResult.error) {
-        errors[field] = validationResult.error
+        errors[field] = validationResult.error;
       } else {
-        sanitizedData[field] = validationResult.sanitizedValue
+        sanitizedData[field] = validationResult.sanitizedValue;
       }
     }
 
     return {
       isValid: Object.keys(errors).length === 0,
       errors,
-      sanitizedData
-    }
+      sanitizedData,
+    };
   }
 
   /**
@@ -78,160 +78,202 @@ export class APIValidator {
    */
   private static validateField(
     fieldName: string,
-    value: any,
-    rules: ValidationRule
-  ): { error?: string; sanitizedValue: any } {
+    value: unknown,
+    rules: ValidationRule,
+  ): { error?: string; sanitizedValue: unknown } {
     // Check required
-    if (rules.required && (value === undefined || value === null || value === '')) {
-      return { error: `${fieldName} is required`, sanitizedValue: value }
+    if (
+      rules.required &&
+      (value === undefined || value === null || value === "")
+    ) {
+      return { error: `${fieldName} is required`, sanitizedValue: value };
     }
 
     // Skip validation if field is not required and empty
-    if (!rules.required && (value === undefined || value === null || value === '')) {
-      return { sanitizedValue: value }
+    if (
+      !rules.required &&
+      (value === undefined || value === null || value === "")
+    ) {
+      return { sanitizedValue: value };
     }
 
     // Type validation and sanitization
-    let sanitizedValue = value
-    
+    let sanitizedValue = value;
+
     switch (rules.type) {
-      case 'string':
-        if (typeof value !== 'string') {
-          return { error: `${fieldName} must be a string`, sanitizedValue: value }
+      case "string":
+        if (typeof value !== "string") {
+          return {
+            error: `${fieldName} must be a string`,
+            sanitizedValue: value,
+          };
         }
         sanitizedValue = InputSanitizer.sanitizeText(value, {
-          maxLength: rules.maxLength
-        })
-        break
+          maxLength: rules.maxLength,
+        });
+        break;
 
-      case 'number':
-        const numValue = typeof value === 'string' ? parseFloat(value) : value
+      case "number":
+        const numValue = typeof value === "string" ? parseFloat(value) : (value as number);
         if (isNaN(numValue)) {
-          return { error: `${fieldName} must be a valid number`, sanitizedValue: value }
+          return {
+            error: `${fieldName} must be a valid number`,
+            sanitizedValue: value,
+          };
         }
-        sanitizedValue = numValue
-        break
+        sanitizedValue = numValue;
+        break;
 
-      case 'email':
-        if (typeof value !== 'string') {
-          return { error: `${fieldName} must be a string`, sanitizedValue: value }
+      case "email":
+        if (typeof value !== "string") {
+          return {
+            error: `${fieldName} must be a string`,
+            sanitizedValue: value,
+          };
         }
-        sanitizedValue = InputSanitizer.sanitizeEmail(value)
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sanitizedValue)) {
-          return { error: `${fieldName} must be a valid email address`, sanitizedValue: value }
+        sanitizedValue = InputSanitizer.sanitizeEmail(value as string);
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sanitizedValue as string)) {
+          return {
+            error: `${fieldName} must be a valid email address`,
+            sanitizedValue: value,
+          };
         }
-        break
+        break;
 
-      case 'phone':
-        if (typeof value !== 'string') {
-          return { error: `${fieldName} must be a string`, sanitizedValue: value }
+      case "phone":
+        if (typeof value !== "string") {
+          return {
+            error: `${fieldName} must be a string`,
+            sanitizedValue: value,
+          };
         }
-        sanitizedValue = InputSanitizer.sanitizePhone(value)
+        sanitizedValue = InputSanitizer.sanitizePhone(value as string);
         // Basic phone validation (10-15 digits)
-        const digitsOnly = sanitizedValue.replace(/\D/g, '')
+        const digitsOnly = (sanitizedValue as string).replace(/\D/g, "");
         if (digitsOnly.length < 10 || digitsOnly.length > 15) {
-          return { error: `${fieldName} must be a valid phone number`, sanitizedValue: value }
+          return {
+            error: `${fieldName} must be a valid phone number`,
+            sanitizedValue: value,
+          };
         }
-        break
+        break;
 
-      case 'url':
-        if (typeof value !== 'string') {
-          return { error: `${fieldName} must be a string`, sanitizedValue: value }
+      case "url":
+        if (typeof value !== "string") {
+          return {
+            error: `${fieldName} must be a string`,
+            sanitizedValue: value,
+          };
         }
-        sanitizedValue = InputSanitizer.sanitizeUrl(value)
-        if (!/^https?:\/\/.+/.test(sanitizedValue)) {
-          return { error: `${fieldName} must be a valid URL starting with http:// or https://`, sanitizedValue: value }
+        sanitizedValue = InputSanitizer.sanitizeUrl(value as string);
+        if (!/^https?:\/\/.+/.test(sanitizedValue as string)) {
+          return {
+            error: `${fieldName} must be a valid URL starting with http:// or https://`,
+            sanitizedValue: value,
+          };
         }
-        break
+        break;
 
-      case 'array':
+      case "array":
         if (!Array.isArray(value)) {
-          return { error: `${fieldName} must be an array`, sanitizedValue: value }
+          return {
+            error: `${fieldName} must be an array`,
+            sanitizedValue: value,
+          };
         }
-        sanitizedValue = value
-        break
+        sanitizedValue = value;
+        break;
 
-      case 'object':
-        if (typeof value !== 'object' || Array.isArray(value) || value === null) {
-          return { error: `${fieldName} must be an object`, sanitizedValue: value }
+      case "object":
+        if (
+          typeof value !== "object" ||
+          Array.isArray(value) ||
+          value === null
+        ) {
+          return {
+            error: `${fieldName} must be an object`,
+            sanitizedValue: value,
+          };
         }
-        sanitizedValue = value
-        break
+        sanitizedValue = value;
+        break;
     }
 
     // Length validation for strings
-    if (rules.type === 'string' && typeof sanitizedValue === 'string') {
+    if (rules.type === "string" && typeof sanitizedValue === "string") {
       if (rules.minLength && sanitizedValue.length < rules.minLength) {
-        return { 
-          error: `${fieldName} must be at least ${rules.minLength} characters long`, 
-          sanitizedValue: value 
-        }
+        return {
+          error: `${fieldName} must be at least ${rules.minLength} characters long`,
+          sanitizedValue: value,
+        };
       }
       if (rules.maxLength && sanitizedValue.length > rules.maxLength) {
-        return { 
-          error: `${fieldName} must be no more than ${rules.maxLength} characters long`, 
-          sanitizedValue: value 
-        }
+        return {
+          error: `${fieldName} must be no more than ${rules.maxLength} characters long`,
+          sanitizedValue: value,
+        };
       }
     }
 
     // Numeric range validation
-    if (rules.type === 'number' && typeof sanitizedValue === 'number') {
+    if (rules.type === "number" && typeof sanitizedValue === "number") {
       if (rules.min !== undefined && sanitizedValue < rules.min) {
-        return { 
-          error: `${fieldName} must be at least ${rules.min}`, 
-          sanitizedValue: value 
-        }
+        return {
+          error: `${fieldName} must be at least ${rules.min}`,
+          sanitizedValue: value,
+        };
       }
       if (rules.max !== undefined && sanitizedValue > rules.max) {
-        return { 
-          error: `${fieldName} must be no more than ${rules.max}`, 
-          sanitizedValue: value 
-        }
+        return {
+          error: `${fieldName} must be no more than ${rules.max}`,
+          sanitizedValue: value,
+        };
       }
     }
 
     // Pattern validation
-    if (rules.pattern && typeof sanitizedValue === 'string') {
+    if (rules.pattern && typeof sanitizedValue === "string") {
       if (!rules.pattern.test(sanitizedValue)) {
-        return { 
-          error: `${fieldName} format is invalid`, 
-          sanitizedValue: value 
-        }
+        return {
+          error: `${fieldName} format is invalid`,
+          sanitizedValue: value,
+        };
       }
     }
 
     // Enum validation
-    if (rules.enum && !rules.enum.includes(sanitizedValue)) {
-      return { 
-        error: `${fieldName} must be one of: ${rules.enum.join(', ')}`, 
-        sanitizedValue: value 
-      }
+    if (rules.enum && !rules.enum.includes(sanitizedValue as string)) {
+      return {
+        error: `${fieldName} must be one of: ${rules.enum.join(", ")}`,
+        sanitizedValue: value,
+      };
     }
 
     // Custom validation
     if (rules.custom) {
-      const customError = rules.custom(sanitizedValue)
+      const customError = rules.custom(sanitizedValue);
       if (customError) {
-        return { error: customError, sanitizedValue: value }
+        return { error: customError, sanitizedValue: value };
       }
     }
 
-    return { sanitizedValue }
+    return { sanitizedValue };
   }
 
   /**
    * Create validation error response
    */
-  static createValidationErrorResponse(errors: Record<string, string>): NextResponse {
+  static createValidationErrorResponse(
+    errors: Record<string, string>,
+  ): NextResponse {
     return NextResponse.json(
       {
-        error: 'Validation failed',
+        error: "Validation failed",
         details: errors,
-        code: 'VALIDATION_ERROR'
+        code: "VALIDATION_ERROR",
       },
-      { status: 400 }
-    )
+      { status: 400 },
+    );
   }
 
   /**
@@ -239,17 +281,17 @@ export class APIValidator {
    */
   static validateQueryParams(
     request: NextRequest,
-    schema: ValidationSchema
+    schema: ValidationSchema,
   ): ValidationResult {
-    const { searchParams } = new URL(request.url)
-    const data: Record<string, any> = {}
-    
+    const { searchParams } = new URL(request.url);
+    const data: Record<string, unknown> = {};
+
     // Convert URLSearchParams to object
     for (const [key, value] of searchParams.entries()) {
-      data[key] = value
+      data[key] = value;
     }
 
-    return this.validateData(data, schema)
+    return this.validateData(data, schema);
   }
 
   /**
@@ -258,43 +300,43 @@ export class APIValidator {
   static validateFileUpload(
     file: File,
     options: {
-      maxSize?: number // in bytes
-      allowedTypes?: string[]
-      allowedExtensions?: string[]
-    } = {}
+      maxSize?: number; // in bytes
+      allowedTypes?: string[];
+      allowedExtensions?: string[];
+    } = {},
   ): { isValid: boolean; error?: string } {
     const {
       maxSize = 10 * 1024 * 1024, // 10MB default
-      allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'],
-      allowedExtensions = ['.pdf', '.jpg', '.jpeg', '.png']
-    } = options
+      allowedTypes = ["application/pdf", "image/jpeg", "image/png"],
+      allowedExtensions = [".pdf", ".jpg", ".jpeg", ".png"],
+    } = options;
 
     // Check file size
     if (file.size > maxSize) {
       return {
         isValid: false,
-        error: `File size must be less than ${Math.round(maxSize / (1024 * 1024))}MB`
-      }
+        error: `File size must be less than ${Math.round(maxSize / (1024 * 1024))}MB`,
+      };
     }
 
     // Check file type
     if (!allowedTypes.includes(file.type)) {
       return {
         isValid: false,
-        error: `File type not allowed. Allowed types: ${allowedTypes.join(', ')}`
-      }
+        error: `File type not allowed. Allowed types: ${allowedTypes.join(", ")}`,
+      };
     }
 
     // Check file extension
-    const extension = '.' + file.name.split('.').pop()?.toLowerCase()
+    const extension = "." + file.name.split(".").pop()?.toLowerCase();
     if (!allowedExtensions.includes(extension)) {
       return {
         isValid: false,
-        error: `File extension not allowed. Allowed extensions: ${allowedExtensions.join(', ')}`
-      }
+        error: `File extension not allowed. Allowed extensions: ${allowedExtensions.join(", ")}`,
+      };
     }
 
-    return { isValid: true }
+    return { isValid: true };
   }
 }
 
@@ -303,131 +345,133 @@ export const ValidationSchemas = {
   collegeRegistration: {
     name: {
       required: true,
-      type: 'string' as const,
+      type: "string" as const,
       minLength: 2,
-      maxLength: 200
+      maxLength: 200,
     },
     type: {
       required: true,
-      type: 'string' as const,
-      enum: ['government', 'government_aided', 'private', 'deemed']
+      type: "string" as const,
+      enum: ["government", "government_aided", "private", "deemed"],
     },
     location: {
       required: true,
-      type: 'object' as const,
-      custom: (value: any) => {
-        if (!value.city || !value.state || !value.country) {
-          return 'Location must include city, state, and country'
+      type: "object" as const,
+      custom: (value: unknown) => {
+        const location = value as { city?: unknown; state?: unknown; country?: unknown };
+        if (!location.city || !location.state || !location.country) {
+          return "Location must include city, state, and country";
         }
-        return null
-      }
+        return null;
+      },
     },
     address: {
       required: true,
-      type: 'string' as const,
+      type: "string" as const,
       minLength: 10,
-      maxLength: 500
+      maxLength: 500,
     },
     email: {
       required: false,
-      type: 'email' as const
+      type: "email" as const,
     },
     website: {
       required: false,
-      type: 'url' as const
+      type: "url" as const,
     },
     phone: {
       required: false,
-      type: 'phone' as const
+      type: "phone" as const,
     },
     established_year: {
       required: false,
-      type: 'number' as const,
+      type: "number" as const,
       min: 1800,
-      max: new Date().getFullYear()
-    }
+      max: new Date().getFullYear(),
+    },
   },
 
   studentApplication: {
     full_name: {
       required: true,
-      type: 'string' as const,
+      type: "string" as const,
       minLength: 2,
-      maxLength: 100
+      maxLength: 100,
     },
     email: {
       required: true,
-      type: 'email' as const
+      type: "email" as const,
     },
     phone: {
       required: true,
-      type: 'phone' as const
+      type: "phone" as const,
     },
     class_stream: {
       required: true,
-      type: 'string' as const,
+      type: "string" as const,
       minLength: 2,
-      maxLength: 50
+      maxLength: 50,
     },
     documents: {
       required: true,
-      type: 'object' as const,
-      custom: (value: any) => {
-        if (!value.marksheet_10th || !value.marksheet_12th) {
-          return 'Both 10th and 12th marksheets are required'
+      type: "object" as const,
+      custom: (value: unknown) => {
+        const documents = value as { marksheet_10th?: unknown; marksheet_12th?: unknown };
+        if (!documents.marksheet_10th || !documents.marksheet_12th) {
+          return "Both 10th and 12th marksheets are required";
         }
-        return null
-      }
-    }
+        return null;
+      },
+    },
   },
 
   courseManagement: {
     name: {
       required: true,
-      type: 'string' as const,
+      type: "string" as const,
       minLength: 2,
-      maxLength: 200
+      maxLength: 200,
     },
     description: {
       required: false,
-      type: 'string' as const,
-      maxLength: 1000
+      type: "string" as const,
+      maxLength: 1000,
     },
     duration: {
       required: false,
-      type: 'string' as const,
-      maxLength: 50
+      type: "string" as const,
+      maxLength: 50,
     },
     eligibility: {
       required: false,
-      type: 'string' as const,
-      maxLength: 500
+      type: "string" as const,
+      maxLength: 500,
     },
     seats: {
       required: false,
-      type: 'number' as const,
+      type: "number" as const,
       min: 1,
-      max: 10000
-    }
+      max: 10000,
+    },
   },
 
   noticeManagement: {
     title: {
       required: true,
-      type: 'string' as const,
+      type: "string" as const,
       minLength: 5,
-      maxLength: 200
+      maxLength: 200,
     },
     content: {
       required: true,
-      type: 'string' as const,
+      type: "string" as const,
       minLength: 10,
-      maxLength: 5000
+      maxLength: 5000,
     },
     type: {
       required: false,
-      type: 'string' as const,
-      enum: ['general', 'admission', 'event', 'urgent']
-    }
-  }
-}
+      type: "string" as const,
+      enum: ["general", "admission", "event", "urgent"],
+    },
+  },
+};

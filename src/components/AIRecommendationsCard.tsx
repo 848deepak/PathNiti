@@ -1,24 +1,21 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Brain, 
-  Star, 
-  TrendingUp, 
-  MapPin, 
-  DollarSign, 
+import React, { useState, useEffect, useCallback } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Brain,
+  Star,
+  DollarSign,
   Clock,
   GraduationCap,
   Award,
-  ExternalLink,
-  ChevronRight,
-  AlertCircle
-} from 'lucide-react';
-import Link from 'next/link';
+  Target,
+  AlertCircle,
+} from "lucide-react";
+import Link from "next/link";
 
 interface AIRecommendationsCardProps {
   userId: string;
@@ -35,48 +32,75 @@ interface RecommendationData {
     personality_scores: Record<string, number>;
   };
   recommendations: {
-    primary_recommendations: any[];
-    secondary_recommendations: any[];
-    backup_options: any[];
-    recommended_colleges: any[];
-    relevant_scholarships: any[];
+    primary_recommendations: Array<{
+      stream: string;
+      confidence: number;
+      reasoning: string;
+    }>;
+    secondary_recommendations: Array<{
+      stream: string;
+      confidence: number;
+      reasoning: string;
+    }>;
+    backup_options: Array<{
+      stream: string;
+      confidence: number;
+      reasoning: string;
+    }>;
+    recommended_colleges: Array<{
+      name: string;
+      location: string;
+      programs: string[];
+      match_score: number;
+    }>;
+    relevant_scholarships: Array<{
+      name: string;
+      amount: number;
+      eligibility: string;
+      application_deadline: string;
+    }>;
     overall_reasoning: string;
     confidence_score: number;
     generated_at: string;
   };
 }
 
-export function AIRecommendationsCard({ userId, className = '' }: AIRecommendationsCardProps) {
+export function AIRecommendationsCard({
+  userId,
+  className = "",
+}: AIRecommendationsCardProps) {
   const [data, setData] = useState<RecommendationData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (userId) {
-      fetchRecommendations();
-    }
-  }, [userId]);
-
-  const fetchRecommendations = async () => {
+  const fetchRecommendations = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(`/api/student/recommendations?user_id=${userId}`);
+      const response = await fetch(
+        `/api/student/recommendations?user_id=${userId}`,
+      );
       const result = await response.json();
 
       if (result.success) {
         setData(result.data);
       } else {
-        setError(result.error || 'Failed to fetch recommendations');
+        setError(result.error || "Failed to fetch recommendations");
       }
     } catch (err) {
-      console.error('Error fetching recommendations:', err);
-      setError('Failed to load AI recommendations');
+      console.error("Error fetching recommendations:", err);
+      setError("Failed to load AI recommendations");
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
+
+  useEffect(() => {
+    if (userId) {
+      fetchRecommendations();
+    }
+  }, [userId, fetchRecommendations]);
 
   if (loading) {
     return (
@@ -90,7 +114,9 @@ export function AIRecommendationsCard({ userId, className = '' }: AIRecommendati
         <CardContent>
           <div className="flex items-center justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
-            <span className="ml-3 text-gray-600">Loading your personalized recommendations...</span>
+            <span className="ml-3 text-gray-600">
+              Loading your personalized recommendations...
+            </span>
           </div>
         </CardContent>
       </Card>
@@ -110,7 +136,8 @@ export function AIRecommendationsCard({ userId, className = '' }: AIRecommendati
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              {error}. Complete an assessment to get personalized AI recommendations.
+              {error}. Complete an assessment to get personalized AI
+              recommendations.
             </AlertDescription>
           </Alert>
           <div className="mt-4">
@@ -158,30 +185,18 @@ export function AIRecommendationsCard({ userId, className = '' }: AIRecommendati
               </div>
               <div className="flex-1">
                 <h3 className="font-semibold text-gray-900 mb-1">
-                  Recommended Stream: {primaryRec.stream?.toUpperCase() || 'General'}
+                  Recommended Stream:{" "}
+                  {primaryRec.stream?.toUpperCase() || "General"}
                 </h3>
                 <p className="text-sm text-gray-600 mb-2">
-                  {primaryRec.reasoning || 'Based on your assessment results and interests.'}
+                  {primaryRec.reasoning ||
+                    "Based on your assessment results and interests."}
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {primaryRec.time_to_earn && (
-                    <Badge variant="outline" className="text-xs">
-                      <Clock className="h-3 w-3 mr-1" />
-                      {primaryRec.time_to_earn}
-                    </Badge>
-                  )}
-                  {primaryRec.average_salary && (
-                    <Badge variant="outline" className="text-xs">
-                      <DollarSign className="h-3 w-3 mr-1" />
-                      {primaryRec.average_salary}
-                    </Badge>
-                  )}
-                  {primaryRec.job_demand_trend && (
-                    <Badge variant="outline" className="text-xs">
-                      <TrendingUp className="h-3 w-3 mr-1" />
-                      {primaryRec.job_demand_trend}
-                    </Badge>
-                  )}
+                  <Badge variant="outline" className="text-xs">
+                    <Target className="h-3 w-3 mr-1" />
+                    {Math.round(primaryRec.confidence * 100)}% Match
+                  </Badge>
                 </div>
               </div>
             </div>
@@ -200,20 +215,12 @@ export function AIRecommendationsCard({ userId, className = '' }: AIRecommendati
                   Recommended College: {topCollege.name}
                 </h3>
                 <p className="text-sm text-gray-600 mb-2">
-                  {topCollege.location?.city}, {topCollege.location?.state}
+                  {topCollege.location}
                 </p>
                 <div className="flex items-center gap-2">
                   <Badge variant="outline" className="text-xs">
-                    {topCollege.type?.replace('_', ' ').toUpperCase()}
+                    {Math.round(topCollege.match_score * 100)}% Match
                   </Badge>
-                  {topCollege.website && (
-                    <Button variant="ghost" size="sm" asChild>
-                      <Link href={topCollege.website} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="h-3 w-3 mr-1" />
-                        Visit Website
-                      </Link>
-                    </Button>
-                  )}
                 </div>
               </div>
             </div>
@@ -232,7 +239,7 @@ export function AIRecommendationsCard({ userId, className = '' }: AIRecommendati
                   {topScholarship.name}
                 </h3>
                 <p className="text-sm text-gray-600 mb-2">
-                  {topScholarship.description}
+                  {topScholarship.eligibility}
                 </p>
                 <div className="flex items-center gap-2">
                   {topScholarship.amount && (
@@ -241,10 +248,10 @@ export function AIRecommendationsCard({ userId, className = '' }: AIRecommendati
                       {topScholarship.amount}
                     </Badge>
                   )}
-                  {topScholarship.deadline && (
+                  {topScholarship.application_deadline && (
                     <Badge variant="outline" className="text-xs">
                       <Clock className="h-3 w-3 mr-1" />
-                      {new Date(topScholarship.deadline).toLocaleDateString()}
+                      {new Date(topScholarship.application_deadline).toLocaleDateString()}
                     </Badge>
                   )}
                 </div>
@@ -287,9 +294,12 @@ export function AIRecommendationsCard({ userId, className = '' }: AIRecommendati
           <div className="flex items-center justify-between text-sm">
             <span className="text-gray-600">Assessment Score:</span>
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-gray-900">{assessment.overall_score}%</span>
+              <span className="font-semibold text-gray-900">
+                {assessment.overall_score}%
+              </span>
               <Badge variant="secondary" className="text-xs">
-                Completed {new Date(assessment.completed_at).toLocaleDateString()}
+                Completed{" "}
+                {new Date(assessment.completed_at).toLocaleDateString()}
               </Badge>
             </div>
           </div>

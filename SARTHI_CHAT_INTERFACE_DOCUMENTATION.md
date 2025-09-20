@@ -7,12 +7,14 @@ The AI Sarthi Chat Interface is a ChatGPT-like conversational interface that all
 ## Features
 
 ### 🎯 Core Capabilities
+
 - **Course Recommendations**: Get personalized stream suggestions based on interests and performance
 - **Practice Questions**: Generate MCQs for classes 10, 11, and 12 across all subjects
 - **College Information**: Find colleges and programs that match student goals
 - **General Guidance**: Handle FAQs and provide education-related advice
 
 ### 💬 Chat Interface Features
+
 - **Real-time Messaging**: Instant responses with typing indicators
 - **Persistent History**: Conversation history stored in database
 - **Session Management**: Context maintained across multiple questions
@@ -24,7 +26,9 @@ The AI Sarthi Chat Interface is a ChatGPT-like conversational interface that all
 ### Frontend Components
 
 #### 1. SarthiChat (`src/components/SarthiChat.tsx`)
+
 Main chat interface component with:
+
 - Message display with user/assistant bubbles
 - Input field with send functionality
 - Typing indicators and loading states
@@ -32,14 +36,18 @@ Main chat interface component with:
 - Reset conversation functionality
 
 #### 2. SarthiChatWidget (`src/components/SarthiChatWidget.tsx`)
+
 Floating chat widget with:
+
 - Minimizable chat window
 - Position customization (bottom-right, bottom-left, etc.)
 - New message notifications
 - Compact mode for embedding in pages
 
 #### 3. Chat Page (`src/app/chat/page.tsx`)
+
 Dedicated chat page with:
+
 - Full-screen chat interface
 - Sidebar with capability explanations
 - Quick start examples
@@ -48,17 +56,20 @@ Dedicated chat page with:
 ### Backend API
 
 #### 1. Session Management (`src/app/api/chat/session/route.ts`)
+
 - Create new chat sessions
 - Retrieve user's active sessions
 - Session metadata and context storage
 
 #### 2. Message Handling (`src/app/api/chat/message/route.ts`)
+
 - Process user messages
 - Route to appropriate AI capabilities
 - Store conversation history
 - Log interactions for analytics
 
 #### 3. Session Reset (`src/app/api/chat/session/reset/route.ts`)
+
 - Archive current sessions
 - Start fresh conversations
 - Maintain user privacy
@@ -87,21 +98,25 @@ Dedicated chat page with:
 ### Existing AI Sarthi Features
 
 #### 1. Recommendation Engine
+
 - Integrates with `src/lib/sarthi-ai.ts`
 - Uses existing `SarthiUserProfile` interface
 - Leverages `getEnhancedRecommendations()` method
 
 #### 2. Question Generation
+
 - Connects to `src/lib/question-generator.ts`
 - Supports classes 10, 11, and 12
 - Generates MCQs for all subjects
 
 #### 3. College Database
+
 - Queries existing `colleges` table
 - Location-based filtering
 - Program and stream matching
 
 ### Authentication Integration
+
 - Uses existing `useAuth` hook from `src/app/providers.tsx`
 - Respects user roles and permissions
 - Maintains session security
@@ -112,16 +127,16 @@ Dedicated chat page with:
 
 ```typescript
 // User asks for recommendations
-"What stream should I choose after 10th?"
+"What stream should I choose after 10th?";
 
 // User requests practice questions
-"Generate 10 math questions for class 12"
+"Generate 10 math questions for class 12";
 
 // User asks about colleges
-"Show me engineering colleges in Jammu"
+"Show me engineering colleges in Jammu";
 
 // User seeks general guidance
-"How to prepare for JEE?"
+"How to prepare for JEE?";
 ```
 
 ### Capability Detection
@@ -170,16 +185,19 @@ import { SarthiChatWidget, SarthiChat } from '@/components/SarthiChatWidget'
 ## Security Features
 
 ### Row Level Security (RLS)
+
 - Users can only access their own conversations
 - Admin access for analytics and monitoring
 - Secure session management
 
 ### Input Sanitization
+
 - All user inputs are sanitized
 - SQL injection prevention
 - XSS protection
 
 ### Rate Limiting
+
 - Built-in request throttling
 - Session-based limits
 - Performance monitoring
@@ -187,11 +205,13 @@ import { SarthiChatWidget, SarthiChat } from '@/components/SarthiChatWidget'
 ## Performance Optimizations
 
 ### Response Time
+
 - Target: < 2 seconds for all responses
 - Caching for frequently asked questions
 - Optimized database queries
 
 ### Scalability
+
 - Session-based conversation management
 - Efficient message storage
 - Background analytics processing
@@ -199,12 +219,14 @@ import { SarthiChatWidget, SarthiChat } from '@/components/SarthiChatWidget'
 ## Analytics and Monitoring
 
 ### Interaction Tracking
+
 - Capability usage statistics
 - Response confidence scores
 - Processing time metrics
 - User feedback collection
 
 ### Admin Dashboard
+
 - Conversation volume metrics
 - Popular questions and topics
 - Performance analytics
@@ -213,12 +235,14 @@ import { SarthiChatWidget, SarthiChat } from '@/components/SarthiChatWidget'
 ## Customization Options
 
 ### UI Customization
+
 - Color themes (user: blue, Sarthi: green)
 - Position settings for floating widget
 - Message bubble styling
 - Typing indicator animations
 
 ### Capability Extension
+
 - Easy addition of new AI capabilities
 - Custom response formatting
 - Integration with external APIs
@@ -251,6 +275,7 @@ NODE_ENV=development
 ## Future Enhancements
 
 ### Planned Features
+
 - Voice input/output support
 - File upload capabilities
 - Multi-language support
@@ -258,6 +283,7 @@ NODE_ENV=development
 - Integration with learning management systems
 
 ### API Extensions
+
 - Webhook support for external integrations
 - Real-time collaboration features
 - Advanced personalization algorithms
@@ -266,12 +292,14 @@ NODE_ENV=development
 ## Support and Maintenance
 
 ### Regular Maintenance
+
 - Database cleanup of old conversations
 - Performance monitoring and optimization
 - Security updates and patches
 - User feedback integration
 
 ### Monitoring
+
 - Error tracking and alerting
 - Performance metrics dashboard
 - User satisfaction surveys

@@ -3,21 +3,24 @@
  */
 
 export interface LocationData {
-  latitude?: number;
-  longitude?: number;
-  city: string;
   state: string;
-  country: string;
-  pincode?: string;
+  city: string;
+  district?: string;
+  coordinates?: {
+    lat: number;
+    lng: number;
+  };
 }
 
 export interface AdmissionCriteria {
-  minimum_percentage?: number;
-  entrance_exam_required?: boolean;
-  entrance_exam_name?: string;
-  application_deadline?: string;
-  eligibility_criteria: string[];
-  selection_process: string[];
+  minimum_marks: number;
+  required_subjects: string[];
+  entrance_exam?: string;
+  interview_required?: boolean;
+  age_limit?: {
+    min: number;
+    max: number;
+  };
 }
 
 export interface ScholarshipInfo {
@@ -37,15 +40,11 @@ export interface EntranceTestInfo {
 }
 
 export interface FeeStructure {
-  tuition_fee?: number;
+  tuition_fee: number;
   hostel_fee?: number;
   other_fees?: number;
-  total_fee?: number;
-  fee_breakdown: Array<{
-    category: string;
-    amount: number;
-    description?: string;
-  }>;
+  total_fee: number;
+  currency: string;
 }
 
 export interface Course {
@@ -69,7 +68,7 @@ export interface Notice {
   id: string;
   title: string;
   content: string;
-  type: 'general' | 'admission' | 'event' | 'urgent';
+  type: "general" | "admission" | "event" | "urgent";
   is_active: boolean;
   published_at: string;
   expires_at?: string;
@@ -88,7 +87,11 @@ export interface Event {
   updated_at: string;
 }
 
-export type CollegeType = 'government' | 'government_aided' | 'private' | 'deemed';
+export type CollegeType =
+  | "government"
+  | "government_aided"
+  | "private"
+  | "deemed";
 
 export interface CollegeProfileData {
   id: string;
@@ -108,11 +111,11 @@ export interface CollegeProfileData {
   entrance_tests?: EntranceTestInfo[] | null;
   fee_structure?: FeeStructure | null;
   gallery?: string[] | null;
-  facilities?: any | null;
-  programs?: any | null;
-  cut_off_data?: any | null;
-  admission_process?: any | null;
-  fees?: any | null;
+  facilities?: Record<string, unknown> | null;
+  programs?: Record<string, unknown> | null;
+  cut_off_data?: Record<string, unknown> | null;
+  admission_process?: Record<string, unknown> | null;
+  fees?: Record<string, unknown> | null;
   images?: string[] | null;
   is_verified: boolean;
   is_active: boolean;
@@ -141,7 +144,8 @@ export interface CollegeProfileCreateData {
   gallery?: string[];
 }
 
-export interface CollegeProfileUpdateData extends Partial<CollegeProfileCreateData> {
+export interface CollegeProfileUpdateData
+  extends Partial<CollegeProfileCreateData> {
   slug?: string;
 }
 

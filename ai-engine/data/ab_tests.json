@@ -29,11 +29,7 @@
         }
       }
     ],
-    "traffic_split": [
-      0.4,
-      0.3,
-      0.3
-    ],
+    "traffic_split": [0.4, 0.3, 0.3],
     "start_date": "2025-09-17T11:39:05.875339",
     "end_date": "2025-10-17T11:39:05.874662",
     "status": "running",
@@ -82,11 +78,7 @@
         }
       }
     ],
-    "traffic_split": [
-      0.4,
-      0.3,
-      0.3
-    ],
+    "traffic_split": [0.4, 0.3, 0.3],
     "start_date": "2025-09-17T11:40:13.405676",
     "end_date": "2025-10-17T11:40:13.396903",
     "status": "running",
@@ -114,10 +106,7 @@
         "name": "current_ui",
         "description": "Current user interface",
         "layout": "standard",
-        "features": [
-          "basic_search",
-          "filters"
-        ]
+        "features": ["basic_search", "filters"]
       },
       {
         "name": "enhanced_ui",
@@ -131,10 +120,7 @@
         ]
       }
     ],
-    "traffic_split": [
-      0.5,
-      0.5
-    ],
+    "traffic_split": [0.5, 0.5],
     "start_date": "2025-09-17T11:40:13.417680",
     "end_date": "2025-10-01T11:40:13.413779",
     "status": "running",
@@ -183,11 +169,7 @@
         }
       }
     ],
-    "traffic_split": [
-      0.4,
-      0.3,
-      0.3
-    ],
+    "traffic_split": [0.4, 0.3, 0.3],
     "start_date": "2025-09-17T11:40:34.751077",
     "end_date": "2025-10-17T11:40:34.747728",
     "status": "running",
@@ -215,10 +197,7 @@
         "name": "current_ui",
         "description": "Current user interface",
         "layout": "standard",
-        "features": [
-          "basic_search",
-          "filters"
-        ]
+        "features": ["basic_search", "filters"]
       },
       {
         "name": "enhanced_ui",
@@ -232,10 +211,7 @@
         ]
       }
     ],
-    "traffic_split": [
-      0.5,
-      0.5
-    ],
+    "traffic_split": [0.5, 0.5],
     "start_date": "2025-09-17T11:40:34.756725",
     "end_date": "2025-10-01T11:40:34.753857",
     "status": "running",
@@ -284,11 +260,7 @@
         }
       }
     ],
-    "traffic_split": [
-      0.4,
-      0.3,
-      0.3
-    ],
+    "traffic_split": [0.4, 0.3, 0.3],
     "start_date": "2025-09-17T11:40:40.156011",
     "end_date": "2025-10-17T11:40:40.152300",
     "status": "running",
@@ -316,10 +288,7 @@
         "name": "current_ui",
         "description": "Current user interface",
         "layout": "standard",
-        "features": [
-          "basic_search",
-          "filters"
-        ]
+        "features": ["basic_search", "filters"]
       },
       {
         "name": "enhanced_ui",
@@ -333,10 +302,7 @@
         ]
       }
     ],
-    "traffic_split": [
-      0.5,
-      0.5
-    ],
+    "traffic_split": [0.5, 0.5],
     "start_date": "2025-09-17T11:40:40.163188",
     "end_date": "2025-10-01T11:40:40.159250",
     "status": "running",
@@ -385,11 +351,7 @@
         }
       }
     ],
-    "traffic_split": [
-      0.4,
-      0.3,
-      0.3
-    ],
+    "traffic_split": [0.4, 0.3, 0.3],
     "start_date": "2025-09-17T11:40:45.668968",
     "end_date": "2025-10-17T11:40:45.665319",
     "status": "running",
@@ -417,10 +379,7 @@
         "name": "current_ui",
         "description": "Current user interface",
         "layout": "standard",
-        "features": [
-          "basic_search",
-          "filters"
-        ]
+        "features": ["basic_search", "filters"]
       },
       {
         "name": "enhanced_ui",
@@ -434,10 +393,7 @@
         ]
       }
     ],
-    "traffic_split": [
-      0.5,
-      0.5
-    ],
+    "traffic_split": [0.5, 0.5],
     "start_date": "2025-09-17T11:40:45.676193",
     "end_date": "2025-10-01T11:40:45.672039",
     "status": "running",
@@ -486,11 +442,7 @@
         }
       }
     ],
-    "traffic_split": [
-      0.4,
-      0.3,
-      0.3
-    ],
+    "traffic_split": [0.4, 0.3, 0.3],
     "start_date": "2025-09-17T11:42:03.024634",
     "end_date": "2025-10-17T11:42:03.017286",
     "status": "running",
@@ -518,10 +470,7 @@
         "name": "current_ui",
         "description": "Current user interface",
         "layout": "standard",
-        "features": [
-          "basic_search",
-          "filters"
-        ]
+        "features": ["basic_search", "filters"]
       },
       {
         "name": "enhanced_ui",
@@ -535,10 +484,7 @@
         ]
       }
     ],
-    "traffic_split": [
-      0.5,
-      0.5
-    ],
+    "traffic_split": [0.5, 0.5],
     "start_date": "2025-09-17T11:42:03.036955",
     "end_date": "2025-10-01T11:42:03.031718",
     "status": "running",

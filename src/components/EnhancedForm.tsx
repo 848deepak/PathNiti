@@ -2,42 +2,57 @@
  * Enhanced form component with comprehensive validation and error handling
  */
 
-"use client"
+"use client";
 
-import React from 'react'
-import { useEnhancedFormValidation, ValidationSchema } from '@/hooks/useEnhancedFormValidation'
-import { FormErrorBoundary } from '@/components/ErrorBoundary'
-import { LoadingButton, OperationStatus } from '@/components/ui/loading-states'
-import { FormErrorDisplay, FieldError, ValidationSummary } from '@/components/ui/form-error-display'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import { Card } from '@/components/ui/card'
+import React from "react";
+import {
+  useEnhancedFormValidation,
+  ValidationSchema,
+} from "@/hooks/useEnhancedFormValidation";
+import { FormErrorBoundary } from "@/components/ErrorBoundary";
+import { LoadingButton, OperationStatus } from "@/components/ui/loading-states";
+import {
+  FormErrorDisplay,
+  FieldError,
+  ValidationSummary,
+} from "@/components/ui/form-error-display";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Card } from "@/components/ui/card";
 
 export interface FormField {
-  name: string
-  label: string
-  type: 'text' | 'email' | 'password' | 'tel' | 'url' | 'number' | 'textarea' | 'select'
-  placeholder?: string
-  required?: boolean
-  options?: Array<{ value: string; label: string }>
-  description?: string
+  name: string;
+  label: string;
+  type:
+    | "text"
+    | "email"
+    | "password"
+    | "tel"
+    | "url"
+    | "number"
+    | "textarea"
+    | "select";
+  placeholder?: string;
+  required?: boolean;
+  options?: Array<{ value: string; label: string }>;
+  description?: string;
 }
 
 export interface EnhancedFormProps {
-  fields: FormField[]
-  schema: ValidationSchema
-  onSubmit: (data: any) => Promise<any>
-  initialValues?: Record<string, any>
-  title?: string
-  description?: string
-  submitButtonText?: string
-  resetButtonText?: string
-  showReset?: boolean
-  className?: string
-  onSuccess?: (result: any) => void
-  onError?: (error: Error) => void
+  fields: FormField[];
+  schema: ValidationSchema;
+  onSubmit: (data: Record<string, unknown>) => Promise<unknown>;
+  initialValues?: Record<string, unknown>;
+  title?: string;
+  description?: string;
+  submitButtonText?: string;
+  resetButtonText?: string;
+  showReset?: boolean;
+  className?: string;
+  onSuccess?: (result: unknown) => void;
+  onError?: (error: Error) => void;
 }
 
 export function EnhancedForm({
@@ -47,53 +62,52 @@ export function EnhancedForm({
   initialValues = {},
   title,
   description,
-  submitButtonText = 'Submit',
-  resetButtonText = 'Reset',
+  submitButtonText = "Submit",
+  resetButtonText = "Reset",
   showReset = true,
-  className = '',
+  className = "",
   onSuccess,
-  onError
+  onError,
 }: EnhancedFormProps) {
   const {
-    formState,
     submissionState,
     isFormValid,
     hasErrors,
     fieldErrors,
-    updateField,
-    handleFieldBlur,
     submitForm,
     resetForm,
     getFieldProps,
     getFieldError,
     isFieldTouched,
-    isFieldValidating
+    isFieldValidating,
   } = useEnhancedFormValidation({
     schema,
     initialValues,
     onSubmitSuccess: onSuccess,
-    onSubmitError: onError
-  })
+    onSubmitError: onError,
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    await submitForm(onSubmit)
-  }
+    e.preventDefault();
+    await submitForm(onSubmit);
+  };
 
   const handleReset = () => {
-    resetForm()
-  }
+    resetForm();
+  };
 
   // Get all errors for validation summary
-  const allErrors = Object.values(fieldErrors)
-  const allWarnings: string[] = [] // You could extend this to include warnings
+  const allErrors = Object.values(fieldErrors);
+  const allWarnings: string[] = []; // You could extend this to include warnings
 
   return (
     <FormErrorBoundary>
       <Card className={`p-6 ${className}`}>
         {(title || description) && (
           <div className="mb-6">
-            {title && <h2 className="text-2xl font-bold text-gray-900 mb-2">{title}</h2>}
+            {title && (
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">{title}</h2>
+            )}
             {description && <p className="text-gray-600">{description}</p>}
           </div>
         )}
@@ -111,10 +125,13 @@ export function EnhancedForm({
           {/* Submission Status */}
           <OperationStatus
             status={
-              submissionState.isSubmitting ? 'loading' :
-              submissionState.submitSuccess ? 'success' :
-              submissionState.submitError ? 'error' :
-              'idle'
+              submissionState.isSubmitting
+                ? "loading"
+                : submissionState.submitSuccess
+                  ? "success"
+                  : submissionState.submitError
+                    ? "error"
+                    : "idle"
             }
             loadingText="Submitting form..."
             successText="Form submitted successfully!"
@@ -127,39 +144,46 @@ export function EnhancedForm({
           <div className="space-y-4">
             {fields.map((field) => (
               <div key={field.name} className="space-y-2">
-                <Label htmlFor={field.name} className="text-sm font-medium text-gray-700">
+                <Label
+                  htmlFor={field.name}
+                  className="text-sm font-medium text-gray-700"
+                >
                   {field.label}
-                  {field.required && <span className="text-red-500 ml-1">*</span>}
+                  {field.required && (
+                    <span className="text-red-500 ml-1">*</span>
+                  )}
                 </Label>
 
                 {field.description && (
                   <p className="text-xs text-gray-500">{field.description}</p>
                 )}
 
-                {field.type === 'textarea' ? (
+                {field.type === "textarea" ? (
                   <Textarea
                     id={field.name}
                     placeholder={field.placeholder}
                     className={`${
                       isFieldTouched(field.name) && getFieldError(field.name)
-                        ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                        : ''
+                        ? "border-red-300 focus:border-red-500 focus:ring-red-500"
+                        : ""
                     }`}
                     disabled={submissionState.isSubmitting}
                     {...getFieldProps(field.name)}
                   />
-                ) : field.type === 'select' ? (
+                ) : field.type === "select" ? (
                   <select
                     id={field.name}
                     className={`w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                       isFieldTouched(field.name) && getFieldError(field.name)
-                        ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                        : ''
+                        ? "border-red-300 focus:border-red-500 focus:ring-red-500"
+                        : ""
                     }`}
                     disabled={submissionState.isSubmitting}
                     {...getFieldProps(field.name)}
                   >
-                    <option value="">{field.placeholder || `Select ${field.label}`}</option>
+                    <option value="">
+                      {field.placeholder || `Select ${field.label}`}
+                    </option>
                     {field.options?.map((option) => (
                       <option key={option.value} value={option.value}>
                         {option.label}
@@ -173,8 +197,8 @@ export function EnhancedForm({
                     placeholder={field.placeholder}
                     className={`${
                       isFieldTouched(field.name) && getFieldError(field.name)
-                        ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                        : ''
+                        ? "border-red-300 focus:border-red-500 focus:ring-red-500"
+                        : ""
                     }`}
                     disabled={submissionState.isSubmitting}
                     {...getFieldProps(field.name)}
@@ -228,14 +252,20 @@ export function EnhancedForm({
                 variant="card"
                 recoveryActions={[
                   {
-                    label: 'Contact Support',
+                    label: "Contact Support",
                     action: () => {
-                      const subject = encodeURIComponent('Form Submission Issue')
-                      const body = encodeURIComponent(`I'm having trouble submitting a form. Attempts: ${submissionState.submitAttempts}`)
-                      window.open(`mailto:support@pathniti.com?subject=${subject}&body=${body}`)
+                      const subject = encodeURIComponent(
+                        "Form Submission Issue",
+                      );
+                      const body = encodeURIComponent(
+                        `I'm having trouble submitting a form. Attempts: ${submissionState.submitAttempts}`,
+                      );
+                      window.open(
+                        `mailto:support@pathniti.com?subject=${subject}&body=${body}`,
+                      );
                     },
-                    type: 'secondary'
-                  }
+                    type: "secondary",
+                  },
                 ]}
               />
             </div>
@@ -243,73 +273,73 @@ export function EnhancedForm({
         </form>
       </Card>
     </FormErrorBoundary>
-  )
+  );
 }
 
 // Example usage component
 export function ExampleFormUsage() {
   const fields: FormField[] = [
     {
-      name: 'name',
-      label: 'Full Name',
-      type: 'text',
-      placeholder: 'Enter your full name',
+      name: "name",
+      label: "Full Name",
+      type: "text",
+      placeholder: "Enter your full name",
       required: true,
-      description: 'Your first and last name'
+      description: "Your first and last name",
     },
     {
-      name: 'email',
-      label: 'Email Address',
-      type: 'email',
-      placeholder: 'Enter your email',
-      required: true
+      name: "email",
+      label: "Email Address",
+      type: "email",
+      placeholder: "Enter your email",
+      required: true,
     },
     {
-      name: 'phone',
-      label: 'Phone Number',
-      type: 'tel',
-      placeholder: 'Enter your phone number',
-      required: true
+      name: "phone",
+      label: "Phone Number",
+      type: "tel",
+      placeholder: "Enter your phone number",
+      required: true,
     },
     {
-      name: 'message',
-      label: 'Message',
-      type: 'textarea',
-      placeholder: 'Enter your message',
-      description: 'Optional message or comments'
-    }
-  ]
+      name: "message",
+      label: "Message",
+      type: "textarea",
+      placeholder: "Enter your message",
+      description: "Optional message or comments",
+    },
+  ];
 
   const schema: ValidationSchema = {
     name: {
       required: true,
       minLength: 2,
-      maxLength: 100
+      maxLength: 100,
     },
     email: {
       required: true,
-      pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
     },
     phone: {
       required: true,
-      pattern: /^[6-9]\d{9}$/
+      pattern: /^[6-9]\d{9}$/,
     },
     message: {
-      maxLength: 500
-    }
-  }
+      maxLength: 500,
+    },
+  };
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (_data: Record<string, unknown>) => {
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
     // Simulate random success/failure for demo
     if (Math.random() > 0.3) {
-      return { success: true, id: '123' }
+      return { success: true, id: "123" };
     } else {
-      throw new Error('Submission failed. Please try again.')
+      throw new Error("Submission failed. Please try again.");
     }
-  }
+  };
 
   return (
     <EnhancedForm
@@ -320,12 +350,12 @@ export function ExampleFormUsage() {
       description="Please fill out this form to get in touch with us."
       submitButtonText="Send Message"
       onSuccess={(result) => {
-        console.log('Form submitted successfully:', result)
-        alert('Message sent successfully!')
+        console.log("Form submitted successfully:", result);
+        alert("Message sent successfully!");
       }}
       onError={(error) => {
-        console.error('Form submission failed:', error)
+        console.error("Form submission failed:", error);
       }}
     />
-  )
+  );
 }

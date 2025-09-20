@@ -1,23 +1,16 @@
-import * as React from "react"
-import { cn } from "@/lib/utils"
+import * as React from "react";
+import { cn } from "@/lib/utils";
 
 const ScrollArea = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & {
-    className?: string
+    className?: string;
   }
 >(({ className, children, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn(
-      "relative overflow-auto",
-      className
-    )}
-    {...props}
-  >
+  <div ref={ref} className={cn("relative overflow-auto", className)} {...props}>
     {children}
   </div>
-))
-ScrollArea.displayName = "ScrollArea"
+));
+ScrollArea.displayName = "ScrollArea";
 
-export { ScrollArea }
+export { ScrollArea };

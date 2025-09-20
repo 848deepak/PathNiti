@@ -1,23 +1,23 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import Image from 'next/image'
-import { ImageOptimizationUtils } from '@/lib/services/image-optimization-service'
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import { ImageOptimizationUtils } from "@/lib/services/image-optimization-service";
 
 interface OptimizedImageProps {
-  src: string
-  alt: string
-  width?: number
-  height?: number
-  className?: string
-  priority?: boolean
-  lazy?: boolean
-  quality?: number
-  sizes?: string
-  fill?: boolean
-  style?: React.CSSProperties
-  onLoad?: () => void
-  onError?: () => void
+  src: string;
+  alt: string;
+  width?: number;
+  height?: number;
+  className?: string;
+  priority?: boolean;
+  lazy?: boolean;
+  quality?: number;
+  sizes?: string;
+  fill?: boolean;
+  style?: React.CSSProperties;
+  onLoad?: () => void;
+  onError?: () => void;
 }
 
 export default function OptimizedImage({
@@ -25,7 +25,7 @@ export default function OptimizedImage({
   alt,
   width,
   height,
-  className = '',
+  className = "",
   priority = false,
   lazy = true,
   quality = 85,
@@ -33,118 +33,118 @@ export default function OptimizedImage({
   fill = false,
   style,
   onLoad,
-  onError
+  onError,
 }: OptimizedImageProps) {
-  const [imageSrc, setImageSrc] = useState<string>(src)
-  const [isLoading, setIsLoading] = useState(true)
-  const [hasError, setHasError] = useState(false)
+  const [imageSrc, setImageSrc] = useState<string>(src);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
   const [responsiveUrls, setResponsiveUrls] = useState<{
-    thumbnail: string
-    medium: string
-    large: string
-    original: string
-  } | null>(null)
+    thumbnail: string;
+    medium: string;
+    large: string;
+    original: string;
+  } | null>(null);
 
   useEffect(() => {
     // Generate responsive URLs if image optimization is supported
     if (ImageOptimizationUtils.isOptimizationSupported(src)) {
-      const urls = ImageOptimizationUtils.getResponsiveUrls(src)
-      setResponsiveUrls(urls)
-      
+      const urls = ImageOptimizationUtils.getResponsiveUrls(src);
+      setResponsiveUrls(urls);
+
       // Use medium size as default
-      setImageSrc(urls.medium)
+      setImageSrc(urls.medium);
     } else {
-      setImageSrc(src)
+      setImageSrc(src);
     }
-  }, [src])
+  }, [src]);
 
   const handleLoad = () => {
-    setIsLoading(false)
-    onLoad?.()
-  }
+    setIsLoading(false);
+    onLoad?.();
+  };
 
   const handleError = () => {
-    setHasError(true)
-    setIsLoading(false)
-    
+    setHasError(true);
+    setIsLoading(false);
+
     // Fallback to original image if optimized version fails
     if (responsiveUrls && imageSrc !== responsiveUrls.original) {
-      setImageSrc(responsiveUrls.original)
-      setHasError(false)
-      return
+      setImageSrc(responsiveUrls.original);
+      setHasError(false);
+      return;
     }
-    
-    onError?.()
-  }
+
+    onError?.();
+  };
 
   // Generate srcSet for responsive images
   const generateSrcSet = () => {
-    if (!responsiveUrls) return undefined
+    if (!responsiveUrls) return undefined;
 
     return [
       `${responsiveUrls.thumbnail} 300w`,
       `${responsiveUrls.medium} 800w`,
-      `${responsiveUrls.large} 1920w`
-    ].join(', ')
-  }
+      `${responsiveUrls.large} 1920w`,
+    ].join(", ");
+  };
 
   // Generate sizes attribute
   const generateSizes = () => {
-    if (sizes) return sizes
-    
+    if (sizes) return sizes;
+
     return [
-      '(max-width: 640px) 300px',
-      '(max-width: 1024px) 800px',
-      '1920px'
-    ].join(', ')
-  }
+      "(max-width: 640px) 300px",
+      "(max-width: 1024px) 800px",
+      "1920px",
+    ].join(", ");
+  };
 
   if (hasError) {
     return (
-      <div 
+      <div
         className={`bg-gray-200 flex items-center justify-center ${className}`}
         style={{ width, height, ...style }}
       >
         <div className="text-gray-500 text-sm text-center p-4">
-          <svg 
-            className="w-8 h-8 mx-auto mb-2" 
-            fill="none" 
-            stroke="currentColor" 
+          <svg
+            className="w-8 h-8 mx-auto mb-2"
+            fill="none"
+            stroke="currentColor"
             viewBox="0 0 24 24"
           >
-            <path 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              strokeWidth={2} 
-              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" 
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
             />
           </svg>
           Image not available
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className={`relative ${className}`} style={style}>
       {/* Loading placeholder */}
       {isLoading && (
-        <div 
+        <div
           className="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center"
           style={{ width, height }}
         >
           <div className="text-gray-400">
-            <svg 
-              className="w-8 h-8 animate-spin" 
-              fill="none" 
-              stroke="currentColor" 
+            <svg
+              className="w-8 h-8 animate-spin"
+              fill="none"
+              stroke="currentColor"
               viewBox="0 0 24 24"
             >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" 
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
               />
             </svg>
           </div>
@@ -158,22 +158,22 @@ export default function OptimizedImage({
         height={fill ? undefined : height}
         fill={fill}
         priority={priority}
-        loading={lazy ? 'lazy' : 'eager'}
+        loading={lazy ? "lazy" : "eager"}
         quality={quality}
-        srcSet={generateSrcSet()}
+        {...(generateSrcSet() && { srcSet: generateSrcSet() })}
         sizes={generateSizes()}
         className={`transition-opacity duration-300 ${
-          isLoading ? 'opacity-0' : 'opacity-100'
+          isLoading ? "opacity-0" : "opacity-100"
         }`}
         onLoad={handleLoad}
         onError={handleError}
         style={{
-          objectFit: 'cover',
-          ...(!fill && { width, height })
+          objectFit: "cover",
+          ...(!fill && { width, height }),
         }}
       />
     </div>
-  )
+  );
 }
 
 /**
@@ -182,13 +182,13 @@ export default function OptimizedImage({
 export function CollegeGalleryImage({
   src,
   alt,
-  className = '',
-  priority = false
+  className = "",
+  priority = false,
 }: {
-  src: string
-  alt: string
-  className?: string
-  priority?: boolean
+  src: string;
+  alt: string;
+  className?: string;
+  priority?: boolean;
 }) {
   return (
     <OptimizedImage
@@ -201,7 +201,7 @@ export function CollegeGalleryImage({
       quality={90}
       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
     />
-  )
+  );
 }
 
 /**
@@ -210,11 +210,11 @@ export function CollegeGalleryImage({
 export function CollegeHeaderImage({
   src,
   alt,
-  className = ''
+  className = "",
 }: {
-  src: string
-  alt: string
-  className?: string
+  src: string;
+  alt: string;
+  className?: string;
 }) {
   return (
     <OptimizedImage
@@ -226,7 +226,7 @@ export function CollegeHeaderImage({
       quality={95}
       sizes="100vw"
     />
-  )
+  );
 }
 
 /**
@@ -235,11 +235,11 @@ export function CollegeHeaderImage({
 export function CollegeThumbnailImage({
   src,
   alt,
-  className = ''
+  className = "",
 }: {
-  src: string
-  alt: string
-  className?: string
+  src: string;
+  alt: string;
+  className?: string;
 }) {
   return (
     <OptimizedImage
@@ -252,5 +252,5 @@ export function CollegeThumbnailImage({
       quality={80}
       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 300px"
     />
-  )
+  );
 }

@@ -17,16 +17,16 @@ export type {
   CollegeProfileData,
   CollegeProfileCreateData,
   CollegeProfileUpdateData,
-  CollegeSlugValidationResult
-} from './college-profile'
+  CollegeSlugValidationResult,
+} from "./college-profile";
 
 // Signup session types
 export type {
   CollegeSignupFormData,
   SignupSession,
   SessionStorageOptions,
-  SignupStep
-} from './signup-session'
+  SignupStep,
+} from "./signup-session";
 
 // Re-export existing types from the main types file
-export * from '../types'
+export * from "../types";

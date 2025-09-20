@@ -1,52 +1,39 @@
-"use client"
+"use client";
 
-import { useEffect } from 'react'
-import { useAuth } from '@/app/providers'
+import { useEffect } from "react";
+import { useAuth } from "@/app/providers";
 
 /**
  * Custom hook that provides authentication guard functionality
  * This hook automatically handles authentication checks and redirects
  */
 export function useAuthGuard(options?: {
-  requireAuth?: boolean
-  requiredRole?: 'student' | 'admin' | 'college'
-  redirectTo?: string
+  requireAuth?: boolean;
+  requiredRole?: "student" | "admin" | "college";
+  redirectTo?: string;
 }) {
-  const { 
-    user, 
-    session, 
-    profile, 
-    loading, 
-    requireAuth, 
-    requireRole 
-  } = useAuth()
+  const { user, session, profile, loading, requireAuth, requireRole } =
+    useAuth();
 
   const {
     requireAuth: shouldRequireAuth = true,
     requiredRole,
-    redirectTo
-  } = options || {}
+  } = options || {};
 
   useEffect(() => {
     // Skip checks while loading
-    if (loading) return
+    if (loading) return;
 
     // Apply authentication requirement
     if (shouldRequireAuth) {
-      requireAuth()
+      requireAuth();
     }
 
     // Apply role requirement if specified
     if (requiredRole) {
-      requireRole(requiredRole)
+      requireRole(requiredRole);
     }
-  }, [
-    loading, 
-    shouldRequireAuth, 
-    requiredRole, 
-    requireAuth, 
-    requireRole
-  ])
+  }, [loading, shouldRequireAuth, requiredRole, requireAuth, requireRole]);
 
   return {
     user,
@@ -55,41 +42,41 @@ export function useAuthGuard(options?: {
     loading,
     isAuthenticated: !loading && !!user && !!session,
     hasProfile: !loading && !!profile,
-    isReady: !loading && !!user && !!session && !!profile
-  }
+    isReady: !loading && !!user && !!session && !!profile,
+  };
 }
 
 /**
  * Hook specifically for pages that require authentication
  */
 export function useRequireAuth() {
-  return useAuthGuard({ requireAuth: true })
+  return useAuthGuard({ requireAuth: true });
 }
 
 /**
  * Hook specifically for pages that require a specific role
  */
-export function useRequireRole(role: 'student' | 'admin' | 'college') {
-  return useAuthGuard({ requireAuth: true, requiredRole: role })
+export function useRequireRole(role: "student" | "admin" | "college") {
+  return useAuthGuard({ requireAuth: true, requiredRole: role });
 }
 
 /**
  * Hook for admin-only pages
  */
 export function useRequireAdmin() {
-  return useRequireRole('admin')
+  return useRequireRole("admin");
 }
 
 /**
  * Hook for student-only pages
  */
 export function useRequireStudent() {
-  return useRequireRole('student')
+  return useRequireRole("student");
 }
 
 /**
  * Hook for college-only pages
  */
 export function useRequireCollege() {
-  return useRequireRole('college')
+  return useRequireRole("college");
 }

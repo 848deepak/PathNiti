@@ -3,18 +3,18 @@
  * Implements comprehensive assessment with RIASEC interests, aptitude, personality, and practical constraints
  */
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { 
-  AptitudeScores, 
-  RIASECScores, 
-  PersonalityScores, 
-  SubjectPerformance, 
+import { GoogleGenerativeAI, GenerativeModel } from "@google/generative-ai";
+import {
+  AptitudeScores,
+  RIASECScores,
+  PersonalityScores,
+  SubjectPerformance,
   PracticalConstraints,
   StreamRecommendation,
   CollegeRecommendation,
   ScholarshipRecommendation,
-  BackupOption 
-} from './types';
+  BackupOption,
+} from "./types";
 
 // Enhanced user profile for comprehensive assessment
 export interface EnhancedUserProfile {
@@ -52,146 +52,146 @@ export interface ComprehensiveRecommendationResult {
 // Career data with enhanced information
 const ENHANCED_CAREER_DATA = [
   {
-    stream: 'engineering',
+    stream: "engineering",
     careers: [
       {
-        title: 'Software Engineer',
-        time_to_earn: '4-5 years',
-        average_salary: '6-25 LPA',
-        job_demand_trend: 'very_high',
-        required_aptitudes: ['logical_reasoning', 'quantitative_skills'],
-        riasec_match: ['investigative', 'realistic'],
-        personality_match: ['structured'],
-        subjects: ['math', 'science']
+        title: "Software Engineer",
+        time_to_earn: "4-5 years",
+        average_salary: "6-25 LPA",
+        job_demand_trend: "very_high",
+        required_aptitudes: ["logical_reasoning", "quantitative_skills"],
+        riasec_match: ["investigative", "realistic"],
+        personality_match: ["structured"],
+        subjects: ["math", "science"],
       },
       {
-        title: 'Civil Engineer',
-        time_to_earn: '4-6 years',
-        average_salary: '4-15 LPA',
-        job_demand_trend: 'high',
-        required_aptitudes: ['spatial_visual_skills', 'quantitative_skills'],
-        riasec_match: ['realistic', 'investigative'],
-        personality_match: ['structured', 'leadership'],
-        subjects: ['math', 'science']
-      }
-    ]
+        title: "Civil Engineer",
+        time_to_earn: "4-6 years",
+        average_salary: "4-15 LPA",
+        job_demand_trend: "high",
+        required_aptitudes: ["spatial_visual_skills", "quantitative_skills"],
+        riasec_match: ["realistic", "investigative"],
+        personality_match: ["structured", "leadership"],
+        subjects: ["math", "science"],
+      },
+    ],
   },
   {
-    stream: 'medical',
+    stream: "medical",
     careers: [
       {
-        title: 'Doctor (MBBS)',
-        time_to_earn: '5.5-11 years',
-        average_salary: '8-50 LPA',
-        job_demand_trend: 'very_high',
-        required_aptitudes: ['memory_attention', 'language_verbal_skills'],
-        riasec_match: ['social', 'investigative'],
-        personality_match: ['leadership', 'supportive'],
-        subjects: ['science']
+        title: "Doctor (MBBS)",
+        time_to_earn: "5.5-11 years",
+        average_salary: "8-50 LPA",
+        job_demand_trend: "very_high",
+        required_aptitudes: ["memory_attention", "language_verbal_skills"],
+        riasec_match: ["social", "investigative"],
+        personality_match: ["leadership", "supportive"],
+        subjects: ["science"],
       },
       {
-        title: 'Pharmacist',
-        time_to_earn: '4-6 years',
-        average_salary: '3-12 LPA',
-        job_demand_trend: 'high',
-        required_aptitudes: ['memory_attention', 'logical_reasoning'],
-        riasec_match: ['investigative', 'social'],
-        personality_match: ['structured'],
-        subjects: ['science']
-      }
-    ]
+        title: "Pharmacist",
+        time_to_earn: "4-6 years",
+        average_salary: "3-12 LPA",
+        job_demand_trend: "high",
+        required_aptitudes: ["memory_attention", "logical_reasoning"],
+        riasec_match: ["investigative", "social"],
+        personality_match: ["structured"],
+        subjects: ["science"],
+      },
+    ],
   },
   {
-    stream: 'commerce',
+    stream: "commerce",
     careers: [
       {
-        title: 'Chartered Accountant',
-        time_to_earn: '4-5 years',
-        average_salary: '6-30 LPA',
-        job_demand_trend: 'high',
-        required_aptitudes: ['quantitative_skills', 'logical_reasoning'],
-        riasec_match: ['conventional', 'enterprising'],
-        personality_match: ['structured'],
-        subjects: ['math']
+        title: "Chartered Accountant",
+        time_to_earn: "4-5 years",
+        average_salary: "6-30 LPA",
+        job_demand_trend: "high",
+        required_aptitudes: ["quantitative_skills", "logical_reasoning"],
+        riasec_match: ["conventional", "enterprising"],
+        personality_match: ["structured"],
+        subjects: ["math"],
       },
       {
-        title: 'Investment Banker',
-        time_to_earn: '4-6 years',
-        average_salary: '8-40 LPA',
-        job_demand_trend: 'medium',
-        required_aptitudes: ['quantitative_skills', 'language_verbal_skills'],
-        riasec_match: ['enterprising', 'conventional'],
-        personality_match: ['risk_taking', 'leadership'],
-        subjects: ['math', 'english']
-      }
-    ]
+        title: "Investment Banker",
+        time_to_earn: "4-6 years",
+        average_salary: "8-40 LPA",
+        job_demand_trend: "medium",
+        required_aptitudes: ["quantitative_skills", "language_verbal_skills"],
+        riasec_match: ["enterprising", "conventional"],
+        personality_match: ["risk_taking", "leadership"],
+        subjects: ["math", "english"],
+      },
+    ],
   },
   {
-    stream: 'arts',
+    stream: "arts",
     careers: [
       {
-        title: 'Civil Services (IAS/IPS)',
-        time_to_earn: '4-6 years',
-        average_salary: '7-20 LPA',
-        job_demand_trend: 'high',
-        required_aptitudes: ['language_verbal_skills', 'memory_attention'],
-        riasec_match: ['social', 'enterprising'],
-        personality_match: ['leadership'],
-        subjects: ['social_science', 'english', 'general_knowledge']
+        title: "Civil Services (IAS/IPS)",
+        time_to_earn: "4-6 years",
+        average_salary: "7-20 LPA",
+        job_demand_trend: "high",
+        required_aptitudes: ["language_verbal_skills", "memory_attention"],
+        riasec_match: ["social", "enterprising"],
+        personality_match: ["leadership"],
+        subjects: ["social_science", "english", "general_knowledge"],
       },
       {
-        title: 'Journalist',
-        time_to_earn: '3-4 years',
-        average_salary: '3-15 LPA',
-        job_demand_trend: 'medium',
-        required_aptitudes: ['language_verbal_skills'],
-        riasec_match: ['artistic', 'social'],
-        personality_match: ['flexible', 'risk_taking'],
-        subjects: ['english', 'social_science']
-      }
-    ]
+        title: "Journalist",
+        time_to_earn: "3-4 years",
+        average_salary: "3-15 LPA",
+        job_demand_trend: "medium",
+        required_aptitudes: ["language_verbal_skills"],
+        riasec_match: ["artistic", "social"],
+        personality_match: ["flexible", "risk_taking"],
+        subjects: ["english", "social_science"],
+      },
+    ],
   },
   {
-    stream: 'science',
+    stream: "science",
     careers: [
       {
-        title: 'Research Scientist',
-        time_to_earn: '6-10 years',
-        average_salary: '5-25 LPA',
-        job_demand_trend: 'growing',
-        required_aptitudes: ['logical_reasoning', 'memory_attention'],
-        riasec_match: ['investigative'],
-        personality_match: ['structured'],
-        subjects: ['science', 'math']
+        title: "Research Scientist",
+        time_to_earn: "6-10 years",
+        average_salary: "5-25 LPA",
+        job_demand_trend: "growing",
+        required_aptitudes: ["logical_reasoning", "memory_attention"],
+        riasec_match: ["investigative"],
+        personality_match: ["structured"],
+        subjects: ["science", "math"],
       },
       {
-        title: 'Data Scientist',
-        time_to_earn: '4-6 years',
-        average_salary: '8-30 LPA',
-        job_demand_trend: 'very_high',
-        required_aptitudes: ['logical_reasoning', 'quantitative_skills'],
-        riasec_match: ['investigative', 'conventional'],
-        personality_match: ['structured'],
-        subjects: ['math', 'science']
-      }
-    ]
-  }
+        title: "Data Scientist",
+        time_to_earn: "4-6 years",
+        average_salary: "8-30 LPA",
+        job_demand_trend: "very_high",
+        required_aptitudes: ["logical_reasoning", "quantitative_skills"],
+        riasec_match: ["investigative", "conventional"],
+        personality_match: ["structured"],
+        subjects: ["math", "science"],
+      },
+    ],
+  },
 ];
 
 export class EnhancedAIRecommendationEngine {
   private genAI: GoogleGenerativeAI | null = null;
-  private model: any = null;
+  private model: GenerativeModel | null = null;
 
   constructor() {
     const apiKey = process.env.GEMINI_API_KEY;
     if (apiKey) {
       this.genAI = new GoogleGenerativeAI(apiKey);
-      this.model = this.genAI.getGenerativeModel({ 
-        model: 'gemini-1.5-flash',
+      this.model = this.genAI.getGenerativeModel({
+        model: "gemini-1.5-flash",
         generationConfig: {
           maxOutputTokens: 2000,
           temperature: 0.7,
-        }
+        },
       });
     }
   }
@@ -200,22 +200,24 @@ export class EnhancedAIRecommendationEngine {
    * Generate comprehensive career recommendations based on multidimensional assessment
    */
   async generateComprehensiveRecommendations(
-    userProfile: EnhancedUserProfile
+    userProfile: EnhancedUserProfile,
   ): Promise<ComprehensiveRecommendationResult> {
     try {
       // Calculate base recommendations using scoring algorithm
-      const baseRecommendations = this.calculateMultidimensionalScores(userProfile);
-      
+      const baseRecommendations =
+        this.calculateMultidimensionalScores(userProfile);
+
       // Enhance with AI if available
       if (this.model) {
         return await this.enhanceWithAI(userProfile, baseRecommendations);
       }
-      
+
       return this.formatBasicRecommendations(userProfile, baseRecommendations);
     } catch (error) {
-      console.error('Error generating recommendations:', error);
+      console.error("Error generating recommendations:", error);
       // Fallback to basic algorithm
-      const baseRecommendations = this.calculateMultidimensionalScores(userProfile);
+      const baseRecommendations =
+        this.calculateMultidimensionalScores(userProfile);
       return this.formatBasicRecommendations(userProfile, baseRecommendations);
     }
   }
@@ -224,8 +226,17 @@ export class EnhancedAIRecommendationEngine {
    * Calculate scores using multidimensional assessment data
    */
   private calculateMultidimensionalScores(userProfile: EnhancedUserProfile) {
-    const { aptitude_scores, riasec_scores, personality_scores, subject_performance, practical_constraints } = userProfile.assessment_results;
-    const streamScores: Record<string, { score: number; reasons: string[]; careers: any[] }> = {};
+    const {
+      aptitude_scores,
+      riasec_scores,
+      personality_scores,
+      subject_performance,
+      practical_constraints,
+    } = userProfile.assessment_results;
+    const streamScores: Record<
+      string,
+      { score: number; reasons: string[]; careers: Array<{ title: string; score: number; [key: string]: unknown }> }
+    > = {};
 
     for (const streamData of ENHANCED_CAREER_DATA) {
       const stream = streamData.stream;
@@ -235,19 +246,23 @@ export class EnhancedAIRecommendationEngine {
 
       for (const career of streamData.careers) {
         let careerScore = 0;
-        
+
         // Aptitude matching (30% weight)
         for (const aptitude of career.required_aptitudes) {
-          const aptitudeScore = aptitude_scores[aptitude as keyof AptitudeScores] || 0;
+          const aptitudeScore =
+            aptitude_scores[aptitude as keyof AptitudeScores] || 0;
           careerScore += aptitudeScore * 0.3;
           if (aptitudeScore > 0.7) {
-            reasons.push(`Strong ${aptitude.replace('_', ' ')} skills match ${career.title}`);
+            reasons.push(
+              `Strong ${aptitude.replace("_", " ")} skills match ${career.title}`,
+            );
           }
         }
 
         // RIASEC interest matching (25% weight)
         for (const interest of career.riasec_match) {
-          const interestScore = riasec_scores[interest as keyof RIASECScores] || 0;
+          const interestScore =
+            riasec_scores[interest as keyof RIASECScores] || 0;
           careerScore += interestScore * 0.25;
           if (interestScore > 0.7) {
             reasons.push(`${interest} interests align with ${career.title}`);
@@ -256,7 +271,10 @@ export class EnhancedAIRecommendationEngine {
 
         // Personality matching (20% weight)
         for (const trait of career.personality_match) {
-          const personalityScore = this.getPersonalityScore(personality_scores, trait);
+          const personalityScore = this.getPersonalityScore(
+            personality_scores,
+            trait,
+          );
           careerScore += personalityScore * 0.2;
           if (personalityScore > 0.7) {
             reasons.push(`${trait} personality trait suits ${career.title}`);
@@ -265,21 +283,29 @@ export class EnhancedAIRecommendationEngine {
 
         // Subject performance matching (20% weight)
         for (const subject of career.subjects) {
-          const subjectScore = this.getSubjectScore(subject_performance, subject);
+          const subjectScore = this.getSubjectScore(
+            subject_performance,
+            subject,
+          );
           careerScore += subjectScore * 0.2;
           if (subjectScore > 0.7) {
-            reasons.push(`Strong performance in ${subject} supports ${career.title}`);
+            reasons.push(
+              `Strong performance in ${subject} supports ${career.title}`,
+            );
           }
         }
 
         // Job demand and practical considerations (5% weight)
-        const demandMultiplier = this.getDemandMultiplier(career.job_demand_trend);
+        const demandMultiplier = this.getDemandMultiplier(
+          career.job_demand_trend,
+        );
         careerScore *= demandMultiplier;
 
-        if (careerScore > 1.5) { // Threshold for viable career match
+        if (careerScore > 1.5) {
+          // Threshold for viable career match
           matchingCareers.push({
             ...career,
-            score: careerScore
+            score: careerScore,
           });
         }
 
@@ -287,82 +313,102 @@ export class EnhancedAIRecommendationEngine {
       }
 
       // Apply practical constraints
-      totalScore = this.applyPracticalConstraints(totalScore, stream, practical_constraints, reasons);
+      totalScore = this.applyPracticalConstraints(
+        totalScore,
+        stream,
+        practical_constraints,
+        reasons,
+      );
 
       streamScores[stream] = {
         score: totalScore / streamData.careers.length, // Average score
         reasons: [...new Set(reasons)], // Remove duplicates
-        careers: matchingCareers.sort((a, b) => b.score - a.score)
+        careers: matchingCareers.sort((a, b) => b.score - a.score),
       };
     }
 
     return streamScores;
   }
 
-  private getPersonalityScore(personality: PersonalityScores, trait: string): number {
+  private getPersonalityScore(
+    personality: PersonalityScores,
+    trait: string,
+  ): number {
     switch (trait) {
-      case 'structured':
+      case "structured":
         return 1 - personality.structured_vs_flexible; // Lower = more structured
-      case 'flexible':
+      case "flexible":
         return personality.structured_vs_flexible; // Higher = more flexible
-      case 'leadership':
+      case "leadership":
         return personality.leadership_vs_supportive; // Higher = more leadership
-      case 'supportive':
+      case "supportive":
         return 1 - personality.leadership_vs_supportive; // Lower = more supportive
-      case 'risk_taking':
+      case "risk_taking":
         return personality.risk_taking_vs_risk_averse; // Higher = more risk taking
-      case 'risk_averse':
+      case "risk_averse":
         return 1 - personality.risk_taking_vs_risk_averse; // Lower = more risk averse
       default:
         return 0.5;
     }
   }
 
-  private getSubjectScore(subjects: SubjectPerformance, subject: string): number {
+  private getSubjectScore(
+    subjects: SubjectPerformance,
+    subject: string,
+  ): number {
     const subjectData = subjects[subject as keyof SubjectPerformance];
     if (!subjectData) return 0;
-    
+
     // Combine accuracy and speed (70% accuracy, 30% speed)
-    return (subjectData.accuracy * 0.7) + (subjectData.speed * 0.3);
+    return subjectData.accuracy * 0.7 + subjectData.speed * 0.3;
   }
 
   private getDemandMultiplier(demand: string): number {
     switch (demand) {
-      case 'very_high': return 1.2;
-      case 'high': return 1.1;
-      case 'growing': return 1.15;
-      case 'medium': return 1.0;
-      case 'declining': return 0.8;
-      default: return 1.0;
+      case "very_high":
+        return 1.2;
+      case "high":
+        return 1.1;
+      case "growing":
+        return 1.15;
+      case "medium":
+        return 1.0;
+      case "declining":
+        return 0.8;
+      default:
+        return 1.0;
     }
   }
 
   private applyPracticalConstraints(
-    score: number, 
-    stream: string, 
+    score: number,
+    stream: string,
     constraints: PracticalConstraints,
-    reasons: string[]
+    reasons: string[],
   ): number {
     let adjustedScore = score;
 
     // Financial background considerations
-    if (constraints.financial_background === 'low') {
-      if (['medical', 'engineering'].includes(stream)) {
+    if (constraints.financial_background === "low") {
+      if (["medical", "engineering"].includes(stream)) {
         adjustedScore *= 0.8; // Higher cost streams get penalty
-        reasons.push('Consider financial constraints for professional courses');
+        reasons.push("Consider financial constraints for professional courses");
       } else {
         adjustedScore *= 1.1; // Boost other streams
-        reasons.push('Financially accessible career path');
+        reasons.push("Financially accessible career path");
       }
     }
 
     // Parental expectations
-    if (constraints.parental_expectation === 'doctor' && stream === 'medical') {
+    if (constraints.parental_expectation === "doctor" && stream === "medical") {
       adjustedScore *= 1.2;
-      reasons.push('Aligns with family expectations');
-    } else if (constraints.parental_expectation === 'engineer' && stream === 'engineering') {
+      reasons.push("Aligns with family expectations");
+    } else if (
+      constraints.parental_expectation === "engineer" &&
+      stream === "engineering"
+    ) {
       adjustedScore *= 1.2;
-      reasons.push('Aligns with family expectations');
+      reasons.push("Aligns with family expectations");
     }
 
     return adjustedScore;
@@ -373,25 +419,39 @@ export class EnhancedAIRecommendationEngine {
    */
   private async enhanceWithAI(
     userProfile: EnhancedUserProfile,
-    baseRecommendations: Record<string, any>
+    baseRecommendations: Record<string, unknown>,
   ): Promise<ComprehensiveRecommendationResult> {
     const prompt = this.buildAIPrompt(userProfile, baseRecommendations);
-    
+
     try {
+      if (!this.model) {
+        throw new Error('AI model not initialized');
+      }
       const result = await this.model.generateContent(prompt);
-      const response = result.response;
+      if (!result || typeof result !== 'object' || !('response' in result)) {
+        throw new Error('Failed to generate content from AI model');
+      }
+      const response = (result as { response: { text: () => string } }).response;
       const aiAnalysis = response.text();
 
       return this.parseAIResponse(aiAnalysis, baseRecommendations);
     } catch (error) {
-      console.error('AI enhancement failed:', error);
+      console.error("AI enhancement failed:", error);
       return this.formatBasicRecommendations(userProfile, baseRecommendations);
     }
   }
 
-  private buildAIPrompt(userProfile: EnhancedUserProfile, baseRecommendations: Record<string, any>): string {
-    const { aptitude_scores, riasec_scores, personality_scores, subject_performance, practical_constraints } = userProfile.assessment_results;
-    
+  private buildAIPrompt(
+    userProfile: EnhancedUserProfile,
+    baseRecommendations: Record<string, unknown>,
+  ): string {
+    const {
+      aptitude_scores,
+      riasec_scores,
+      personality_scores,
+      practical_constraints,
+    } = userProfile.assessment_results;
+
     return `
 You are an expert career counselor analyzing a comprehensive student assessment. Please provide detailed career recommendations.
 
@@ -427,9 +487,12 @@ PRACTICAL CONSTRAINTS:
 - Parental Expectation: ${practical_constraints.parental_expectation}
 
 CALCULATED STREAM SCORES:
-${Object.entries(baseRecommendations).map(([stream, data]: [string, any]) => 
-  `${stream}: ${data.score.toFixed(2)} (${data.reasons.slice(0, 2).join(', ')})`
-).join('\n')}
+${Object.entries(baseRecommendations)
+  .map(
+    ([stream, data]: [string, unknown]) =>
+      `${stream}: ${typeof data === 'object' && data !== null && 'score' in data ? (data as { score: number }).score.toFixed(2) : '0.00'} (${typeof data === 'object' && data !== null && 'reasons' in data ? (data as { reasons: string[] }).reasons.slice(0, 2).join(", ") : 'N/A'})`,
+  )
+  .join("\n")}
 
 Please provide:
 1. Top 3 primary stream recommendations with detailed reasoning
@@ -443,42 +506,71 @@ Format as structured analysis focusing on career fit, earning potential, and per
   }
 
   private parseAIResponse(
-    aiResponse: string, 
-    baseRecommendations: Record<string, any>
+    aiResponse: string,
+    baseRecommendations: Record<string, unknown>,
   ): ComprehensiveRecommendationResult {
     // Parse AI response and combine with base recommendations
     // This is a simplified version - in practice, you'd implement more sophisticated parsing
-    
-    const sortedStreams = Object.entries(baseRecommendations)
-      .sort(([,a], [,b]) => (b as any).score - (a as any).score);
 
-    const primary_recommendations: StreamRecommendation[] = sortedStreams.slice(0, 3).map(([stream, data]: [string, any]) => ({
-      stream,
-      reasoning: data.reasons.join('. ') + '. ' + (data.careers[0]?.title ? `Top career: ${data.careers[0].title}` : ''),
-      time_to_earn: data.careers[0]?.time_to_earn || '4-6 years',
-      average_salary: data.careers[0]?.average_salary || '5-20 LPA',
-      job_demand_trend: data.careers[0]?.job_demand_trend || 'medium',
-      confidence_score: Math.min(data.score / 3, 1) // Normalize to 0-1
-    }));
+    const sortedStreams = Object.entries(baseRecommendations).sort(
+      ([, a], [, b]) => {
+        const aScore = (a as { score?: number })?.score || 0;
+        const bScore = (b as { score?: number })?.score || 0;
+        return bScore - aScore;
+      },
+    );
 
-    const secondary_recommendations: StreamRecommendation[] = sortedStreams.slice(3, 5).map(([stream, data]: [string, any]) => ({
-      stream,
-      reasoning: data.reasons.join('. '),
-      time_to_earn: data.careers[0]?.time_to_earn || '4-6 years',
-      average_salary: data.careers[0]?.average_salary || '4-15 LPA',
-      job_demand_trend: data.careers[0]?.job_demand_trend || 'medium',
-      confidence_score: Math.min(data.score / 3, 1)
-    }));
+    const primary_recommendations: StreamRecommendation[] = sortedStreams
+      .slice(0, 3)
+      .map(([stream, data]: [string, unknown]) => {
+        const dataObj = data as { 
+          score?: number; 
+          reasons?: string[]; 
+          careers?: Array<{ title?: string; time_to_earn?: string; average_salary?: string; job_demand_trend?: string }> 
+        };
+        return {
+          stream,
+          reasoning:
+            (Array.isArray(dataObj.reasons) ? dataObj.reasons.join(". ") : "Good fit") +
+            ". " +
+            (dataObj.careers?.[0]?.title
+              ? `Top career: ${dataObj.careers[0].title}`
+              : ""),
+          time_to_earn: dataObj.careers?.[0]?.time_to_earn || "4-6 years",
+          average_salary: dataObj.careers?.[0]?.average_salary || "5-20 LPA",
+          job_demand_trend: dataObj.careers?.[0]?.job_demand_trend || "medium",
+          confidence_score: Math.min((dataObj.score || 0) / 3, 1), // Normalize to 0-1
+        };
+      });
+
+    const secondary_recommendations: StreamRecommendation[] = sortedStreams
+      .slice(3, 5)
+      .map(([stream, data]: [string, unknown]) => {
+        const dataObj = data as { 
+          score?: number; 
+          reasons?: string[]; 
+          careers?: Array<{ title?: string; time_to_earn?: string; average_salary?: string; job_demand_trend?: string }> 
+        };
+        return {
+          stream,
+          reasoning: Array.isArray(dataObj.reasons) ? dataObj.reasons.join(". ") : "Good alternative",
+          time_to_earn: dataObj.careers?.[0]?.time_to_earn || "4-6 years",
+          average_salary: dataObj.careers?.[0]?.average_salary || "4-15 LPA",
+          job_demand_trend: dataObj.careers?.[0]?.job_demand_trend || "medium",
+          confidence_score: Math.min((dataObj.score || 0) / 3, 1),
+        };
+      });
 
     const backup_options: BackupOption[] = [
       {
-        course: 'Diploma Courses',
-        why_considered: 'Shorter duration with practical skills, good job opportunities'
+        course: "Diploma Courses",
+        why_considered:
+          "Shorter duration with practical skills, good job opportunities",
       },
       {
-        course: 'Skill-based Certifications',
-        why_considered: 'Industry-relevant skills that can be learned quickly'
-      }
+        course: "Skill-based Certifications",
+        why_considered: "Industry-relevant skills that can be learned quickly",
+      },
     ];
 
     const overall_reasoning = `
@@ -487,8 +579,13 @@ The AI analysis suggests focusing on ${primary_recommendations[0]?.stream} as yo
 with your aptitude, interests, and personality traits. ${aiResponse.slice(0, 200)}...
     `.trim();
 
-    const confidence_score = primary_recommendations.length > 0 ? 
-      primary_recommendations.reduce((sum, rec) => sum + rec.confidence_score, 0) / primary_recommendations.length : 0.5;
+    const confidence_score =
+      primary_recommendations.length > 0
+        ? primary_recommendations.reduce(
+            (sum, rec) => sum + rec.confidence_score,
+            0,
+          ) / primary_recommendations.length
+        : 0.5;
 
     return {
       primary_recommendations,
@@ -497,23 +594,33 @@ with your aptitude, interests, and personality traits. ${aiResponse.slice(0, 200
       colleges: [], // Will be populated by separate college matching logic
       scholarships: [], // Will be populated by separate scholarship matching logic
       overall_reasoning,
-      confidence_score
+      confidence_score,
     };
   }
 
   private formatBasicRecommendations(
     userProfile: EnhancedUserProfile,
-    baseRecommendations: Record<string, any>
+    baseRecommendations: Record<string, unknown>,
   ): ComprehensiveRecommendationResult {
     // Fallback formatting when AI is not available
-    return this.parseAIResponse('Basic algorithm recommendations', baseRecommendations);
+    return this.parseAIResponse(
+      "Basic algorithm recommendations",
+      baseRecommendations,
+    );
   }
 
-  private getTopStrengths(recommendations: Record<string, any>): string {
-    const topStream = Object.entries(recommendations)
-      .sort(([,a], [,b]) => (b as any).score - (a as any).score)[0];
-    
-    return topStream ? `${topStream[0]} with score ${(topStream[1] as any).score.toFixed(2)}` : 'analytical thinking';
+  private getTopStrengths(recommendations: Record<string, unknown>): string {
+    const topStream = Object.entries(recommendations).sort(
+      ([, a], [, b]) => {
+        const aScore = (a as { score?: number })?.score || 0;
+        const bScore = (b as { score?: number })?.score || 0;
+        return bScore - aScore;
+      },
+    )[0];
+
+    return topStream
+      ? `${topStream[0]} with score ${((topStream[1] as { score?: number })?.score || 0).toFixed(2)}`
+      : "analytical thinking";
   }
 }
 

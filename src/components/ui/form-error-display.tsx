@@ -3,60 +3,68 @@
  * Provides comprehensive error messaging and recovery options
  */
 
-import React from 'react'
-import { AlertCircle, AlertTriangle, Info, RefreshCw, ExternalLink } from 'lucide-react'
-import { Button } from './button'
-import { Alert, AlertDescription } from './alert'
+import React from "react";
+import {
+  AlertCircle,
+  AlertTriangle,
+  Info,
+  RefreshCw,
+  ExternalLink,
+} from "lucide-react";
+import { Button } from "./button";
+import { Alert, AlertDescription } from "./alert";
 
 interface RecoveryAction {
-  label: string
-  action: () => void | Promise<void>
-  type: 'primary' | 'secondary' | 'danger'
-  description?: string
+  label: string;
+  action: () => void | Promise<void>;
+  type: "primary" | "secondary" | "danger";
+  description?: string;
 }
 
 interface FormErrorDisplayProps {
-  error?: string
-  warnings?: string[]
-  recoveryActions?: RecoveryAction[]
-  className?: string
-  showIcon?: boolean
-  variant?: 'inline' | 'card' | 'toast'
+  error?: string;
+  warnings?: string[];
+  recoveryActions?: RecoveryAction[];
+  className?: string;
+  showIcon?: boolean;
+  variant?: "inline" | "card" | "toast";
 }
 
 export function FormErrorDisplay({
   error,
   warnings = [],
   recoveryActions = [],
-  className = '',
+  className = "",
   showIcon = true,
-  variant = 'inline'
+  variant = "inline",
 }: FormErrorDisplayProps) {
   if (!error && warnings.length === 0) {
-    return null
+    return null;
   }
 
   const baseClasses = {
-    inline: 'text-sm',
-    card: 'p-4 rounded-lg border',
-    toast: 'p-3 rounded-md shadow-lg'
-  }
+    inline: "text-sm",
+    card: "p-4 rounded-lg border",
+    toast: "p-3 rounded-md shadow-lg",
+  };
 
   const errorClasses = {
-    inline: 'text-red-600 bg-red-50 border-red-200 p-3 rounded-md',
-    card: 'text-red-800 bg-red-50 border-red-200',
-    toast: 'text-red-800 bg-red-100 border-red-300'
-  }
+    inline: "text-red-600 bg-red-50 border-red-200 p-3 rounded-md",
+    card: "text-red-800 bg-red-50 border-red-200",
+    toast: "text-red-800 bg-red-100 border-red-300",
+  };
 
   const warningClasses = {
-    inline: 'text-amber-600 bg-amber-50 border-amber-200 p-3 rounded-md',
-    card: 'text-amber-800 bg-amber-50 border-amber-200',
-    toast: 'text-amber-800 bg-amber-100 border-amber-300'
-  }
+    inline: "text-amber-600 bg-amber-50 border-amber-200 p-3 rounded-md",
+    card: "text-amber-800 bg-amber-50 border-amber-200",
+    toast: "text-amber-800 bg-amber-100 border-amber-300",
+  };
 
   if (error) {
     return (
-      <div className={`${baseClasses[variant]} ${errorClasses[variant]} ${className}`}>
+      <div
+        className={`${baseClasses[variant]} ${errorClasses[variant]} ${className}`}
+      >
         <div className="flex items-start space-x-3">
           {showIcon && (
             <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
@@ -64,7 +72,7 @@ export function FormErrorDisplay({
           <div className="flex-1">
             <p className="font-medium mb-1">Error</p>
             <p className="text-sm mb-3">{error}</p>
-            
+
             {recoveryActions.length > 0 && (
               <div className="space-y-2">
                 <p className="text-xs font-medium text-red-700 mb-2">
@@ -75,31 +83,38 @@ export function FormErrorDisplay({
                     <Button
                       key={index}
                       size="sm"
-                      variant={action.type === 'primary' ? 'default' : 
-                              action.type === 'danger' ? 'destructive' : 'outline'}
+                      variant={
+                        action.type === "primary"
+                          ? "default"
+                          : action.type === "danger"
+                            ? "destructive"
+                            : "outline"
+                      }
                       onClick={action.action}
                       className="text-xs"
                     >
                       {action.label}
-                      {action.type === 'secondary' && action.label.toLowerCase().includes('contact') && (
-                        <ExternalLink className="h-3 w-3 ml-1" />
-                      )}
-                      {action.label.toLowerCase().includes('retry') && (
+                      {action.type === "secondary" &&
+                        action.label.toLowerCase().includes("contact") && (
+                          <ExternalLink className="h-3 w-3 ml-1" />
+                        )}
+                      {action.label.toLowerCase().includes("retry") && (
                         <RefreshCw className="h-3 w-3 ml-1" />
                       )}
                     </Button>
                   ))}
                 </div>
-                
-                {recoveryActions.some(action => action.description) && (
+
+                {recoveryActions.some((action) => action.description) && (
                   <div className="mt-3 space-y-1">
                     {recoveryActions
-                      .filter(action => action.description)
+                      .filter((action) => action.description)
                       .map((action, index) => (
                         <div key={index} className="flex items-start space-x-2">
                           <div className="w-1 h-1 bg-red-400 rounded-full mt-2 flex-shrink-0" />
                           <p className="text-xs text-red-600">
-                            <span className="font-medium">{action.label}:</span> {action.description}
+                            <span className="font-medium">{action.label}:</span>{" "}
+                            {action.description}
                           </p>
                         </div>
                       ))}
@@ -110,50 +125,59 @@ export function FormErrorDisplay({
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   if (warnings.length > 0) {
     return (
-      <div className={`${baseClasses[variant]} ${warningClasses[variant]} ${className}`}>
+      <div
+        className={`${baseClasses[variant]} ${warningClasses[variant]} ${className}`}
+      >
         <div className="flex items-start space-x-3">
           {showIcon && (
             <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
           )}
           <div className="flex-1">
             <p className="font-medium mb-1">
-              {warnings.length === 1 ? 'Notice' : 'Notices'}
+              {warnings.length === 1 ? "Notice" : "Notices"}
             </p>
             <div className="space-y-1">
               {warnings.map((warning, index) => (
-                <p key={index} className="text-sm">{warning}</p>
+                <p key={index} className="text-sm">
+                  {warning}
+                </p>
               ))}
             </div>
           </div>
         </div>
       </div>
-    )
+    );
   }
 
-  return null
+  return null;
 }
 
 interface FieldErrorProps {
-  error?: string
-  warnings?: string[]
-  fieldName: string
-  className?: string
+  error?: string;
+  warnings?: string[];
+  fieldName: string;
+  className?: string;
 }
 
-export function FieldError({ error, warnings = [], fieldName, className = '' }: FieldErrorProps) {
+export function FieldError({
+  error,
+  warnings = [],
+  fieldName,
+  className = "",
+}: FieldErrorProps) {
   if (!error && warnings.length === 0) {
-    return null
+    return null;
   }
 
   return (
     <div className={`mt-1 ${className}`}>
       {error && (
-        <p 
+        <p
           id={`${fieldName}-error`}
           className="text-sm text-red-600 flex items-center space-x-1"
           role="alert"
@@ -162,11 +186,11 @@ export function FieldError({ error, warnings = [], fieldName, className = '' }: 
           <span>{error}</span>
         </p>
       )}
-      
+
       {warnings.length > 0 && (
         <div className="space-y-1">
           {warnings.map((warning, index) => (
-            <p 
+            <p
               key={index}
               className="text-sm text-amber-600 flex items-center space-x-1"
             >
@@ -177,21 +201,21 @@ export function FieldError({ error, warnings = [], fieldName, className = '' }: 
         </div>
       )}
     </div>
-  )
+  );
 }
 
 interface SessionRecoveryBannerProps {
-  onRestore: () => void
-  onDismiss: () => void
-  sessionAge: number
-  className?: string
+  onRestore: () => void;
+  onDismiss: () => void;
+  sessionAge: number;
+  className?: string;
 }
 
 export function SessionRecoveryBanner({
   onRestore,
   onDismiss,
   sessionAge,
-  className = ''
+  className = "",
 }: SessionRecoveryBannerProps) {
   return (
     <Alert className={`border-blue-200 bg-blue-50 ${className}`}>
@@ -201,7 +225,8 @@ export function SessionRecoveryBanner({
           <div>
             <p className="font-medium mb-1">Previous session found</p>
             <p className="text-sm">
-              We found form data from {sessionAge} minutes ago. Would you like to continue where you left off?
+              We found form data from {sessionAge} minutes ago. Would you like
+              to continue where you left off?
             </p>
           </div>
           <div className="flex space-x-2 ml-4">
@@ -224,18 +249,22 @@ export function SessionRecoveryBanner({
         </div>
       </AlertDescription>
     </Alert>
-  )
+  );
 }
 
 interface ValidationSummaryProps {
-  errors: string[]
-  warnings: string[]
-  className?: string
+  errors: string[];
+  warnings: string[];
+  className?: string;
 }
 
-export function ValidationSummary({ errors, warnings, className = '' }: ValidationSummaryProps) {
+export function ValidationSummary({
+  errors,
+  warnings,
+  className = "",
+}: ValidationSummaryProps) {
   if (errors.length === 0 && warnings.length === 0) {
-    return null
+    return null;
   }
 
   return (
@@ -245,7 +274,8 @@ export function ValidationSummary({ errors, warnings, className = '' }: Validati
           <AlertCircle className="h-4 w-4 text-red-600" />
           <AlertDescription className="text-red-800">
             <p className="font-medium mb-2">
-              Please fix the following {errors.length === 1 ? 'error' : 'errors'}:
+              Please fix the following{" "}
+              {errors.length === 1 ? "error" : "errors"}:
             </p>
             <ul className="list-disc list-inside space-y-1 text-sm">
               {errors.map((error, index) => (
@@ -261,7 +291,7 @@ export function ValidationSummary({ errors, warnings, className = '' }: Validati
           <AlertTriangle className="h-4 w-4 text-amber-600" />
           <AlertDescription className="text-amber-800">
             <p className="font-medium mb-2">
-              {warnings.length === 1 ? 'Notice' : 'Notices'}:
+              {warnings.length === 1 ? "Notice" : "Notices"}:
             </p>
             <ul className="list-disc list-inside space-y-1 text-sm">
               {warnings.map((warning, index) => (
@@ -272,5 +302,5 @@ export function ValidationSummary({ errors, warnings, className = '' }: Validati
         </Alert>
       )}
     </div>
-  )
+  );
 }

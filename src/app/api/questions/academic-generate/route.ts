@@ -1,5 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+
+interface QuestionTemplate {
+  text: string;
+  subcategory: string;
+  options: string[];
+  correct_answer: number;
+  difficulty: number;
+  time_limit: number;
+  scoring_weight: number;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -8,29 +18,37 @@ export async function POST(request: NextRequest) {
     // Validate input
     if (!grade || !subject) {
       return NextResponse.json(
-        { error: 'Grade and subject are required' },
-        { status: 400 }
+        { error: "Grade and subject are required" },
+        { status: 400 },
       );
     }
 
     if (![10, 11, 12].includes(grade)) {
       return NextResponse.json(
-        { error: 'Grade must be 10, 11, or 12' },
-        { status: 400 }
+        { error: "Grade must be 10, 11, or 12" },
+        { status: 400 },
       );
     }
 
-    const validSubjects = ['mathematics', 'science', 'english', 'social_science'];
+    const validSubjects = [
+      "mathematics",
+      "science",
+      "english",
+      "social_science",
+    ];
     if (!validSubjects.includes(subject)) {
       return NextResponse.json(
-        { error: 'Invalid subject. Must be one of: mathematics, science, english, social_science' },
-        { status: 400 }
+        {
+          error:
+            "Invalid subject. Must be one of: mathematics, science, english, social_science",
+        },
+        { status: 400 },
       );
     }
 
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
     );
 
     // Generate questions based on subject and grade
@@ -38,7 +56,7 @@ export async function POST(request: NextRequest) {
 
     // Insert questions into existing quiz_questions table
     const { data: insertedQuestions, error } = await supabase
-      .from('quiz_questions')
+      .from("quiz_questions")
       .insert(questions)
       .select();
 
@@ -50,7 +68,7 @@ export async function POST(request: NextRequest) {
       success: true,
       generated: questions.length,
       stored: insertedQuestions?.length || 0,
-      questions: insertedQuestions?.map(q => ({
+      questions: insertedQuestions?.map((q) => ({
         id: q.id,
         question_text: q.question_text,
         question_type: q.question_type,
@@ -60,30 +78,33 @@ export async function POST(request: NextRequest) {
         correct_answer: q.correct_answer,
         difficulty_level: q.difficulty_level,
         time_limit: q.time_limit,
-        scoring_weight: q.scoring_weight
-      }))
+        scoring_weight: q.scoring_weight,
+      })),
     });
-
   } catch (error) {
-    console.error('Error generating academic questions:', error);
+    console.error("Error generating academic questions:", error);
     return NextResponse.json(
-      { error: 'Failed to generate questions' },
-      { status: 500 }
+      { error: "Failed to generate questions" },
+      { status: 500 },
     );
   }
 }
 
-function generateAcademicQuestions(grade: number, subject: string, count: number) {
+function generateAcademicQuestions(
+  grade: number,
+  subject: string,
+  count: number,
+) {
   const questions = [];
-  
+
   // Question templates based on subject and grade
   const questionTemplates = getQuestionTemplates(grade, subject);
-  
+
   for (let i = 0; i < count; i++) {
     const template = questionTemplates[i % questionTemplates.length];
     const question = {
       question_text: template.text,
-      question_type: 'academic', // New type for academic questions
+      question_type: "academic", // New type for academic questions
       category: subject,
       subcategory: template.subcategory,
       options: template.options,
@@ -91,11 +112,11 @@ function generateAcademicQuestions(grade: number, subject: string, count: number
       difficulty_level: template.difficulty,
       time_limit: template.time_limit,
       scoring_weight: template.scoring_weight,
-      is_active: true
+      is_active: true,
     };
     questions.push(question);
   }
-  
+
   return questions;
 }
 
@@ -110,7 +131,7 @@ function getQuestionTemplates(grade: number, subject: string) {
           correct_answer: 0,
           difficulty: 2,
           time_limit: 90,
-          scoring_weight: 2.0
+          scoring_weight: 2.0,
         },
         {
           text: "In a right-angled triangle, if one angle is 30°, what is the measure of the other acute angle?",
@@ -119,7 +140,7 @@ function getQuestionTemplates(grade: number, subject: string) {
           correct_answer: 0,
           difficulty: 1,
           time_limit: 60,
-          scoring_weight: 1.0
+          scoring_weight: 1.0,
         },
         {
           text: "Find the value of √144 + √81",
@@ -128,7 +149,7 @@ function getQuestionTemplates(grade: number, subject: string) {
           correct_answer: 0,
           difficulty: 1,
           time_limit: 45,
-          scoring_weight: 1.0
+          scoring_weight: 1.0,
         },
         {
           text: "If the area of a circle is 154 cm², what is its radius? (π = 22/7)",
@@ -137,7 +158,7 @@ function getQuestionTemplates(grade: number, subject: string) {
           correct_answer: 0,
           difficulty: 2,
           time_limit: 90,
-          scoring_weight: 2.0
+          scoring_weight: 2.0,
         },
         {
           text: "What is the HCF of 24 and 36?",
@@ -146,18 +167,23 @@ function getQuestionTemplates(grade: number, subject: string) {
           correct_answer: 1,
           difficulty: 1,
           time_limit: 60,
-          scoring_weight: 1.0
-        }
+          scoring_weight: 1.0,
+        },
       ],
       11: [
         {
           text: "Find the derivative of x³ + 2x² - 5x + 1",
           subcategory: "calculus",
-          options: ["3x² + 4x - 5", "3x² + 2x - 5", "x² + 4x - 5", "3x² + 4x + 5"],
+          options: [
+            "3x² + 4x - 5",
+            "3x² + 2x - 5",
+            "x² + 4x - 5",
+            "3x² + 4x + 5",
+          ],
           correct_answer: 0,
           difficulty: 2,
           time_limit: 120,
-          scoring_weight: 2.0
+          scoring_weight: 2.0,
         },
         {
           text: "What is the value of sin(30°) + cos(60°)?",
@@ -166,8 +192,8 @@ function getQuestionTemplates(grade: number, subject: string) {
           correct_answer: 0,
           difficulty: 1,
           time_limit: 60,
-          scoring_weight: 1.0
-        }
+          scoring_weight: 1.0,
+        },
       ],
       12: [
         {
@@ -177,9 +203,9 @@ function getQuestionTemplates(grade: number, subject: string) {
           correct_answer: 0,
           difficulty: 2,
           time_limit: 90,
-          scoring_weight: 2.0
-        }
-      ]
+          scoring_weight: 2.0,
+        },
+      ],
     },
     science: {
       10: [
@@ -190,12 +216,12 @@ function getQuestionTemplates(grade: number, subject: string) {
             "Angle of incidence = Angle of reflection",
             "Angle of incidence = 2 × Angle of reflection",
             "Angle of reflection = 2 × Angle of incidence",
-            "Both angles are always 90°"
+            "Both angles are always 90°",
           ],
           correct_answer: 0,
           difficulty: 1,
           time_limit: 60,
-          scoring_weight: 1.0
+          scoring_weight: 1.0,
         },
         {
           text: "A current of 2A flows through a resistor of 5Ω. Calculate the voltage across the resistor.",
@@ -204,7 +230,7 @@ function getQuestionTemplates(grade: number, subject: string) {
           correct_answer: 1,
           difficulty: 2,
           time_limit: 90,
-          scoring_weight: 2.0
+          scoring_weight: 2.0,
         },
         {
           text: "What is the chemical formula of water?",
@@ -213,9 +239,9 @@ function getQuestionTemplates(grade: number, subject: string) {
           correct_answer: 0,
           difficulty: 1,
           time_limit: 30,
-          scoring_weight: 1.0
-        }
-      ]
+          scoring_weight: 1.0,
+        },
+      ],
     },
     english: {
       10: [
@@ -226,7 +252,7 @@ function getQuestionTemplates(grade: number, subject: string) {
           correct_answer: 0,
           difficulty: 1,
           time_limit: 45,
-          scoring_weight: 1.0
+          scoring_weight: 1.0,
         },
         {
           text: "What is the synonym of 'abundant'?",
@@ -235,20 +261,25 @@ function getQuestionTemplates(grade: number, subject: string) {
           correct_answer: 1,
           difficulty: 1,
           time_limit: 45,
-          scoring_weight: 1.0
-        }
-      ]
+          scoring_weight: 1.0,
+        },
+      ],
     },
     social_science: {
       10: [
         {
           text: "Who was the first Prime Minister of India?",
           subcategory: "history",
-          options: ["Mahatma Gandhi", "Jawaharlal Nehru", "Sardar Patel", "Dr. Rajendra Prasad"],
+          options: [
+            "Mahatma Gandhi",
+            "Jawaharlal Nehru",
+            "Sardar Patel",
+            "Dr. Rajendra Prasad",
+          ],
           correct_answer: 1,
           difficulty: 1,
           time_limit: 45,
-          scoring_weight: 1.0
+          scoring_weight: 1.0,
         },
         {
           text: "What is the capital of Australia?",
@@ -257,32 +288,35 @@ function getQuestionTemplates(grade: number, subject: string) {
           correct_answer: 2,
           difficulty: 1,
           time_limit: 45,
-          scoring_weight: 1.0
-        }
-      ]
-    }
+          scoring_weight: 1.0,
+        },
+      ],
+    },
   };
 
-  return templates[subject as keyof typeof templates]?.[grade as keyof typeof templates[typeof subject]] || [];
+  const subjectTemplates = templates[subject as keyof typeof templates];
+  if (!subjectTemplates) return [];
+  
+  return (subjectTemplates as Record<number, QuestionTemplate[]>)[grade] || [];
 }
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const grade = searchParams.get('grade');
-    const subject = searchParams.get('subject');
-    const type = searchParams.get('type') || 'academic';
-    const limit = parseInt(searchParams.get('limit') || '20');
+    const grade = searchParams.get("grade");
+    const subject = searchParams.get("subject");
+    const type = searchParams.get("type") || "academic";
+    const limit = parseInt(searchParams.get("limit") || "20");
 
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
     );
 
     let query = supabase
-      .from('quiz_questions')
-      .select('*')
-      .eq('is_active', true)
+      .from("quiz_questions")
+      .select("*")
+      .eq("is_active", true)
       .limit(limit);
 
     if (grade) {
@@ -291,11 +325,11 @@ export async function GET(request: NextRequest) {
     }
 
     if (subject) {
-      query = query.eq('category', subject);
+      query = query.eq("category", subject);
     }
 
     if (type) {
-      query = query.eq('question_type', type);
+      query = query.eq("question_type", type);
     }
 
     const { data: questions, error } = await query;
@@ -307,14 +341,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       questions: questions || [],
-      count: questions?.length || 0
+      count: questions?.length || 0,
     });
-
   } catch (error) {
-    console.error('Error fetching questions:', error);
+    console.error("Error fetching questions:", error);
     return NextResponse.json(
-      { error: 'Failed to fetch questions' },
-      { status: 500 }
+      { error: "Failed to fetch questions" },
+      { status: 500 },
     );
   }
 }

@@ -1,8 +1,15 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui"
-import { WifiOff, RefreshCw, Home, Brain, MapPin, Calendar } from "lucide-react"
-import Link from "next/link"
+import { Button } from "@/components/ui";
+import {
+  WifiOff,
+  RefreshCw,
+  Home,
+  Brain,
+  MapPin,
+  Calendar,
+} from "lucide-react";
+import Link from "next/link";
 
 export default function OfflinePage() {
   return (
@@ -18,9 +25,10 @@ export default function OfflinePage() {
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
             You&apos;re Offline
           </h1>
-          
+
           <p className="text-gray-600 mb-6">
-            It looks like you&apos;re not connected to the internet. Don&apos;t worry, you can still access some features of PathNiti.
+            It looks like you&apos;re not connected to the internet. Don&apos;t
+            worry, you can still access some features of PathNiti.
           </p>
 
           {/* Available Offline Features */}
@@ -46,14 +54,11 @@ export default function OfflinePage() {
 
           {/* Actions */}
           <div className="space-y-3">
-            <Button 
-              onClick={() => window.location.reload()} 
-              className="w-full"
-            >
+            <Button onClick={() => window.location.reload()} className="w-full">
               <RefreshCw className="h-4 w-4 mr-2" />
               Try Again
             </Button>
-            
+
             <Button variant="outline" className="w-full" asChild>
               <Link href="/">
                 <Home className="h-4 w-4 mr-2" />
@@ -84,5 +89,5 @@ export default function OfflinePage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -1,31 +1,55 @@
-"use client"
+"use client";
 
-import { useState, useEffect, Suspense } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import Link from "next/link"
-import { Button, Input, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui"
+import { useState, useEffect, useCallback, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import {
+  Button,
+  Input,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui";
 // import { SearchableSelect } from "@/components/ui/searchable-select"
-import { FormErrorDisplay, FieldError, SessionRecoveryBanner, ValidationSummary } from "@/components/ui/form-error-display"
-import { Mail, Lock, Eye, EyeOff, User, ArrowLeft, Phone, Briefcase, CheckCircle, AlertCircle } from "lucide-react"
-import { useAuth } from "../../../providers"
-import { PathNitiLogo } from "@/components/PathNitiLogo"
+import {
+  FormErrorDisplay,
+  FieldError,
+  SessionRecoveryBanner,
+  ValidationSummary,
+} from "@/components/ui/form-error-display";
+import {
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  User,
+  ArrowLeft,
+  Phone,
+  Briefcase,
+  CheckCircle,
+  AlertCircle,
+} from "lucide-react";
+import { useAuth } from "../../../providers";
+import { PathNitiLogo } from "@/components/PathNitiLogo";
 // import { createBrowserClient as createClient } from "@/lib/supabase"
-import { signupSessionManager } from "@/lib/services/signup-session"
-import { useDebounce } from "@/hooks/useDebounce"
-import { useFormValidation } from "@/hooks/useFormValidation"
-import { ErrorRecoveryManager } from "@/lib/utils/error-recovery"
-import { useCollegeLazyLoader } from "@/lib/utils/lazy-loading"
+import { signupSessionManager } from "@/lib/services/signup-session";
+import { useDebounce } from "@/hooks/useDebounce";
+import { useFormValidation } from "@/hooks/useFormValidation";
+import { ErrorRecoveryManager } from "@/lib/utils/error-recovery";
+import { useCollegeLazyLoader } from "@/lib/utils/lazy-loading";
 
 // Force dynamic rendering
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
 interface College {
-  id: string
-  name: string
+  id: string;
+  name: string;
   location: {
-    state: string
-    city: string
-  }
+    state: string;
+    city: string;
+  };
 }
 
 function CollegeSignupPageContent() {
@@ -35,274 +59,246 @@ function CollegeSignupPageContent() {
     validationState,
     isSubmitting,
     submitError,
-    sessionRecoveryAvailable,
     isFormValid,
     hasErrors,
-    hasWarnings,
-    updateField,
-    handleFieldBlur,
     getFieldProps,
     getFormData,
     handleSubmit,
-    resetForm,
     restoreFromSession,
-    validateForm
-  } = useFormValidation({}, {
-    validateOnChange: true,
-    validateOnBlur: true,
-    debounceMs: 300,
-    enableSessionRecovery: true
-  })
+    updateField,
+  } = useFormValidation(
+    {},
+    {
+      validateOnChange: true,
+      validateOnBlur: true,
+      debounceMs: 300,
+      enableSessionRecovery: true,
+    },
+  );
 
-  const [colleges, setColleges] = useState<College[]>([])
-  const [filteredColleges, setFilteredColleges] = useState<College[]>([])
-  const [collegeSearch, setCollegeSearch] = useState("")
-  const debouncedSearch = useDebounce(collegeSearch, 300)
-  const { loadColleges, searchColleges, invalidateCache } = useCollegeLazyLoader({
-    pageSize: 100, // Load more colleges initially for better UX
-    cacheTimeout: 10 * 60 * 1000 // 10 minutes cache
-  })
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [success, setSuccess] = useState(false)
-  const [loadingColleges, setLoadingColleges] = useState(true)
-  const [isRegistering, setIsRegistering] = useState(false)
-  const [showNewCollegeSuccess, setShowNewCollegeSuccess] = useState(false)
-  const [showSessionRecovery, setShowSessionRecovery] = useState(false)
-  const [recoveryActions, setRecoveryActions] = useState<any[]>([])
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const { signUpCollege, signInWithOAuth, loading } = useAuth()
+  const [colleges, setColleges] = useState<College[]>([]);
+  const [collegeSearch] = useState("");
+  const debouncedSearch = useDebounce(collegeSearch, 300);
+  const { loadColleges, searchColleges } =
+    useCollegeLazyLoader({
+      pageSize: 100, // Load more colleges initially for better UX
+      cacheTimeout: 10 * 60 * 1000, // 10 minutes cache
+    });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [loadingColleges, setLoadingColleges] = useState(true);
+  const [showNewCollegeSuccess, setShowNewCollegeSuccess] = useState(false);
+  const [showSessionRecovery, setShowSessionRecovery] = useState(false);
+  const [recoveryActions, setRecoveryActions] = useState<
+    Array<{ action: string; timestamp: string; data: Record<string, unknown> }>
+  >([]);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { signUpCollege, signInWithOAuth, loading } = useAuth();
 
   // Check for session recovery on mount
-  useEffect(() => {
-    const recoveryInfo = signupSessionManager.getRecoveryInfo()
-    if (recoveryInfo.hasRecoverableData) {
-      setShowSessionRecovery(true)
+  const fetchColleges = useCallback(async () => {
+    try {
+      const result = await loadColleges({}, true); // Use cache
+
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      setColleges((result.data as College[]) || []);
+    } catch (error) {
+      console.error("Error fetching colleges:", error);
+      // Generate recovery actions for college loading errors
+      const recovery = ErrorRecoveryManager.handleCollegeSelectionError(
+        "Failed to load colleges. Please try again.",
+      );
+      setRecoveryActions(recovery as unknown as Array<{ action: string; timestamp: string; data: Record<string, unknown> }>);     } finally {
+      setLoadingColleges(false);
     }
-  }, [])
+  }, [loadColleges]);
+
+  const handleCollegeRegistrationReturn = useCallback(() => {
+    const collegeId = searchParams.get("collegeId");
+    const collegeName = searchParams.get("collegeName");
+    const success = searchParams.get("success");
+    const error = searchParams.get("error");
+    const errorMessage = searchParams.get("errorMessage");
+
+    // Handle successful college registration return
+    if (success === "true" && collegeId && collegeName) {
+      // Auto-select the newly registered college
+      updateField("collegeId", collegeId);
+
+      // Show success message with college name
+      setShowNewCollegeSuccess(true);
+      setTimeout(() => setShowNewCollegeSuccess(false), 8000);
+
+      // Update session with the new college selection
+      const currentFormData = signupSessionManager.getFormData() || {};
+      signupSessionManager.saveFormData(
+        {
+          ...currentFormData,
+          collegeId: collegeId,
+          collegeName: collegeName,
+          isNewCollege: true,
+          registrationSource: "new",
+        },
+        "college-selection",
+      );
+
+      // Clear URL parameters
+      const url = new URL(window.location.href);
+      url.searchParams.delete("collegeId");
+      url.searchParams.delete("collegeName");
+      url.searchParams.delete("success");
+      window.history.replaceState({}, "", url.toString());
+    }
+
+    // Handle error from college registration
+    if (error === "true" && errorMessage) {
+      // Generate recovery actions for college registration errors
+      const recovery = ErrorRecoveryManager.handleCollegeSelectionError(errorMessage);
+      setRecoveryActions(recovery as unknown as Array<{ action: string; timestamp: string; data: Record<string, unknown> }>); 
+      // Clear URL parameters
+      const url = new URL(window.location.href);
+      url.searchParams.delete("error");
+      url.searchParams.delete("errorMessage");
+      window.history.replaceState({}, "", url.toString());
+    }
+  }, [searchParams, updateField]);
 
   useEffect(() => {
-    fetchColleges()
-    handleCollegeRegistrationReturn()
+    const recoveryInfo = signupSessionManager.getRecoveryInfo();
+    if (recoveryInfo.hasRecoverableData) {
+      setShowSessionRecovery(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchColleges();
+    handleCollegeRegistrationReturn();
 
     // Listen for window focus to detect return from college registration
     const handleWindowFocus = () => {
       // Check if we should refresh colleges list
-      const sessionData = signupSessionManager.getSession()
-      if (sessionData?.step === 'college-registration') {
+      const sessionData = signupSessionManager.getSession();
+      if (sessionData?.step === "college-registration") {
         // Refresh colleges list in case a new one was added
-        fetchColleges()
+        fetchColleges();
         // Check URL parameters for success
-        handleCollegeRegistrationReturn()
+        handleCollegeRegistrationReturn();
       }
-    }
+    };
 
-    window.addEventListener('focus', handleWindowFocus)
-    return () => window.removeEventListener('focus', handleWindowFocus)
-  }, [])
+    window.addEventListener("focus", handleWindowFocus);
+    return () => window.removeEventListener("focus", handleWindowFocus);
+  }, [fetchColleges, handleCollegeRegistrationReturn]);
 
   useEffect(() => {
     // Use lazy loading for search
     const performSearch = async () => {
       if (debouncedSearch.trim() === "") {
-        setFilteredColleges(colleges)
+        // No need to set filtered colleges as we removed that state
       } else {
         try {
-          const result = await searchColleges(debouncedSearch, {}, true) // Use cache
-          setFilteredColleges(result.data || [])
+          await searchColleges(debouncedSearch, {}, true); // Use cache
+          // No need to set filtered colleges as we removed that state
         } catch (error) {
-          console.error('Error searching colleges:', error)
+          console.error("Error searching colleges:", error);
           // Fall back to client-side filtering
-          const filtered = colleges.filter(college =>
-            college.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-            college.location.city.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-            college.location.state.toLowerCase().includes(debouncedSearch.toLowerCase())
-          )
-          setFilteredColleges(filtered)
+          colleges.filter(
+            (college) =>
+              college.name
+                .toLowerCase()
+                .includes(debouncedSearch.toLowerCase()) ||
+              college.location.city
+                .toLowerCase()
+                .includes(debouncedSearch.toLowerCase()) ||
+              college.location.state
+                .toLowerCase()
+                .includes(debouncedSearch.toLowerCase()),
+          );
+          // No need to set filtered colleges as we removed that state
         }
       }
-    }
+    };
 
-    performSearch()
-  }, [colleges, debouncedSearch, searchColleges])
+    performSearch();
+  }, [colleges, debouncedSearch, searchColleges]);
 
   // Auto-save form data to session (handled by useFormValidation hook)
-
-  const fetchColleges = async () => {
-    try {
-      const result = await loadColleges({}, true) // Use cache
-      
-      if (result.error) {
-        throw new Error(result.error)
-      }
-      
-      setColleges(result.data || [])
-      setFilteredColleges(result.data || [])
-    } catch (error) {
-      console.error('Error fetching colleges:', error)
-      // Generate recovery actions for college loading errors
-      const recovery = ErrorRecoveryManager.handleCollegeSelectionError(
-        'Failed to load colleges. Please try again.'
-      )
-      setRecoveryActions(recovery)
-    } finally {
-      setLoadingColleges(false)
-    }
-  }
 
   // Handle session recovery
   const handleSessionRecovery = (restore: boolean) => {
     if (restore) {
-      restoreFromSession()
+      restoreFromSession();
     } else {
-      signupSessionManager.clearSession()
+      signupSessionManager.clearSession();
     }
-    setShowSessionRecovery(false)
-  }
+    setShowSessionRecovery(false);
+  };
 
-  const handleCollegeRegistrationReturn = () => {
-    const collegeId = searchParams.get('collegeId')
-    const collegeName = searchParams.get('collegeName')
-    const success = searchParams.get('success')
-    const error = searchParams.get('error')
-    const errorMessage = searchParams.get('errorMessage')
 
-    // Handle successful college registration return
-    if (success === 'true' && collegeId && collegeName) {
-      // Auto-select the newly registered college
-      updateField('collegeId', collegeId)
-      
-      // Show success message with college name
-      setShowNewCollegeSuccess(true)
-      setTimeout(() => setShowNewCollegeSuccess(false), 8000)
 
-      // Update session with the new college selection
-      const currentFormData = signupSessionManager.getFormData() || {}
-      signupSessionManager.saveFormData({
-        ...currentFormData,
-        collegeId: collegeId,
-        collegeName: collegeName,
-        isNewCollege: true,
-        registrationSource: 'new'
-      }, 'college-selection')
-
-      // Invalidate cache and refresh colleges list to include the new college
-      invalidateCache('colleges')
-      fetchColleges()
-
-      // Clear URL parameters
-      clearUrlParameters()
-    }
-    
-    // Handle college registration errors
-    else if (error === 'true') {
-      const displayError = errorMessage || 'College registration failed. Please try again.'
-      
-      // Generate recovery actions for college registration errors
-      const recovery = ErrorRecoveryManager.handleCollegeSelectionError(displayError)
-      setRecoveryActions(recovery)
-      
-      // Reset session step back to college selection
-      signupSessionManager.setStep('college-selection')
-      
-      // Clear URL parameters
-      clearUrlParameters()
-    }
-    
-    // Handle case where user returned but registration was incomplete
-    else if (searchParams.get('returned') === 'true') {
-      // Check if there's session data indicating they were in registration flow
-      const sessionData = signupSessionManager.getSession()
-      if (sessionData?.step === 'college-registration') {
-        // Generate recovery actions
-        const recovery = ErrorRecoveryManager.handleCollegeSelectionError(
-          'College registration was not completed. Please select an existing college or try registering again.'
-        )
-        setRecoveryActions(recovery)
-        
-        // Reset session step
-        signupSessionManager.setStep('college-selection')
-      }
-      
-      // Clear URL parameters
-      clearUrlParameters()
-    }
-  }
-
-  const clearUrlParameters = () => {
-    const newUrl = window.location.pathname
-    window.history.replaceState({}, '', newUrl)
-  }
-
-  const handleRegisterNewCollege = () => {
-    setIsRegistering(true)
-    
-    // Save current form data before navigating
-    const currentFormData = getFormData()
-    signupSessionManager.saveFormData(currentFormData, 'college-registration')
-
-    // Navigate to college registration with return parameters
-    const returnUrl = encodeURIComponent(window.location.href)
-    const registrationUrl = `/colleges/register?source=signup&returnTo=${returnUrl}`
-    
-    // Navigate in the same window for better UX
-    router.push(registrationUrl)
-  }
-
-  // Handle college selection change
-  const handleCollegeChange = (value: string) => {
-    updateField('collegeId', value)
-    // Clear any college-related errors
-    setRecoveryActions([])
-  }
 
   const handleEmailSignup = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    await handleSubmit(async (formData) => {
-      const { data, error } = await signUpCollege(formData.email!, formData.password!, {
-        first_name: formData.firstName!,
-        last_name: formData.lastName!,
-        phone: formData.phone!,
-        college_id: formData.collegeId!,
-        contact_person: formData.contactPerson!,
-        designation: formData.designation!,
-      })
+    e.preventDefault();
 
-      if (error) throw error
+    await handleSubmit(async (formData) => {
+      const { data, error } = await signUpCollege(
+        formData.email!,
+        formData.password!,
+        {
+          first_name: formData.firstName!,
+          last_name: formData.lastName!,
+          phone: formData.phone!,
+          college_id: formData.collegeId!,
+          contact_person: formData.contactPerson!,
+          designation: formData.designation!,
+        },
+      );
+
+      if (error) throw error;
 
       if (data?.user) {
-        setSuccess(true)
+        setSuccess(true);
         // Redirect to college dashboard
         setTimeout(() => {
-          router.push("/colleges/dashboard")
-        }, 2000)
+          router.push("/colleges/dashboard");
+        }, 2000);
       }
-    })
-  }
+    });
+  };
 
   const handleGoogleSignup = async () => {
     try {
-      const { error } = await signInWithOAuth("google")
+      const { error } = await signInWithOAuth("google");
 
       if (error) {
         // Handle specific error cases with recovery actions
-        const recovery = ErrorRecoveryManager.handleSubmissionError(error, getFormData())
-        setRecoveryActions(recovery.actions)
-        
-        if (error.message.includes('Invalid URL') || error.message.includes('URL')) {
-          console.error('OAuth URL configuration error:', error)
+        const recovery = ErrorRecoveryManager.handleSubmissionError(
+          error,
+          getFormData(),
+        );
+        setRecoveryActions(recovery.actions as unknown as Array<{ action: string; timestamp: string; data: Record<string, unknown> }>); 
+        if (
+          error.message.includes("Invalid URL") ||
+          error.message.includes("URL")
+        ) {
+          console.error("OAuth URL configuration error:", error);
         } else {
-          throw error
+          throw error;
         }
       }
     } catch (error: unknown) {
-      console.error('Google OAuth error:', error)
-      const recovery = ErrorRecoveryManager.handleSubmissionError(error as Error, getFormData())
-      setRecoveryActions(recovery.actions)
-    }
-  }
+      console.error("Google OAuth error:", error);
+      const recovery = ErrorRecoveryManager.handleSubmissionError(
+        error as Error,
+        getFormData(),
+      );
+      setRecoveryActions(recovery.actions as unknown as { action: string; timestamp: string; data: Record<string, unknown> }[]);     }
+  };
 
   if (success) {
     return (
@@ -310,13 +306,26 @@ function CollegeSignupPageContent() {
         <Card className="w-full max-w-md">
           <CardContent className="pt-6 text-center">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              <svg
+                className="w-8 h-8 text-green-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Account Created!</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Account Created!
+            </h2>
             <p className="text-gray-600 mb-4">
-              Please check your email to verify your account. You&apos;ll be redirected to your college dashboard.
+              Please check your email to verify your account. You&apos;ll be
+              redirected to your college dashboard.
             </p>
             <Button asChild>
               <Link href="/colleges/dashboard">Go to Dashboard</Link>
@@ -324,7 +333,7 @@ function CollegeSignupPageContent() {
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   return (
@@ -351,7 +360,8 @@ function CollegeSignupPageContent() {
           <CardHeader className="text-center">
             <CardTitle className="text-2xl">Create College Account</CardTitle>
             <CardDescription>
-              Join PathNiti as a college representative to manage your institution
+              Join PathNiti as a college representative to manage your
+              institution
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -369,8 +379,7 @@ function CollegeSignupPageContent() {
             {submitError && (
               <FormErrorDisplay
                 error={submitError}
-                recoveryActions={recoveryActions}
-                variant="card"
+                recoveryActions={recoveryActions as unknown as Array<{ label: string; action: () => void | Promise<void>; type: "primary" | "secondary" | "danger"; description?: string }>}                 variant="card"
                 className="mb-4"
               />
             )}
@@ -379,11 +388,17 @@ function CollegeSignupPageContent() {
             {hasErrors && validationState && (
               <ValidationSummary
                 errors={Object.entries(validationState)
-                  .filter(([key, validation]) => key !== 'overall' && validation.error)
-                  .map(([_, validation]) => validation.error!)}
+                  .filter(
+                    ([key, validation]) =>
+                      key !== "overall" && validation.error,
+                  )
+                  .map(([, validation]) => validation.error!)}
                 warnings={Object.entries(validationState)
-                  .filter(([key, validation]) => key !== 'overall' && validation.warnings?.length)
-                  .flatMap(([_, validation]) => validation.warnings!)}
+                  .filter(
+                    ([key, validation]) =>
+                      key !== "overall" && validation.warnings?.length,
+                  )
+                  .flatMap(([, validation]) => validation.warnings!)}
                 className="mb-4"
               />
             )}
@@ -401,15 +416,15 @@ function CollegeSignupPageContent() {
                       name="firstName"
                       type="text"
                       placeholder="First name"
-                      {...getFieldProps('firstName')}
-                      className={`pl-10 ${formState.firstName?.error ? 'border-red-300 focus:border-red-500' : ''}`}
+                      {...getFieldProps("firstName")}
+                      className={`pl-10 ${formState.firstName?.error ? "border-red-300 focus:border-red-500" : ""}`}
                       required
                     />
                   </div>
-                  <FieldError 
-                    error={formState.firstName?.error} 
+                  <FieldError
+                    error={formState.firstName?.error}
                     warnings={formState.firstName?.warnings}
-                    fieldName="firstName" 
+                    fieldName="firstName"
                   />
                 </div>
 
@@ -424,15 +439,15 @@ function CollegeSignupPageContent() {
                       name="lastName"
                       type="text"
                       placeholder="Last name"
-                      {...getFieldProps('lastName')}
-                      className={`pl-10 ${formState.lastName?.error ? 'border-red-300 focus:border-red-500' : ''}`}
+                      {...getFieldProps("lastName")}
+                      className={`pl-10 ${formState.lastName?.error ? "border-red-300 focus:border-red-500" : ""}`}
                       required
                     />
                   </div>
-                  <FieldError 
-                    error={formState.lastName?.error} 
+                  <FieldError
+                    error={formState.lastName?.error}
                     warnings={formState.lastName?.warnings}
-                    fieldName="lastName" 
+                    fieldName="lastName"
                   />
                 </div>
               </div>
@@ -448,15 +463,15 @@ function CollegeSignupPageContent() {
                     name="email"
                     type="email"
                     placeholder="Enter your email"
-                    {...getFieldProps('email')}
-                    className={`pl-10 ${formState.email?.error ? 'border-red-300 focus:border-red-500' : ''}`}
+                    {...getFieldProps("email")}
+                    className={`pl-10 ${formState.email?.error ? "border-red-300 focus:border-red-500" : ""}`}
                     required
                   />
                 </div>
-                <FieldError 
-                  error={formState.email?.error} 
+                <FieldError
+                  error={formState.email?.error}
                   warnings={formState.email?.warnings}
-                  fieldName="email" 
+                  fieldName="email"
                 />
               </div>
 
@@ -464,20 +479,20 @@ function CollegeSignupPageContent() {
                 <label htmlFor="collegeId" className="text-sm font-medium">
                   College
                 </label>
-                
+
                 {/* Enhanced College Selection with Search and Keyboard Navigation */}
                 {/* Temporarily commented out to fix build issue */}
                 {/*
                 <SearchableSelect
                   options={filteredColleges}
                   value={formState.collegeId?.value || ''}
-                  onChange={handleCollegeChange}
+                  onChange={_handleCollegeChange}
                   onSearch={setCollegeSearch}
                   searchQuery={collegeSearch}
                   placeholder="Select your college"
                   searchPlaceholder="Search colleges by name or location..."
                   loading={loadingColleges}
-                  onRegisterNew={handleRegisterNewCollege}
+                  onRegisterNew={_handleRegisterNewCollege}
                   registerNewText={isRegistering ? "Redirecting..." : "Register New College"}
                   noResultsText={
                     debouncedSearch.trim() !== "" 
@@ -488,12 +503,14 @@ function CollegeSignupPageContent() {
                 />
                 */}
                 <div className="w-full p-3 border border-gray-300 rounded-md bg-gray-50">
-                  <p className="text-sm text-gray-600">College selection temporarily disabled for build fix</p>
+                  <p className="text-sm text-gray-600">
+                    College selection temporarily disabled for build fix
+                  </p>
                 </div>
-                <FieldError 
-                  error={formState.collegeId?.error} 
+                <FieldError
+                  error={formState.collegeId?.error}
                   warnings={formState.collegeId?.warnings}
-                  fieldName="collegeId" 
+                  fieldName="collegeId"
                 />
 
                 {/* Success message for newly registered college */}
@@ -506,8 +523,11 @@ function CollegeSignupPageContent() {
                           College registered successfully!
                         </p>
                         <p className="text-xs text-green-700">
-                          {searchParams.get('collegeName') && (
-                            <>&quot;{searchParams.get('collegeName')}&quot; has been pre-selected. </>
+                          {searchParams.get("collegeName") && (
+                            <>
+                              &quot;{searchParams.get("collegeName")}&quot; has
+                              been pre-selected.{" "}
+                            </>
                           )}
                           You can now complete your account creation.
                         </p>
@@ -528,15 +548,15 @@ function CollegeSignupPageContent() {
                     name="contactPerson"
                     type="text"
                     placeholder="Full name of contact person"
-                    {...getFieldProps('contactPerson')}
-                    className={`pl-10 ${formState.contactPerson?.error ? 'border-red-300 focus:border-red-500' : ''}`}
+                    {...getFieldProps("contactPerson")}
+                    className={`pl-10 ${formState.contactPerson?.error ? "border-red-300 focus:border-red-500" : ""}`}
                     required
                   />
                 </div>
-                <FieldError 
-                  error={formState.contactPerson?.error} 
+                <FieldError
+                  error={formState.contactPerson?.error}
                   warnings={formState.contactPerson?.warnings}
-                  fieldName="contactPerson" 
+                  fieldName="contactPerson"
                 />
               </div>
 
@@ -551,14 +571,14 @@ function CollegeSignupPageContent() {
                     name="designation"
                     type="text"
                     placeholder="e.g., Admission Officer, Registrar"
-                    {...getFieldProps('designation')}
-                    className={`pl-10 ${formState.designation?.error ? 'border-red-300 focus:border-red-500' : ''}`}
+                    {...getFieldProps("designation")}
+                    className={`pl-10 ${formState.designation?.error ? "border-red-300 focus:border-red-500" : ""}`}
                   />
                 </div>
-                <FieldError 
-                  error={formState.designation?.error} 
+                <FieldError
+                  error={formState.designation?.error}
                   warnings={formState.designation?.warnings}
-                  fieldName="designation" 
+                  fieldName="designation"
                 />
               </div>
 
@@ -573,14 +593,14 @@ function CollegeSignupPageContent() {
                     name="phone"
                     type="tel"
                     placeholder="Enter your phone number"
-                    {...getFieldProps('phone')}
-                    className={`pl-10 ${formState.phone?.error ? 'border-red-300 focus:border-red-500' : ''}`}
+                    {...getFieldProps("phone")}
+                    className={`pl-10 ${formState.phone?.error ? "border-red-300 focus:border-red-500" : ""}`}
                   />
                 </div>
-                <FieldError 
-                  error={formState.phone?.error} 
+                <FieldError
+                  error={formState.phone?.error}
                   warnings={formState.phone?.warnings}
-                  fieldName="phone" 
+                  fieldName="phone"
                 />
               </div>
 
@@ -595,8 +615,8 @@ function CollegeSignupPageContent() {
                     name="password"
                     type={showPassword ? "text" : "password"}
                     placeholder="Create a password"
-                    {...getFieldProps('password')}
-                    className={`pl-10 pr-10 ${formState.password?.error ? 'border-red-300 focus:border-red-500' : ''}`}
+                    {...getFieldProps("password")}
+                    className={`pl-10 pr-10 ${formState.password?.error ? "border-red-300 focus:border-red-500" : ""}`}
                     required
                   />
                   <button
@@ -607,15 +627,18 @@ function CollegeSignupPageContent() {
                     {showPassword ? <EyeOff /> : <Eye />}
                   </button>
                 </div>
-                <FieldError 
-                  error={formState.password?.error} 
+                <FieldError
+                  error={formState.password?.error}
                   warnings={formState.password?.warnings}
-                  fieldName="password" 
+                  fieldName="password"
                 />
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="confirmPassword" className="text-sm font-medium">
+                <label
+                  htmlFor="confirmPassword"
+                  className="text-sm font-medium"
+                >
                   Confirm Password
                 </label>
                 <div className="relative">
@@ -625,8 +648,8 @@ function CollegeSignupPageContent() {
                     name="confirmPassword"
                     type={showConfirmPassword ? "text" : "password"}
                     placeholder="Confirm your password"
-                    {...getFieldProps('confirmPassword')}
-                    className={`pl-10 pr-10 ${formState.confirmPassword?.error ? 'border-red-300 focus:border-red-500' : ''}`}
+                    {...getFieldProps("confirmPassword")}
+                    className={`pl-10 pr-10 ${formState.confirmPassword?.error ? "border-red-300 focus:border-red-500" : ""}`}
                     required
                   />
                   <button
@@ -637,22 +660,28 @@ function CollegeSignupPageContent() {
                     {showConfirmPassword ? <EyeOff /> : <Eye />}
                   </button>
                 </div>
-                <FieldError 
-                  error={formState.confirmPassword?.error} 
+                <FieldError
+                  error={formState.confirmPassword?.error}
                   warnings={formState.confirmPassword?.warnings}
-                  fieldName="confirmPassword" 
+                  fieldName="confirmPassword"
                 />
               </div>
 
-              <Button 
-                type="submit" 
-                className="w-full" 
-                disabled={loading || loadingColleges || isRegistering || isSubmitting || !isFormValid}
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={
+                  loading ||
+                  loadingColleges ||
+                  isSubmitting ||
+                  !isFormValid
+                }
               >
-                {isSubmitting ? "Creating Account..." : 
-                 loading ? "Creating Account..." : 
-                 isRegistering ? "Redirecting to Registration..." :
-                 "Create College Account"}
+                {isSubmitting
+                  ? "Creating Account..."
+                  : loading
+                  ? "Creating Account..."
+                  : "Create College Account"}
               </Button>
 
               {/* Form validation status */}
@@ -682,7 +711,7 @@ function CollegeSignupPageContent() {
               variant="outline"
               className="w-full"
               onClick={handleGoogleSignup}
-              disabled={loading || isRegistering}
+              disabled={loading}
             >
               <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                 <path
@@ -717,20 +746,22 @@ function CollegeSignupPageContent() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default function CollegeSignupPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading...</p>
+          </div>
         </div>
-      </div>
-    }>
+      }
+    >
       <CollegeSignupPageContent />
     </Suspense>
-  )
+  );
 }

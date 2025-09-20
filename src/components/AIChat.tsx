@@ -1,36 +1,43 @@
-'use client';
+"use client";
 
-import { useState, useRef, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState, useRef, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 // import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
-import { Send, Bot, User, Loader2 } from 'lucide-react';
+import { Badge } from "@/components/ui/badge";
+import { Send, Bot, User, Loader2 } from "lucide-react";
 
 interface Message {
   id: string;
-  type: 'user' | 'ai';
+  type: "user" | "ai";
   content: string;
   timestamp: Date;
-  context?: any;
+  context?: Record<string, unknown>;
 }
 
 interface AIChatProps {
-  userProfile?: any;
+  userProfile?: {
+    user_id: string;
+    class_level?: string;
+    stream?: string;
+    interests?: string[];
+    location?: { state?: string; city?: string };
+  };
   className?: string;
 }
 
-export default function AIChat({ userProfile, className = '' }: AIChatProps) {
+export default function AIChat({ userProfile, className = "" }: AIChatProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
-      id: '1',
-      type: 'ai',
-      content: 'Hello! I\'m your AI career counselor. I can help you with stream selection, college guidance, career advice, and more. What would you like to know?',
-      timestamp: new Date()
-    }
+      id: "1",
+      type: "ai",
+      content:
+        "Hello! I'm your AI career counselor. I can help you with stream selection, college guidance, career advice, and more. What would you like to know?",
+      timestamp: new Date(),
+    },
   ]);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
@@ -50,58 +57,59 @@ export default function AIChat({ userProfile, className = '' }: AIChatProps) {
 
     const userMessage: Message = {
       id: Date.now().toString(),
-      type: 'user',
+      type: "user",
       content: input.trim(),
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
-    setMessages(prev => [...prev, userMessage]);
-    setInput('');
+    setMessages((prev) => [...prev, userMessage]);
+    setInput("");
     setIsLoading(true);
 
     try {
       // Determine the type of question for better AI response
       const questionType = determineQuestionType(input);
-      
-      const response = await fetch('/api/ai/gemini', {
-        method: 'POST',
+
+      const response = await fetch("/api/ai/gemini", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           prompt: input.trim(),
           context: userProfile,
-          type: questionType
+          type: questionType,
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to get AI response');
+        throw new Error("Failed to get AI response");
       }
 
       const data = await response.json();
-      
+
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        type: 'ai',
+        type: "ai",
         content: data.response,
         timestamp: new Date(),
-        context: { 
+        context: {
           type: questionType,
-          usage: data.usage // Include usage stats
-        }
+          usage: data.usage, // Include usage stats
+        },
       };
 
-      setMessages(prev => [...prev, aiMessage]);
+      setMessages((prev) => [...prev, aiMessage]);
     } catch (error) {
-      console.error('Error getting AI response:', error);
+      console.error("Error getting AI response:", error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        type: 'ai',
-        content: 'I apologize, but I\'m having trouble processing your request right now. Please try again in a moment.',
-        timestamp: new Date()
+        type: "ai",
+        content:
+          "I apologize, but I'm having trouble processing your request right now. Please try again in a moment.",
+        timestamp: new Date(),
       };
-      setMessages(prev => [...prev, errorMessage]);
+      setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
     }
@@ -109,42 +117,59 @@ export default function AIChat({ userProfile, className = '' }: AIChatProps) {
 
   const determineQuestionType = (question: string): string => {
     const lowerQuestion = question.toLowerCase();
-    
-    if (lowerQuestion.includes('stream') || lowerQuestion.includes('subject') || 
-        lowerQuestion.includes('science') || lowerQuestion.includes('arts') || 
-        lowerQuestion.includes('commerce')) {
-      return 'stream_selection';
+
+    if (
+      lowerQuestion.includes("stream") ||
+      lowerQuestion.includes("subject") ||
+      lowerQuestion.includes("science") ||
+      lowerQuestion.includes("arts") ||
+      lowerQuestion.includes("commerce")
+    ) {
+      return "stream_selection";
     }
-    
-    if (lowerQuestion.includes('college') || lowerQuestion.includes('university') || 
-        lowerQuestion.includes('admission') || lowerQuestion.includes('course')) {
-      return 'college_guidance';
+
+    if (
+      lowerQuestion.includes("college") ||
+      lowerQuestion.includes("university") ||
+      lowerQuestion.includes("admission") ||
+      lowerQuestion.includes("course")
+    ) {
+      return "college_guidance";
     }
-    
-    if (lowerQuestion.includes('career') || lowerQuestion.includes('job') || 
-        lowerQuestion.includes('profession') || lowerQuestion.includes('salary')) {
-      return 'career_advice';
+
+    if (
+      lowerQuestion.includes("career") ||
+      lowerQuestion.includes("job") ||
+      lowerQuestion.includes("profession") ||
+      lowerQuestion.includes("salary")
+    ) {
+      return "career_advice";
     }
-    
-    return 'general';
+
+    return "general";
   };
 
   const getQuestionTypeBadge = (type?: string) => {
     if (!type) return null;
-    
+
     const badges = {
-      stream_selection: { label: 'Stream Selection', color: 'bg-blue-100 text-blue-800' },
-      college_guidance: { label: 'College Guidance', color: 'bg-green-100 text-green-800' },
-      career_advice: { label: 'Career Advice', color: 'bg-purple-100 text-purple-800' },
-      general: { label: 'General', color: 'bg-gray-100 text-gray-800' }
+      stream_selection: {
+        label: "Stream Selection",
+        color: "bg-blue-100 text-blue-800",
+      },
+      college_guidance: {
+        label: "College Guidance",
+        color: "bg-green-100 text-green-800",
+      },
+      career_advice: {
+        label: "Career Advice",
+        color: "bg-purple-100 text-purple-800",
+      },
+      general: { label: "General", color: "bg-gray-100 text-gray-800" },
     };
-    
+
     const badge = badges[type as keyof typeof badges] || badges.general;
-    return (
-      <Badge className={badge.color}>
-        {badge.label}
-      </Badge>
-    );
+    return <Badge className={badge.color}>{badge.label}</Badge>;
   };
 
   return (
@@ -160,7 +185,7 @@ export default function AIChat({ userProfile, className = '' }: AIChatProps) {
           )}
         </CardTitle>
       </CardHeader>
-      
+
       <CardContent className="flex-1 flex flex-col p-0">
         <div className="flex-1 px-4 overflow-y-auto" ref={scrollAreaRef}>
           <div className="space-y-4 pb-4">
@@ -168,40 +193,44 @@ export default function AIChat({ userProfile, className = '' }: AIChatProps) {
               <div
                 key={message.id}
                 className={`flex gap-3 ${
-                  message.type === 'user' ? 'justify-end' : 'justify-start'
+                  message.type === "user" ? "justify-end" : "justify-start"
                 }`}
               >
-                {message.type === 'ai' && (
+                {message.type === "ai" && (
                   <div className="flex-shrink-0">
                     <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                       <Bot className="h-4 w-4 text-blue-600" />
                     </div>
                   </div>
                 )}
-                
+
                 <div
                   className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                    message.type === 'user'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-900'
+                    message.type === "user"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 text-gray-900"
                   }`}
                 >
                   <div className="whitespace-pre-wrap">{message.content}</div>
                   <div className="flex items-center justify-between mt-2">
-                    <span className={`text-xs ${
-                      message.type === 'user' ? 'text-blue-100' : 'text-gray-500'
-                    }`}>
+                    <span
+                      className={`text-xs ${
+                        message.type === "user"
+                          ? "text-blue-100"
+                          : "text-gray-500"
+                      }`}
+                    >
                       {message.timestamp.toLocaleTimeString()}
                     </span>
-                    {message.type === 'ai' && message.context?.type && (
+                    {message.type === "ai" && message.context && (message.context.type as string) && (
                       <div className="ml-2">
-                        {getQuestionTypeBadge(message.context.type)}
+                        {getQuestionTypeBadge(message.context.type as string)}
                       </div>
                     )}
                   </div>
                 </div>
-                
-                {message.type === 'user' && (
+
+                {message.type === "user" && (
                   <div className="flex-shrink-0">
                     <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
                       <User className="h-4 w-4 text-gray-600" />
@@ -210,7 +239,7 @@ export default function AIChat({ userProfile, className = '' }: AIChatProps) {
                 )}
               </div>
             ))}
-            
+
             {isLoading && (
               <div className="flex gap-3 justify-start">
                 <div className="flex-shrink-0">
@@ -228,7 +257,7 @@ export default function AIChat({ userProfile, className = '' }: AIChatProps) {
             )}
           </div>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="p-4 border-t">
           <div className="flex gap-2">
             <Input

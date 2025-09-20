@@ -18,7 +18,7 @@ export interface OfflineQuizResponse {
 export interface OfflineAssessmentSession {
   id: string;
   user_id: string;
-  status: 'not_started' | 'in_progress' | 'completed';
+  status: "not_started" | "in_progress" | "completed";
   started_at?: string;
   completed_at?: string;
   aptitude_scores?: Record<string, number>;
@@ -83,7 +83,7 @@ export interface OfflineAwarenessContent {
   id: string;
   title: string;
   content: string;
-  type: 'infographic' | 'faq' | 'career_guide' | 'government_update';
+  type: "infographic" | "faq" | "career_guide" | "government_update";
   category: string;
   tags: string[];
   media_url?: string;
@@ -94,7 +94,7 @@ export interface OfflineAwarenessContent {
 export interface OfflineChatMessage {
   id: string;
   session_id: string;
-  type: 'user' | 'assistant' | 'system';
+  type: "user" | "assistant" | "system";
   content: string;
   timestamp: string;
   metadata?: {
@@ -116,7 +116,7 @@ export interface OfflineUserProfile {
   gender?: string;
   class_level?: string;
   stream?: string;
-  location?: any;
+  location?: Record<string, unknown>;
   interests?: string[];
   avatar_url?: string;
   role: string;
@@ -126,7 +126,7 @@ export interface OfflineUserProfile {
 }
 
 class OfflineStorageManager {
-  private dbName = 'PathNitiOfflineDB';
+  private dbName = "PathNitiOfflineDB";
   private version = 1;
   private db: IDBDatabase | null = null;
 
@@ -135,13 +135,13 @@ class OfflineStorageManager {
       const request = indexedDB.open(this.dbName, this.version);
 
       request.onerror = () => {
-        console.error('Failed to open IndexedDB:', request.error);
+        console.error("Failed to open IndexedDB:", request.error);
         reject(request.error);
       };
 
       request.onsuccess = () => {
         this.db = request.result;
-        console.log('IndexedDB initialized successfully');
+        console.log("IndexedDB initialized successfully");
         resolve();
       };
 
@@ -154,71 +154,96 @@ class OfflineStorageManager {
 
   private createObjectStores(db: IDBDatabase): void {
     // Quiz responses store
-    if (!db.objectStoreNames.contains('quiz_responses')) {
-      const quizStore = db.createObjectStore('quiz_responses', { keyPath: 'id' });
-      quizStore.createIndex('session_id', 'session_id', { unique: false });
-      quizStore.createIndex('synced', 'synced', { unique: false });
-      quizStore.createIndex('created_at', 'created_at', { unique: false });
+    if (!db.objectStoreNames.contains("quiz_responses")) {
+      const quizStore = db.createObjectStore("quiz_responses", {
+        keyPath: "id",
+      });
+      quizStore.createIndex("session_id", "session_id", { unique: false });
+      quizStore.createIndex("synced", "synced", { unique: false });
+      quizStore.createIndex("created_at", "created_at", { unique: false });
     }
 
     // Assessment sessions store
-    if (!db.objectStoreNames.contains('assessment_sessions')) {
-      const sessionStore = db.createObjectStore('assessment_sessions', { keyPath: 'id' });
-      sessionStore.createIndex('user_id', 'user_id', { unique: false });
-      sessionStore.createIndex('status', 'status', { unique: false });
-      sessionStore.createIndex('synced', 'synced', { unique: false });
+    if (!db.objectStoreNames.contains("assessment_sessions")) {
+      const sessionStore = db.createObjectStore("assessment_sessions", {
+        keyPath: "id",
+      });
+      sessionStore.createIndex("user_id", "user_id", { unique: false });
+      sessionStore.createIndex("status", "status", { unique: false });
+      sessionStore.createIndex("synced", "synced", { unique: false });
     }
 
     // Colleges cache store
-    if (!db.objectStoreNames.contains('colleges_cache')) {
-      const collegeStore = db.createObjectStore('colleges_cache', { keyPath: 'id' });
-      collegeStore.createIndex('type', 'type', { unique: false });
-      collegeStore.createIndex('location_state', 'location.state', { unique: false });
-      collegeStore.createIndex('last_synced', 'last_synced', { unique: false });
+    if (!db.objectStoreNames.contains("colleges_cache")) {
+      const collegeStore = db.createObjectStore("colleges_cache", {
+        keyPath: "id",
+      });
+      collegeStore.createIndex("type", "type", { unique: false });
+      collegeStore.createIndex("location_state", "location.state", {
+        unique: false,
+      });
+      collegeStore.createIndex("last_synced", "last_synced", { unique: false });
     }
 
     // Scholarships cache store
-    if (!db.objectStoreNames.contains('scholarships_cache')) {
-      const scholarshipStore = db.createObjectStore('scholarships_cache', { keyPath: 'id' });
-      scholarshipStore.createIndex('is_active', 'is_active', { unique: false });
-      scholarshipStore.createIndex('last_synced', 'last_synced', { unique: false });
+    if (!db.objectStoreNames.contains("scholarships_cache")) {
+      const scholarshipStore = db.createObjectStore("scholarships_cache", {
+        keyPath: "id",
+      });
+      scholarshipStore.createIndex("is_active", "is_active", { unique: false });
+      scholarshipStore.createIndex("last_synced", "last_synced", {
+        unique: false,
+      });
     }
 
     // Awareness content store
-    if (!db.objectStoreNames.contains('awareness_content')) {
-      const contentStore = db.createObjectStore('awareness_content', { keyPath: 'id' });
-      contentStore.createIndex('type', 'type', { unique: false });
-      contentStore.createIndex('category', 'category', { unique: false });
-      contentStore.createIndex('cached_at', 'cached_at', { unique: false });
+    if (!db.objectStoreNames.contains("awareness_content")) {
+      const contentStore = db.createObjectStore("awareness_content", {
+        keyPath: "id",
+      });
+      contentStore.createIndex("type", "type", { unique: false });
+      contentStore.createIndex("category", "category", { unique: false });
+      contentStore.createIndex("cached_at", "cached_at", { unique: false });
     }
 
     // Chat messages store
-    if (!db.objectStoreNames.contains('chat_messages')) {
-      const chatStore = db.createObjectStore('chat_messages', { keyPath: 'id' });
-      chatStore.createIndex('session_id', 'session_id', { unique: false });
-      chatStore.createIndex('timestamp', 'timestamp', { unique: false });
-      chatStore.createIndex('synced', 'synced', { unique: false });
+    if (!db.objectStoreNames.contains("chat_messages")) {
+      const chatStore = db.createObjectStore("chat_messages", {
+        keyPath: "id",
+      });
+      chatStore.createIndex("session_id", "session_id", { unique: false });
+      chatStore.createIndex("timestamp", "timestamp", { unique: false });
+      chatStore.createIndex("synced", "synced", { unique: false });
     }
 
     // User profile store
-    if (!db.objectStoreNames.contains('user_profile')) {
-      const profileStore = db.createObjectStore('user_profile', { keyPath: 'id' });
-      profileStore.createIndex('email', 'email', { unique: true });
-      profileStore.createIndex('pending_updates', 'pending_updates', { unique: false });
+    if (!db.objectStoreNames.contains("user_profile")) {
+      const profileStore = db.createObjectStore("user_profile", {
+        keyPath: "id",
+      });
+      profileStore.createIndex("email", "email", { unique: true });
+      profileStore.createIndex("pending_updates", "pending_updates", {
+        unique: false,
+      });
     }
 
     // Sync queue store
-    if (!db.objectStoreNames.contains('sync_queue')) {
-      const syncStore = db.createObjectStore('sync_queue', { keyPath: 'id', autoIncrement: true });
-      syncStore.createIndex('type', 'type', { unique: false });
-      syncStore.createIndex('priority', 'priority', { unique: false });
-      syncStore.createIndex('created_at', 'created_at', { unique: false });
+    if (!db.objectStoreNames.contains("sync_queue")) {
+      const syncStore = db.createObjectStore("sync_queue", {
+        keyPath: "id",
+        autoIncrement: true,
+      });
+      syncStore.createIndex("type", "type", { unique: false });
+      syncStore.createIndex("priority", "priority", { unique: false });
+      syncStore.createIndex("created_at", "created_at", { unique: false });
     }
   }
 
   // Quiz Response Methods
-  async saveQuizResponse(response: Omit<OfflineQuizResponse, 'id' | 'synced' | 'created_at'>): Promise<string> {
-    if (!this.db) throw new Error('Database not initialized');
+  async saveQuizResponse(
+    response: Omit<OfflineQuizResponse, "id" | "synced" | "created_at">,
+  ): Promise<string> {
+    if (!this.db) throw new Error("Database not initialized");
 
     const id = `quiz_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const quizResponse: OfflineQuizResponse = {
@@ -229,8 +254,8 @@ class OfflineStorageManager {
     };
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(['quiz_responses'], 'readwrite');
-      const store = transaction.objectStore('quiz_responses');
+      const transaction = this.db!.transaction(["quiz_responses"], "readwrite");
+      const store = transaction.objectStore("quiz_responses");
       const request = store.add(quizResponse);
 
       request.onsuccess = () => resolve(id);
@@ -239,12 +264,12 @@ class OfflineStorageManager {
   }
 
   async getQuizResponses(sessionId: string): Promise<OfflineQuizResponse[]> {
-    if (!this.db) throw new Error('Database not initialized');
+    if (!this.db) throw new Error("Database not initialized");
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(['quiz_responses'], 'readonly');
-      const store = transaction.objectStore('quiz_responses');
-      const index = store.index('session_id');
+      const transaction = this.db!.transaction(["quiz_responses"], "readonly");
+      const store = transaction.objectStore("quiz_responses");
+      const index = store.index("session_id");
       const request = index.getAll(sessionId);
 
       request.onsuccess = () => resolve(request.result || []);
@@ -253,13 +278,13 @@ class OfflineStorageManager {
   }
 
   async getUnsyncedQuizResponses(): Promise<OfflineQuizResponse[]> {
-    if (!this.db) throw new Error('Database not initialized');
+    if (!this.db) throw new Error("Database not initialized");
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(['quiz_responses'], 'readonly');
-      const store = transaction.objectStore('quiz_responses');
-      const index = store.index('synced');
-      const request = index.getAll(false);
+      const transaction = this.db!.transaction(["quiz_responses"], "readonly");
+      const store = transaction.objectStore("quiz_responses");
+      const index = store.index("synced");
+      const request = index.getAll(null);
 
       request.onsuccess = () => resolve(request.result || []);
       request.onerror = () => reject(request.error);
@@ -267,11 +292,11 @@ class OfflineStorageManager {
   }
 
   async markQuizResponseSynced(id: string): Promise<void> {
-    if (!this.db) throw new Error('Database not initialized');
+    if (!this.db) throw new Error("Database not initialized");
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(['quiz_responses'], 'readwrite');
-      const store = transaction.objectStore('quiz_responses');
+      const transaction = this.db!.transaction(["quiz_responses"], "readwrite");
+      const store = transaction.objectStore("quiz_responses");
       const getRequest = store.get(id);
 
       getRequest.onsuccess = () => {
@@ -282,7 +307,7 @@ class OfflineStorageManager {
           putRequest.onsuccess = () => resolve();
           putRequest.onerror = () => reject(putRequest.error);
         } else {
-          reject(new Error('Quiz response not found'));
+          reject(new Error("Quiz response not found"));
         }
       };
       getRequest.onerror = () => reject(getRequest.error);
@@ -290,8 +315,10 @@ class OfflineStorageManager {
   }
 
   // Assessment Session Methods
-  async saveAssessmentSession(session: Omit<OfflineAssessmentSession, 'id' | 'synced' | 'created_at'>): Promise<string> {
-    if (!this.db) throw new Error('Database not initialized');
+  async saveAssessmentSession(
+    session: Omit<OfflineAssessmentSession, "id" | "synced" | "created_at">,
+  ): Promise<string> {
+    if (!this.db) throw new Error("Database not initialized");
 
     const id = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const assessmentSession: OfflineAssessmentSession = {
@@ -302,8 +329,11 @@ class OfflineStorageManager {
     };
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(['assessment_sessions'], 'readwrite');
-      const store = transaction.objectStore('assessment_sessions');
+      const transaction = this.db!.transaction(
+        ["assessment_sessions"],
+        "readwrite",
+      );
+      const store = transaction.objectStore("assessment_sessions");
       const request = store.add(assessmentSession);
 
       request.onsuccess = () => resolve(id);
@@ -311,12 +341,18 @@ class OfflineStorageManager {
     });
   }
 
-  async updateAssessmentSession(id: string, updates: Partial<OfflineAssessmentSession>): Promise<void> {
-    if (!this.db) throw new Error('Database not initialized');
+  async updateAssessmentSession(
+    id: string,
+    updates: Partial<OfflineAssessmentSession>,
+  ): Promise<void> {
+    if (!this.db) throw new Error("Database not initialized");
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(['assessment_sessions'], 'readwrite');
-      const store = transaction.objectStore('assessment_sessions');
+      const transaction = this.db!.transaction(
+        ["assessment_sessions"],
+        "readwrite",
+      );
+      const store = transaction.objectStore("assessment_sessions");
       const getRequest = store.get(id);
 
       getRequest.onsuccess = () => {
@@ -327,19 +363,24 @@ class OfflineStorageManager {
           putRequest.onsuccess = () => resolve();
           putRequest.onerror = () => reject(putRequest.error);
         } else {
-          reject(new Error('Assessment session not found'));
+          reject(new Error("Assessment session not found"));
         }
       };
       getRequest.onerror = () => reject(getRequest.error);
     });
   }
 
-  async getAssessmentSession(id: string): Promise<OfflineAssessmentSession | null> {
-    if (!this.db) throw new Error('Database not initialized');
+  async getAssessmentSession(
+    id: string,
+  ): Promise<OfflineAssessmentSession | null> {
+    if (!this.db) throw new Error("Database not initialized");
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(['assessment_sessions'], 'readonly');
-      const store = transaction.objectStore('assessment_sessions');
+      const transaction = this.db!.transaction(
+        ["assessment_sessions"],
+        "readonly",
+      );
+      const store = transaction.objectStore("assessment_sessions");
       const request = store.get(id);
 
       request.onsuccess = () => resolve(request.result || null);
@@ -348,13 +389,16 @@ class OfflineStorageManager {
   }
 
   async getUnsyncedAssessmentSessions(): Promise<OfflineAssessmentSession[]> {
-    if (!this.db) throw new Error('Database not initialized');
+    if (!this.db) throw new Error("Database not initialized");
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(['assessment_sessions'], 'readonly');
-      const store = transaction.objectStore('assessment_sessions');
-      const index = store.index('synced');
-      const request = index.getAll(false);
+      const transaction = this.db!.transaction(
+        ["assessment_sessions"],
+        "readonly",
+      );
+      const store = transaction.objectStore("assessment_sessions");
+      const index = store.index("synced");
+      const request = index.getAll(null);
 
       request.onsuccess = () => resolve(request.result || []);
       request.onerror = () => reject(request.error);
@@ -363,17 +407,17 @@ class OfflineStorageManager {
 
   // College Cache Methods
   async cacheColleges(colleges: OfflineCollege[]): Promise<void> {
-    if (!this.db) throw new Error('Database not initialized');
+    if (!this.db) throw new Error("Database not initialized");
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(['colleges_cache'], 'readwrite');
-      const store = transaction.objectStore('colleges_cache');
-      
-      const requests = colleges.map(college => store.put(college));
+      const transaction = this.db!.transaction(["colleges_cache"], "readwrite");
+      const store = transaction.objectStore("colleges_cache");
+
+      const requests = colleges.map((college) => store.put(college));
       let completed = 0;
       let hasError = false;
 
-      requests.forEach(request => {
+      requests.forEach((request) => {
         request.onsuccess = () => {
           completed++;
           if (completed === requests.length && !hasError) {
@@ -393,11 +437,11 @@ class OfflineStorageManager {
     type?: string;
     limit?: number;
   }): Promise<OfflineCollege[]> {
-    if (!this.db) throw new Error('Database not initialized');
+    if (!this.db) throw new Error("Database not initialized");
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(['colleges_cache'], 'readonly');
-      const store = transaction.objectStore('colleges_cache');
+      const transaction = this.db!.transaction(["colleges_cache"], "readonly");
+      const store = transaction.objectStore("colleges_cache");
       const request = store.getAll();
 
       request.onsuccess = () => {
@@ -405,10 +449,14 @@ class OfflineStorageManager {
 
         // Apply filters
         if (filters?.state) {
-          colleges = colleges.filter(college => college.location?.state === filters.state);
+          colleges = colleges.filter(
+            (college) => college.location?.state === filters.state,
+          );
         }
         if (filters?.type) {
-          colleges = colleges.filter(college => college.type === filters.type);
+          colleges = colleges.filter(
+            (college) => college.type === filters.type,
+          );
         }
         if (filters?.limit) {
           colleges = colleges.slice(0, filters.limit);
@@ -422,17 +470,22 @@ class OfflineStorageManager {
 
   // Scholarship Cache Methods
   async cacheScholarships(scholarships: OfflineScholarship[]): Promise<void> {
-    if (!this.db) throw new Error('Database not initialized');
+    if (!this.db) throw new Error("Database not initialized");
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(['scholarships_cache'], 'readwrite');
-      const store = transaction.objectStore('scholarships_cache');
-      
-      const requests = scholarships.map(scholarship => store.put(scholarship));
+      const transaction = this.db!.transaction(
+        ["scholarships_cache"],
+        "readwrite",
+      );
+      const store = transaction.objectStore("scholarships_cache");
+
+      const requests = scholarships.map((scholarship) =>
+        store.put(scholarship),
+      );
       let completed = 0;
       let hasError = false;
 
-      requests.forEach(request => {
+      requests.forEach((request) => {
         request.onsuccess = () => {
           completed++;
           if (completed === requests.length && !hasError) {
@@ -448,11 +501,14 @@ class OfflineStorageManager {
   }
 
   async getCachedScholarships(): Promise<OfflineScholarship[]> {
-    if (!this.db) throw new Error('Database not initialized');
+    if (!this.db) throw new Error("Database not initialized");
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(['scholarships_cache'], 'readonly');
-      const store = transaction.objectStore('scholarships_cache');
+      const transaction = this.db!.transaction(
+        ["scholarships_cache"],
+        "readonly",
+      );
+      const store = transaction.objectStore("scholarships_cache");
       const request = store.getAll();
 
       request.onsuccess = () => resolve(request.result || []);
@@ -461,18 +517,23 @@ class OfflineStorageManager {
   }
 
   // Awareness Content Methods
-  async cacheAwarenessContent(content: OfflineAwarenessContent[]): Promise<void> {
-    if (!this.db) throw new Error('Database not initialized');
+  async cacheAwarenessContent(
+    content: OfflineAwarenessContent[],
+  ): Promise<void> {
+    if (!this.db) throw new Error("Database not initialized");
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(['awareness_content'], 'readwrite');
-      const store = transaction.objectStore('awareness_content');
-      
-      const requests = content.map(item => store.put(item));
+      const transaction = this.db!.transaction(
+        ["awareness_content"],
+        "readwrite",
+      );
+      const store = transaction.objectStore("awareness_content");
+
+      const requests = content.map((item) => store.put(item));
       let completed = 0;
       let hasError = false;
 
-      requests.forEach(request => {
+      requests.forEach((request) => {
         request.onsuccess = () => {
           completed++;
           if (completed === requests.length && !hasError) {
@@ -487,22 +548,28 @@ class OfflineStorageManager {
     });
   }
 
-  async getCachedAwarenessContent(type?: string, category?: string): Promise<OfflineAwarenessContent[]> {
-    if (!this.db) throw new Error('Database not initialized');
+  async getCachedAwarenessContent(
+    type?: string,
+    category?: string,
+  ): Promise<OfflineAwarenessContent[]> {
+    if (!this.db) throw new Error("Database not initialized");
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(['awareness_content'], 'readonly');
-      const store = transaction.objectStore('awareness_content');
+      const transaction = this.db!.transaction(
+        ["awareness_content"],
+        "readonly",
+      );
+      const store = transaction.objectStore("awareness_content");
       const request = store.getAll();
 
       request.onsuccess = () => {
         let content = request.result || [];
 
         if (type) {
-          content = content.filter(item => item.type === type);
+          content = content.filter((item) => item.type === type);
         }
         if (category) {
-          content = content.filter(item => item.category === category);
+          content = content.filter((item) => item.category === category);
         }
 
         resolve(content);
@@ -512,8 +579,10 @@ class OfflineStorageManager {
   }
 
   // Chat Message Methods
-  async saveChatMessage(message: Omit<OfflineChatMessage, 'id' | 'synced'>): Promise<string> {
-    if (!this.db) throw new Error('Database not initialized');
+  async saveChatMessage(
+    message: Omit<OfflineChatMessage, "id" | "synced">,
+  ): Promise<string> {
+    if (!this.db) throw new Error("Database not initialized");
 
     const id = `chat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const chatMessage: OfflineChatMessage = {
@@ -523,8 +592,8 @@ class OfflineStorageManager {
     };
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(['chat_messages'], 'readwrite');
-      const store = transaction.objectStore('chat_messages');
+      const transaction = this.db!.transaction(["chat_messages"], "readwrite");
+      const store = transaction.objectStore("chat_messages");
       const request = store.add(chatMessage);
 
       request.onsuccess = () => resolve(id);
@@ -533,12 +602,12 @@ class OfflineStorageManager {
   }
 
   async getChatMessages(sessionId: string): Promise<OfflineChatMessage[]> {
-    if (!this.db) throw new Error('Database not initialized');
+    if (!this.db) throw new Error("Database not initialized");
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(['chat_messages'], 'readonly');
-      const store = transaction.objectStore('chat_messages');
-      const index = store.index('session_id');
+      const transaction = this.db!.transaction(["chat_messages"], "readonly");
+      const store = transaction.objectStore("chat_messages");
+      const index = store.index("session_id");
       const request = index.getAll(sessionId);
 
       request.onsuccess = () => resolve(request.result || []);
@@ -548,11 +617,11 @@ class OfflineStorageManager {
 
   // User Profile Methods
   async saveUserProfile(profile: OfflineUserProfile): Promise<void> {
-    if (!this.db) throw new Error('Database not initialized');
+    if (!this.db) throw new Error("Database not initialized");
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(['user_profile'], 'readwrite');
-      const store = transaction.objectStore('user_profile');
+      const transaction = this.db!.transaction(["user_profile"], "readwrite");
+      const store = transaction.objectStore("user_profile");
       const request = store.put(profile);
 
       request.onsuccess = () => resolve();
@@ -561,11 +630,11 @@ class OfflineStorageManager {
   }
 
   async getUserProfile(): Promise<OfflineUserProfile | null> {
-    if (!this.db) throw new Error('Database not initialized');
+    if (!this.db) throw new Error("Database not initialized");
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(['user_profile'], 'readonly');
-      const store = transaction.objectStore('user_profile');
+      const transaction = this.db!.transaction(["user_profile"], "readonly");
+      const store = transaction.objectStore("user_profile");
       const request = store.getAll();
 
       request.onsuccess = () => {
@@ -577,8 +646,12 @@ class OfflineStorageManager {
   }
 
   // Sync Queue Methods
-  async addToSyncQueue(type: string, data: any, priority: number = 1): Promise<void> {
-    if (!this.db) throw new Error('Database not initialized');
+  async addToSyncQueue(
+    type: string,
+    data: Record<string, unknown>,
+    priority: number = 1,
+  ): Promise<void> {
+    if (!this.db) throw new Error("Database not initialized");
 
     const syncItem = {
       type,
@@ -588,8 +661,8 @@ class OfflineStorageManager {
     };
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(['sync_queue'], 'readwrite');
-      const store = transaction.objectStore('sync_queue');
+      const transaction = this.db!.transaction(["sync_queue"], "readwrite");
+      const store = transaction.objectStore("sync_queue");
       const request = store.add(syncItem);
 
       request.onsuccess = () => resolve();
@@ -597,12 +670,20 @@ class OfflineStorageManager {
     });
   }
 
-  async getSyncQueue(): Promise<Array<{ id: number; type: string; data: any; priority: number; created_at: string }>> {
-    if (!this.db) throw new Error('Database not initialized');
+  async getSyncQueue(): Promise<
+    Array<{
+      id: number;
+      type: string;
+      data: Record<string, unknown>;
+      priority: number;
+      created_at: string;
+    }>
+  > {
+    if (!this.db) throw new Error("Database not initialized");
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(['sync_queue'], 'readonly');
-      const store = transaction.objectStore('sync_queue');
+      const transaction = this.db!.transaction(["sync_queue"], "readonly");
+      const store = transaction.objectStore("sync_queue");
       const request = store.getAll();
 
       request.onsuccess = () => {
@@ -612,7 +693,9 @@ class OfflineStorageManager {
           if (a.priority !== b.priority) {
             return b.priority - a.priority;
           }
-          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+          return (
+            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+          );
         });
         resolve(items);
       };
@@ -621,11 +704,11 @@ class OfflineStorageManager {
   }
 
   async removeFromSyncQueue(id: number): Promise<void> {
-    if (!this.db) throw new Error('Database not initialized');
+    if (!this.db) throw new Error("Database not initialized");
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(['sync_queue'], 'readwrite');
-      const store = transaction.objectStore('sync_queue');
+      const transaction = this.db!.transaction(["sync_queue"], "readwrite");
+      const store = transaction.objectStore("sync_queue");
       const request = store.delete(id);
 
       request.onsuccess = () => resolve();
@@ -635,25 +718,25 @@ class OfflineStorageManager {
 
   // Utility Methods
   async clearAllData(): Promise<void> {
-    if (!this.db) throw new Error('Database not initialized');
+    if (!this.db) throw new Error("Database not initialized");
 
     const storeNames = [
-      'quiz_responses',
-      'assessment_sessions',
-      'colleges_cache',
-      'scholarships_cache',
-      'awareness_content',
-      'chat_messages',
-      'user_profile',
-      'sync_queue'
+      "quiz_responses",
+      "assessment_sessions",
+      "colleges_cache",
+      "scholarships_cache",
+      "awareness_content",
+      "chat_messages",
+      "user_profile",
+      "sync_queue",
     ];
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(storeNames, 'readwrite');
+      const transaction = this.db!.transaction(storeNames, "readwrite");
       let completed = 0;
       let hasError = false;
 
-      storeNames.forEach(storeName => {
+      storeNames.forEach((storeName) => {
         const store = transaction.objectStore(storeName);
         const request = store.clear();
 
@@ -680,23 +763,39 @@ class OfflineStorageManager {
     chatMessages: number;
     syncQueueItems: number;
   }> {
-    if (!this.db) throw new Error('Database not initialized');
+    if (!this.db) throw new Error("Database not initialized");
 
     const storeNames = [
-      'quiz_responses',
-      'assessment_sessions',
-      'colleges_cache',
-      'scholarships_cache',
-      'awareness_content',
-      'chat_messages',
-      'sync_queue'
+      "quiz_responses",
+      "assessment_sessions",
+      "colleges_cache",
+      "scholarships_cache",
+      "awareness_content",
+      "chat_messages",
+      "sync_queue",
     ];
 
-    const stats: any = {};
+    const stats: {
+      quizResponses: number;
+      assessmentSessions: number;
+      cachedColleges: number;
+      cachedScholarships: number;
+      awarenessContent: number;
+      chatMessages: number;
+      syncQueueItems: number;
+    } = {
+      quizResponses: 0,
+      assessmentSessions: 0,
+      cachedColleges: 0,
+      cachedScholarships: 0,
+      awarenessContent: 0,
+      chatMessages: 0,
+      syncQueueItems: 0,
+    };
 
     for (const storeName of storeNames) {
       const count = await new Promise<number>((resolve, reject) => {
-        const transaction = this.db!.transaction([storeName], 'readonly');
+        const transaction = this.db!.transaction([storeName], "readonly");
         const store = transaction.objectStore(storeName);
         const request = store.count();
 
@@ -704,8 +803,17 @@ class OfflineStorageManager {
         request.onerror = () => reject(request.error);
       });
 
-      const key = storeName.replace('_', '') + (storeName === 'sync_queue' ? 'Items' : '');
-      stats[key] = count;
+      const key =
+        storeName.replace("_", "") +
+        (storeName === "sync_queue" ? "Items" : "");
+      
+      if (key === "quizresponses") stats.quizResponses = count;
+      else if (key === "assessmentsessions") stats.assessmentSessions = count;
+      else if (key === "collegescache") stats.cachedColleges = count;
+      else if (key === "scholarshipscache") stats.cachedScholarships = count;
+      else if (key === "awarenesscontent") stats.awarenessContent = count;
+      else if (key === "chatmessages") stats.chatMessages = count;
+      else if (key === "syncqueueItems") stats.syncQueueItems = count;
     }
 
     return stats;
@@ -716,6 +824,6 @@ class OfflineStorageManager {
 export const offlineStorage = new OfflineStorageManager();
 
 // Initialize on module load
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   offlineStorage.initialize().catch(console.error);
 }

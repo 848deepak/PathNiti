@@ -1,64 +1,63 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { Database } from '@/lib/supabase/types'
+import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+// import { Database } from '@/lib/supabase/types' // Unused import
 
 // Force dynamic rendering
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
-export async function GET(_request: NextRequest) {
+export async function GET() {
   try {
-    const supabase = createClient()
-    
+    const supabase = createClient();
+
     // Get the authenticated user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
     if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Verify user is a student
     const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
 
-    if (profileError || profile?.role !== 'student') {
+    if (profileError || profile?.role !== "student") {
       return NextResponse.json(
-        { error: 'Access denied. Student role required.' },
-        { status: 403 }
-      )
+        { error: "Access denied. Student role required." },
+        { status: 403 },
+      );
     }
 
     // Fetch notifications for the user
     const { data: notifications, error: notificationsError } = await supabase
-      .from('notifications')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('sent_at', { ascending: false })
-      .limit(50) // Limit to recent 50 notifications
+      .from("notifications")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("sent_at", { ascending: false })
+      .limit(50); // Limit to recent 50 notifications
 
     if (notificationsError) {
-      console.error('Error fetching notifications:', notificationsError)
+      console.error("Error fetching notifications:", notificationsError);
       return NextResponse.json(
-        { error: 'Failed to fetch notifications' },
-        { status: 500 }
-      )
+        { error: "Failed to fetch notifications" },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json({
       success: true,
-      data: notifications || []
-    })
-
+      data: notifications || [],
+    });
   } catch (error) {
-    console.error('Unexpected error in student notifications API:', error)
+    console.error("Unexpected error in student notifications API:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }

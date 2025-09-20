@@ -1,16 +1,28 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
-import { Notice } from '@/lib/types/college-profile';
-import { Trash2, Edit, Plus, Calendar, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { Notice } from "@/lib/types/college-profile";
+import { Trash2, Edit, Plus, Calendar, AlertCircle } from "lucide-react";
 
 interface CollegeNoticeManagerProps {
   collegeId: string;
@@ -19,18 +31,20 @@ interface CollegeNoticeManagerProps {
 interface NoticeFormData {
   title: string;
   content: string;
-  type: 'general' | 'admission' | 'event' | 'urgent';
+  type: "general" | "admission" | "event" | "urgent";
   expires_at: string;
 }
 
 const initialFormData: NoticeFormData = {
-  title: '',
-  content: '',
-  type: 'general',
-  expires_at: ''
+  title: "",
+  content: "",
+  type: "general",
+  expires_at: "",
 };
 
-export default function CollegeNoticeManager({ collegeId }: CollegeNoticeManagerProps) {
+export default function CollegeNoticeManager({
+  collegeId,
+}: CollegeNoticeManagerProps) {
   const [notices, setNotices] = useState<Notice[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -39,28 +53,30 @@ export default function CollegeNoticeManager({ collegeId }: CollegeNoticeManager
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchNotices();
-  }, [collegeId]);
-
-  const fetchNotices = async () => {
+  const fetchNotices = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/colleges/admin/notices?college_id=${collegeId}`);
-      
+      const response = await fetch(
+        `/api/colleges/admin/notices?college_id=${collegeId}`,
+      );
+
       if (!response.ok) {
-        throw new Error('Failed to fetch notices');
+        throw new Error("Failed to fetch notices");
       }
 
       const data = await response.json();
       setNotices(data.notices || []);
     } catch (error) {
-      console.error('Error fetching notices:', error);
-      setError('Failed to load notices');
+      console.error("Error fetching notices:", error);
+      setError("Failed to load notices");
     } finally {
       setLoading(false);
     }
-  };
+  }, [collegeId]);
+
+  useEffect(() => {
+    fetchNotices();
+  }, [fetchNotices]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,26 +84,26 @@ export default function CollegeNoticeManager({ collegeId }: CollegeNoticeManager
     setError(null);
 
     try {
-      const url = editingNotice 
+      const url = editingNotice
         ? `/api/colleges/admin/notices/${editingNotice.id}`
-        : '/api/colleges/admin/notices';
-      
-      const method = editingNotice ? 'PUT' : 'POST';
-      
+        : "/api/colleges/admin/notices";
+
+      const method = editingNotice ? "PUT" : "POST";
+
       const response = await fetch(url, {
         method,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           ...formData,
-          expires_at: formData.expires_at || null
+          expires_at: formData.expires_at || null,
         }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to save notice');
+        throw new Error(errorData.error || "Failed to save notice");
       }
 
       await fetchNotices();
@@ -95,8 +111,10 @@ export default function CollegeNoticeManager({ collegeId }: CollegeNoticeManager
       setEditingNotice(null);
       setIsDialogOpen(false);
     } catch (error) {
-      console.error('Error saving notice:', error);
-      setError(error instanceof Error ? error.message : 'Failed to save notice');
+      console.error("Error saving notice:", error);
+      setError(
+        error instanceof Error ? error.message : "Failed to save notice",
+      );
     } finally {
       setSubmitting(false);
     }
@@ -108,69 +126,76 @@ export default function CollegeNoticeManager({ collegeId }: CollegeNoticeManager
       title: notice.title,
       content: notice.content,
       type: notice.type,
-      expires_at: notice.expires_at ? notice.expires_at.split('T')[0] : ''
+      expires_at: notice.expires_at ? notice.expires_at.split("T")[0] : "",
     });
     setIsDialogOpen(true);
   };
 
   const handleDelete = async (noticeId: string) => {
-    if (!confirm('Are you sure you want to delete this notice?')) {
+    if (!confirm("Are you sure you want to delete this notice?")) {
       return;
     }
 
     try {
       const response = await fetch(`/api/colleges/admin/notices/${noticeId}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete notice');
+        throw new Error("Failed to delete notice");
       }
 
       await fetchNotices();
     } catch (error) {
-      console.error('Error deleting notice:', error);
-      setError('Failed to delete notice');
+      console.error("Error deleting notice:", error);
+      setError("Failed to delete notice");
     }
   };
 
   const toggleNoticeStatus = async (notice: Notice) => {
     try {
       const response = await fetch(`/api/colleges/admin/notices/${notice.id}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          is_active: !notice.is_active
+          is_active: !notice.is_active,
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update notice status');
+        throw new Error("Failed to update notice status");
       }
 
       await fetchNotices();
     } catch (error) {
-      console.error('Error updating notice status:', error);
-      setError('Failed to update notice status');
+      console.error("Error updating notice status:", error);
+      setError("Failed to update notice status");
     }
   };
 
   const getNoticeTypeColor = (type: string) => {
     switch (type) {
-      case 'urgent': return 'bg-red-100 text-red-800';
-      case 'admission': return 'bg-blue-100 text-blue-800';
-      case 'event': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case "urgent":
+        return "bg-red-100 text-red-800";
+      case "admission":
+        return "bg-blue-100 text-blue-800";
+      case "event":
+        return "bg-green-100 text-green-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const getNoticeTypeIcon = (type: string) => {
     switch (type) {
-      case 'urgent': return <AlertCircle className="w-4 h-4" />;
-      case 'event': return <Calendar className="w-4 h-4" />;
-      default: return null;
+      case "urgent":
+        return <AlertCircle className="w-4 h-4" />;
+      case "event":
+        return <Calendar className="w-4 h-4" />;
+      default:
+        return null;
     }
   };
 
@@ -180,12 +205,12 @@ export default function CollegeNoticeManager({ collegeId }: CollegeNoticeManager
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-IN', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Date(dateString).toLocaleDateString("en-IN", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -210,7 +235,7 @@ export default function CollegeNoticeManager({ collegeId }: CollegeNoticeManager
         <CardTitle>College Notices</CardTitle>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button 
+            <Button
               onClick={() => {
                 setEditingNotice(null);
                 setFormData(initialFormData);
@@ -224,7 +249,7 @@ export default function CollegeNoticeManager({ collegeId }: CollegeNoticeManager
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>
-                {editingNotice ? 'Edit Notice' : 'Add New Notice'}
+                {editingNotice ? "Edit Notice" : "Add New Notice"}
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -233,7 +258,9 @@ export default function CollegeNoticeManager({ collegeId }: CollegeNoticeManager
                 <Input
                   id="title"
                   value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, title: e.target.value })
+                  }
                   placeholder="Enter notice title"
                   required
                 />
@@ -244,7 +271,9 @@ export default function CollegeNoticeManager({ collegeId }: CollegeNoticeManager
                 <Textarea
                   id="content"
                   value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, content: e.target.value })
+                  }
                   placeholder="Enter notice content"
                   rows={4}
                   required
@@ -256,7 +285,9 @@ export default function CollegeNoticeManager({ collegeId }: CollegeNoticeManager
                   <Label htmlFor="type">Type</Label>
                   <Select
                     value={formData.type}
-                    onValueChange={(value: any) => setFormData({ ...formData, type: value })}
+                    onValueChange={(value: string) =>
+                      setFormData({ ...formData, type: value as "general" | "admission" | "event" | "urgent" })
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -276,14 +307,14 @@ export default function CollegeNoticeManager({ collegeId }: CollegeNoticeManager
                     id="expires_at"
                     type="date"
                     value={formData.expires_at}
-                    onChange={(e) => setFormData({ ...formData, expires_at: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, expires_at: e.target.value })
+                    }
                   />
                 </div>
               </div>
 
-              {error && (
-                <div className="text-red-600 text-sm">{error}</div>
-              )}
+              {error && <div className="text-red-600 text-sm">{error}</div>}
 
               <div className="flex justify-end space-x-2">
                 <Button
@@ -294,7 +325,11 @@ export default function CollegeNoticeManager({ collegeId }: CollegeNoticeManager
                   Cancel
                 </Button>
                 <Button type="submit" disabled={submitting}>
-                  {submitting ? 'Saving...' : editingNotice ? 'Update' : 'Create'}
+                  {submitting
+                    ? "Saving..."
+                    : editingNotice
+                      ? "Update"
+                      : "Create"}
                 </Button>
               </div>
             </form>
@@ -318,21 +353,24 @@ export default function CollegeNoticeManager({ collegeId }: CollegeNoticeManager
               <div
                 key={notice.id}
                 className={`border rounded-lg p-4 ${
-                  !notice.is_active ? 'opacity-60 bg-gray-50' : ''
-                } ${isExpired(notice.expires_at) ? 'border-red-200 bg-red-50' : ''}`}
+                  !notice.is_active ? "opacity-60 bg-gray-50" : ""
+                } ${isExpired(notice.expires_at || null) ? "border-red-200 bg-red-50" : ""}`}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
                       <h3 className="font-semibold text-lg">{notice.title}</h3>
-                      <Badge className={`${getNoticeTypeColor(notice.type)} flex items-center gap-1`}>
+                      <Badge
+                        className={`${getNoticeTypeColor(notice.type)} flex items-center gap-1`}
+                      >
                         {getNoticeTypeIcon(notice.type)}
-                        {notice.type.charAt(0).toUpperCase() + notice.type.slice(1)}
+                        {notice.type.charAt(0).toUpperCase() +
+                          notice.type.slice(1)}
                       </Badge>
                       {!notice.is_active && (
                         <Badge variant="secondary">Inactive</Badge>
                       )}
-                      {isExpired(notice.expires_at) && (
+                      {isExpired(notice.expires_at || null) && (
                         <Badge variant="destructive">Expired</Badge>
                       )}
                     </div>
@@ -350,7 +388,7 @@ export default function CollegeNoticeManager({ collegeId }: CollegeNoticeManager
                       size="sm"
                       onClick={() => toggleNoticeStatus(notice)}
                     >
-                      {notice.is_active ? 'Deactivate' : 'Activate'}
+                      {notice.is_active ? "Deactivate" : "Activate"}
                     </Button>
                     <Button
                       variant="outline"

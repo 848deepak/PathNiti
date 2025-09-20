@@ -21,22 +21,26 @@ AI-powered backend service for personalized career and education recommendations
 ## Setup
 
 1. **Install Dependencies**
+
    ```bash
    pip install -r requirements.txt
    ```
 
 2. **Environment Configuration**
+
    ```bash
    cp env.example .env
    # Edit .env with your configuration
    ```
 
 3. **Run the Server**
+
    ```bash
    python main.py
    ```
 
    Or with uvicorn:
+
    ```bash
    uvicorn main:app --reload --host 0.0.0.0 --port 8000
    ```
@@ -44,18 +48,21 @@ AI-powered backend service for personalized career and education recommendations
 ## API Endpoints
 
 ### Health Check
+
 - `GET /` - Basic health check
 - `GET /health` - Detailed health status
 
 ### Recommendations
+
 - `POST /recommendations/stream` - Get stream recommendations
-- `POST /recommendations/college` - Get college recommendations  
+- `POST /recommendations/college` - Get college recommendations
 - `POST /recommendations/career` - Get career recommendations
 - `POST /recommendations/quiz` - Process quiz results
 
 ## API Documentation
 
 Once running, visit:
+
 - **Swagger UI**: http://localhost:8000/docs
 - **ReDoc**: http://localhost:8000/redoc
 
@@ -71,6 +78,7 @@ The AI engine uses machine learning algorithms to provide personalized recommend
 ## Deployment
 
 The AI engine can be deployed to:
+
 - **AWS Lambda**: Serverless deployment
 - **Google Cloud Run**: Containerized deployment
 - **Docker**: Container deployment
@@ -79,4 +87,3 @@ The AI engine can be deployed to:
 ## Integration
 
 The AI engine integrates with the main EduNiti frontend through REST APIs. Make sure to configure CORS origins in the environment variables.
-

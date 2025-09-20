@@ -1,17 +1,22 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui"
-import { useAuth } from "../../providers"
-import { 
-  Shield, 
-  Users, 
-  Building, 
-  BarChart3, 
-  TrendingUp, 
+import { useEffect, useState } from "react";
+// import { useRouter } from "next/navigation"
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui";
+import { useAuth } from "../../providers";
+import {
+  Shield,
+  Users,
+  Building,
+  BarChart3,
   Activity,
-  UserCheck,
   BookOpen,
   ArrowLeft,
   Settings,
@@ -19,9 +24,9 @@ import {
   Target,
   Zap,
   Loader2,
-  AlertCircle
-} from "lucide-react"
-import Link from "next/link"
+  AlertCircle,
+} from "lucide-react";
+import Link from "next/link";
 
 interface AdminAnalytics {
   totalUsers: number;
@@ -61,55 +66,56 @@ interface AdminAnalytics {
 }
 
 export default function AdminDashboardPage() {
-  const { user, profile, loading, requireAuth, requireRole } = useAuth()
-  const router = useRouter()
-  const [analytics, setAnalytics] = useState<AdminAnalytics | null>(null)
-  const [analyticsLoading, setAnalyticsLoading] = useState(true)
-  const [analyticsError, setAnalyticsError] = useState<string | null>(null)
+  const { loading, requireAuth, requireRole } = useAuth();
+  const [analytics, setAnalytics] = useState<AdminAnalytics | null>(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(true);
+  const [analyticsError, setAnalyticsError] = useState<string | null>(null);
 
   // Use centralized authentication enforcement
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        await requireAuth()
-        await requireRole('admin')
+        await requireAuth();
+        await requireRole("admin");
       } catch (error) {
-        console.error('Authentication check failed:', error)
+        console.error("Authentication check failed:", error);
       }
-    }
-    checkAuth()
-  }, [requireAuth, requireRole])
+    };
+    checkAuth();
+  }, [requireAuth, requireRole]);
 
   // Fetch analytics data
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
-        setAnalyticsLoading(true)
-        setAnalyticsError(null)
+        setAnalyticsLoading(true);
+        setAnalyticsError(null);
 
-        const response = await fetch('/api/admin/analytics')
-        
+        const response = await fetch("/api/admin/analytics");
+
         if (!response.ok) {
-          throw new Error('Failed to fetch analytics data')
+          throw new Error("Failed to fetch analytics data");
         }
 
-        const result = await response.json()
-        
+        const result = await response.json();
+
         if (result.success) {
-          setAnalytics(result.data)
+          setAnalytics(result.data);
         } else {
-          throw new Error(result.error || 'Failed to fetch analytics')
+          throw new Error(result.error || "Failed to fetch analytics");
         }
       } catch (error) {
-        console.error('Error fetching analytics:', error)
-        setAnalyticsError(error instanceof Error ? error.message : 'Failed to fetch analytics')
+        console.error("Error fetching analytics:", error);
+        setAnalyticsError(
+          error instanceof Error ? error.message : "Failed to fetch analytics",
+        );
       } finally {
-        setAnalyticsLoading(false)
+        setAnalyticsLoading(false);
       }
-    }
+    };
 
-    fetchAnalytics()
-  }, [])
+    fetchAnalytics();
+  }, []);
 
   // Use central loading state from useAuth
   if (loading) {
@@ -120,7 +126,7 @@ export default function AdminDashboardPage() {
           <p className="text-gray-600">Loading admin dashboard...</p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -130,12 +136,17 @@ export default function AdminDashboardPage() {
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Link href="/" className="flex items-center text-gray-600 hover:text-primary transition-colors">
+              <Link
+                href="/"
+                className="flex items-center text-gray-600 hover:text-primary transition-colors"
+              >
                 <ArrowLeft className="h-5 w-5 mr-2" />
                 Back to Main Site
               </Link>
               <div className="h-6 w-px bg-gray-300" />
-              <h1 className="text-2xl font-bold text-gray-900">Admin Analytics Dashboard</h1>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Admin Analytics Dashboard
+              </h1>
             </div>
             <Button variant="outline" asChild>
               <Link href="/admin">
@@ -154,11 +165,10 @@ export default function AdminDashboardPage() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold mb-2">
-                    Admin Dashboard
-                  </h2>
+                  <h2 className="text-2xl font-bold mb-2">Admin Dashboard</h2>
                   <p className="text-slate-200">
-                    Monitor platform metrics, user analytics, and system performance.
+                    Monitor platform metrics, user analytics, and system
+                    performance.
                   </p>
                 </div>
                 <Shield className="h-16 w-16 text-slate-300" />
@@ -178,7 +188,9 @@ export default function AdminDashboardPage() {
               {analyticsLoading ? (
                 <div className="flex items-center space-x-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  <span className="text-sm text-muted-foreground">Loading...</span>
+                  <span className="text-sm text-muted-foreground">
+                    Loading...
+                  </span>
                 </div>
               ) : analyticsError ? (
                 <div className="flex items-center space-x-2">
@@ -187,7 +199,9 @@ export default function AdminDashboardPage() {
                 </div>
               ) : (
                 <>
-                  <div className="text-2xl font-bold">{analytics?.totalUsers || 0}</div>
+                  <div className="text-2xl font-bold">
+                    {analytics?.totalUsers || 0}
+                  </div>
                   <p className="text-xs text-muted-foreground">
                     +{analytics?.userGrowthRate || 0}% from last month
                   </p>
@@ -198,14 +212,18 @@ export default function AdminDashboardPage() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Colleges</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Active Colleges
+              </CardTitle>
               <Building className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               {analyticsLoading ? (
                 <div className="flex items-center space-x-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  <span className="text-sm text-muted-foreground">Loading...</span>
+                  <span className="text-sm text-muted-foreground">
+                    Loading...
+                  </span>
                 </div>
               ) : analyticsError ? (
                 <div className="flex items-center space-x-2">
@@ -214,9 +232,12 @@ export default function AdminDashboardPage() {
                 </div>
               ) : (
                 <>
-                  <div className="text-2xl font-bold">{analytics?.totalColleges || 0}</div>
+                  <div className="text-2xl font-bold">
+                    {analytics?.totalColleges || 0}
+                  </div>
                   <p className="text-xs text-muted-foreground">
-                    {analytics?.verifiedColleges || 0} verified, {analytics?.newCollegesThisWeek || 0} new this week
+                    {analytics?.verifiedColleges || 0} verified,{" "}
+                    {analytics?.newCollegesThisWeek || 0} new this week
                   </p>
                 </>
               )}
@@ -225,14 +246,18 @@ export default function AdminDashboardPage() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Quiz Completions</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Quiz Completions
+              </CardTitle>
               <BookOpen className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               {analyticsLoading ? (
                 <div className="flex items-center space-x-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  <span className="text-sm text-muted-foreground">Loading...</span>
+                  <span className="text-sm text-muted-foreground">
+                    Loading...
+                  </span>
                 </div>
               ) : analyticsError ? (
                 <div className="flex items-center space-x-2">
@@ -241,7 +266,9 @@ export default function AdminDashboardPage() {
                 </div>
               ) : (
                 <>
-                  <div className="text-2xl font-bold">{analytics?.completedAssessments || 0}</div>
+                  <div className="text-2xl font-bold">
+                    {analytics?.completedAssessments || 0}
+                  </div>
                   <p className="text-xs text-muted-foreground">
                     Avg score: {analytics?.averageScore || 0}%
                   </p>
@@ -252,14 +279,18 @@ export default function AdminDashboardPage() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">AI Interactions</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                AI Interactions
+              </CardTitle>
               <Activity className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               {analyticsLoading ? (
                 <div className="flex items-center space-x-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  <span className="text-sm text-muted-foreground">Loading...</span>
+                  <span className="text-sm text-muted-foreground">
+                    Loading...
+                  </span>
                 </div>
               ) : analyticsError ? (
                 <div className="flex items-center space-x-2">
@@ -268,7 +299,9 @@ export default function AdminDashboardPage() {
                 </div>
               ) : (
                 <>
-                  <div className="text-2xl font-bold">{analytics?.totalAiInteractions || 0}</div>
+                  <div className="text-2xl font-bold">
+                    {analytics?.totalAiInteractions || 0}
+                  </div>
                   <p className="text-xs text-muted-foreground">
                     {analytics?.aiInteractionsToday || 0} today
                   </p>
@@ -287,7 +320,8 @@ export default function AdminDashboardPage() {
                 Sarthi AI Performance Dashboard
               </CardTitle>
               <CardDescription className="text-blue-700">
-                Monitor AI recommendation accuracy, usage patterns, and user satisfaction for the enhanced career guidance system.
+                Monitor AI recommendation accuracy, usage patterns, and user
+                satisfaction for the enhanced career guidance system.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -302,25 +336,33 @@ export default function AdminDashboardPage() {
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Stream Predictions</span>
                       <span className="font-medium text-green-600">
-                        {analyticsLoading ? '...' : `${analytics?.aiAccuracy?.streamPredictions || 0}%`}
+                        {analyticsLoading
+                          ? "..."
+                          : `${analytics?.aiAccuracy?.streamPredictions || 0}%`}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Career Matching</span>
                       <span className="font-medium text-green-600">
-                        {analyticsLoading ? '...' : `${analytics?.aiAccuracy?.careerMatching || 0}%`}
+                        {analyticsLoading
+                          ? "..."
+                          : `${analytics?.aiAccuracy?.careerMatching || 0}%`}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm">ROI Predictions</span>
                       <span className="font-medium text-blue-600">
-                        {analyticsLoading ? '...' : `${analytics?.aiAccuracy?.roiPredictions || 0}%`}
+                        {analyticsLoading
+                          ? "..."
+                          : `${analytics?.aiAccuracy?.roiPredictions || 0}%`}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Parent Satisfaction</span>
                       <span className="font-medium text-green-600">
-                        {analyticsLoading ? '...' : `${analytics?.aiAccuracy?.parentSatisfaction || 0}%`}
+                        {analyticsLoading
+                          ? "..."
+                          : `${analytics?.aiAccuracy?.parentSatisfaction || 0}%`}
                       </span>
                     </div>
                   </div>
@@ -336,19 +378,25 @@ export default function AdminDashboardPage() {
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Daily Recommendations</span>
                       <span className="font-medium">
-                        {analyticsLoading ? '...' : analytics?.aiInteractionsToday || 0}
+                        {analyticsLoading
+                          ? "..."
+                          : analytics?.aiInteractionsToday || 0}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Total Interactions</span>
                       <span className="font-medium">
-                        {analyticsLoading ? '...' : analytics?.totalAiInteractions || 0}
+                        {analyticsLoading
+                          ? "..."
+                          : analytics?.totalAiInteractions || 0}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Quiz Completions</span>
                       <span className="font-medium">
-                        {analyticsLoading ? '...' : analytics?.completedAssessments || 0}
+                        {analyticsLoading
+                          ? "..."
+                          : analytics?.completedAssessments || 0}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
@@ -368,25 +416,33 @@ export default function AdminDashboardPage() {
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Local College Matches</span>
                       <span className="font-medium">
-                        {analyticsLoading ? '...' : `${analytics?.regionalInsights?.localCollegeMatches || 0}%`}
+                        {analyticsLoading
+                          ? "..."
+                          : `${analytics?.regionalInsights?.localCollegeMatches || 0}%`}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Scholarship Eligibility</span>
                       <span className="font-medium text-green-600">
-                        {analyticsLoading ? '...' : `${analytics?.regionalInsights?.scholarshipEligibility || 0}%`}
+                        {analyticsLoading
+                          ? "..."
+                          : `${analytics?.regionalInsights?.scholarshipEligibility || 0}%`}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Govt. Job Preferences</span>
                       <span className="font-medium">
-                        {analyticsLoading ? '...' : `${analytics?.regionalInsights?.govtJobPreferences || 0}%`}
+                        {analyticsLoading
+                          ? "..."
+                          : `${analytics?.regionalInsights?.govtJobPreferences || 0}%`}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm">Fast Earning Concerns</span>
                       <span className="font-medium text-orange-600">
-                        {analyticsLoading ? '...' : `${analytics?.regionalInsights?.fastEarningConcerns || 0}%`}
+                        {analyticsLoading
+                          ? "..."
+                          : `${analytics?.regionalInsights?.fastEarningConcerns || 0}%`}
                       </span>
                     </div>
                   </div>
@@ -427,51 +483,71 @@ export default function AdminDashboardPage() {
                   <BarChart3 className="h-5 w-5 mr-2" />
                   Platform Usage Analytics
                 </CardTitle>
-                <CardDescription>Key metrics and trends over time</CardDescription>
+                <CardDescription>
+                  Key metrics and trends over time
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium">User Registration Rate</span>
+                      <span className="text-sm font-medium">
+                        User Registration Rate
+                      </span>
                       <span className="text-sm text-green-600">
-                        {analyticsLoading ? '...' : `+${analytics?.platformMetrics?.userRegistrationRate || 0}%`}
+                        {analyticsLoading
+                          ? "..."
+                          : `+${analytics?.platformMetrics?.userRegistrationRate || 0}%`}
                       </span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-green-600 h-2 rounded-full" 
-                        style={{ width: `${Math.min(analytics?.platformMetrics?.userRegistrationRate || 0, 100)}%` }}
+                      <div
+                        className="bg-green-600 h-2 rounded-full"
+                        style={{
+                          width: `${Math.min(analytics?.platformMetrics?.userRegistrationRate || 0, 100)}%`,
+                        }}
                       ></div>
                     </div>
                   </div>
-                  
+
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium">Quiz Completion Rate</span>
+                      <span className="text-sm font-medium">
+                        Quiz Completion Rate
+                      </span>
                       <span className="text-sm text-blue-600">
-                        {analyticsLoading ? '...' : `${analytics?.platformMetrics?.quizCompletionRate || 0}%`}
+                        {analyticsLoading
+                          ? "..."
+                          : `${analytics?.platformMetrics?.quizCompletionRate || 0}%`}
                       </span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-blue-600 h-2 rounded-full" 
-                        style={{ width: `${Math.min(analytics?.platformMetrics?.quizCompletionRate || 0, 100)}%` }}
+                      <div
+                        className="bg-blue-600 h-2 rounded-full"
+                        style={{
+                          width: `${Math.min(analytics?.platformMetrics?.quizCompletionRate || 0, 100)}%`,
+                        }}
                       ></div>
                     </div>
                   </div>
-                  
+
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium">College Verification Rate</span>
+                      <span className="text-sm font-medium">
+                        College Verification Rate
+                      </span>
                       <span className="text-sm text-purple-600">
-                        {analyticsLoading ? '...' : `${analytics?.platformMetrics?.collegeVerificationRate || 0}%`}
+                        {analyticsLoading
+                          ? "..."
+                          : `${analytics?.platformMetrics?.collegeVerificationRate || 0}%`}
                       </span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-purple-600 h-2 rounded-full" 
-                        style={{ width: `${Math.min(analytics?.platformMetrics?.collegeVerificationRate || 0, 100)}%` }}
+                      <div
+                        className="bg-purple-600 h-2 rounded-full"
+                        style={{
+                          width: `${Math.min(analytics?.platformMetrics?.collegeVerificationRate || 0, 100)}%`,
+                        }}
                       ></div>
                     </div>
                   </div>
@@ -484,28 +560,46 @@ export default function AdminDashboardPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Quick Management</CardTitle>
-                <CardDescription>Direct access to admin functions</CardDescription>
+                <CardDescription>
+                  Direct access to admin functions
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button className="w-full justify-start" variant="outline" asChild>
+                <Button
+                  className="w-full justify-start"
+                  variant="outline"
+                  asChild
+                >
                   <Link href="/admin">
                     <Users className="h-4 w-4 mr-2" />
                     Manage Users
                   </Link>
                 </Button>
-                <Button className="w-full justify-start" variant="outline" asChild>
+                <Button
+                  className="w-full justify-start"
+                  variant="outline"
+                  asChild
+                >
                   <Link href="/admin">
                     <Building className="h-4 w-4 mr-2" />
                     Manage Colleges
                   </Link>
                 </Button>
-                <Button className="w-full justify-start" variant="outline" asChild>
+                <Button
+                  className="w-full justify-start"
+                  variant="outline"
+                  asChild
+                >
                   <Link href="/admin">
                     <BookOpen className="h-4 w-4 mr-2" />
                     Content Management
                   </Link>
                 </Button>
-                <Button className="w-full justify-start" variant="outline" asChild>
+                <Button
+                  className="w-full justify-start"
+                  variant="outline"
+                  asChild
+                >
                   <Link href="/admin">
                     <Settings className="h-4 w-4 mr-2" />
                     System Settings
@@ -520,40 +614,59 @@ export default function AdminDashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle>Recent Admin Activity</CardTitle>
-            <CardDescription>Latest administrative actions and system events</CardDescription>
+            <CardDescription>
+              Latest administrative actions and system events
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {analyticsLoading ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="h-6 w-6 animate-spin mr-2" />
-                <span className="text-sm text-muted-foreground">Loading activity...</span>
+                <span className="text-sm text-muted-foreground">
+                  Loading activity...
+                </span>
               </div>
             ) : analyticsError ? (
               <div className="flex items-center justify-center py-8">
                 <AlertCircle className="h-6 w-6 text-red-500 mr-2" />
-                <span className="text-sm text-red-500">Failed to load activity</span>
+                <span className="text-sm text-red-500">
+                  Failed to load activity
+                </span>
               </div>
             ) : (
               <div className="space-y-4">
                 {analytics?.recentActivity?.length ? (
                   analytics.recentActivity.map((activity, index) => (
                     <div key={index} className="flex items-center space-x-3">
-                      <div className={`w-2 h-2 rounded-full ${
-                        activity.action.includes('college') ? 'bg-green-600' :
-                        activity.action.includes('user') ? 'bg-blue-600' :
-                        activity.action.includes('content') ? 'bg-purple-600' :
-                        'bg-orange-600'
-                      }`}></div>
+                      <div
+                        className={`w-2 h-2 rounded-full ${
+                          activity.action.includes("college")
+                            ? "bg-green-600"
+                            : activity.action.includes("user")
+                              ? "bg-blue-600"
+                              : activity.action.includes("content")
+                                ? "bg-purple-600"
+                                : "bg-orange-600"
+                        }`}
+                      ></div>
                       <div>
-                        <p className="text-sm font-medium">{activity.description}</p>
-                        <p className="text-xs text-gray-500">{activity.timeAgo}</p>
+                        <p className="text-sm font-medium">
+                          {activity.description}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {activity.timeAgo}
+                        </p>
                       </div>
                     </div>
                   ))
                 ) : (
                   <div className="text-center py-4">
-                    <p className="text-sm text-gray-500">No recent admin activity</p>
-                    <p className="text-xs text-gray-400 mt-1">Admin actions will appear here</p>
+                    <p className="text-sm text-gray-500">
+                      No recent admin activity
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      Admin actions will appear here
+                    </p>
                   </div>
                 )}
               </div>
@@ -562,5 +675,5 @@ export default function AdminDashboardPage() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

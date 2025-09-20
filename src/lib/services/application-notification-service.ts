@@ -3,71 +3,72 @@
  * Handles notifications for student application status changes
  */
 
-import { createClient } from '@supabase/supabase-js'
-import { Database } from '@/lib/supabase/types'
-import { sendEmailNotification } from './email-notification-service'
+import { createClient } from "@supabase/supabase-js";
+import { Database } from "@/lib/supabase/types";
+import { sendEmailNotification } from "./email-notification-service";
 
 const supabase = createClient<Database>(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+);
 
 export interface ApplicationStatusChangeData {
-  applicationId: string
-  studentId: string
-  collegeId: string
-  collegeName: string
-  studentName: string
-  studentEmail: string
-  oldStatus: 'pending' | 'approved' | 'rejected'
-  newStatus: 'pending' | 'approved' | 'rejected'
-  feedback?: string
-  reviewedBy: string
+  applicationId: string;
+  studentId: string;
+  collegeId: string;
+  collegeName: string;
+  studentName: string;
+  studentEmail: string;
+  oldStatus: "pending" | "approved" | "rejected";
+  newStatus: "pending" | "approved" | "rejected";
+  feedback?: string;
+  reviewedBy: string;
 }
 
 export interface CollegeNotificationData {
-  collegeId: string
-  collegeName: string
-  studentName: string
-  studentEmail: string
-  applicationId: string
-  action: 'new_application' | 'document_updated'
+  collegeId: string;
+  collegeName: string;
+  studentName: string;
+  studentEmail: string;
+  applicationId: string;
+  action: "new_application" | "document_updated";
 }
 
 /**
  * Create in-app notification for student
  */
 export async function createStudentNotification(
-  data: ApplicationStatusChangeData
+  data: ApplicationStatusChangeData,
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const { title, message, type } = generateStudentNotificationContent(data)
+    const { title, message, type } = generateStudentNotificationContent(data);
 
-    const { error } = await supabase
-      .from('notifications')
-      .insert({
-        user_id: data.studentId,
-        title,
-        message,
-        type,
-        data: {
-          application_id: data.applicationId,
-          college_id: data.collegeId,
-          college_name: data.collegeName,
-          status: data.newStatus,
-          feedback: data.feedback
-        }
-      })
+    const { error } = await (supabase as any).from("notifications").insert({
+      user_id: data.studentId,
+      title,
+      message,
+      type,
+      data: {
+        application_id: data.applicationId,
+        college_id: data.collegeId,
+        college_name: data.collegeName,
+        status: data.newStatus,
+        feedback: data.feedback,
+      },
+    } as never);
 
     if (error) {
-      console.error('Error creating student notification:', error)
-      return { success: false, error: error.message }
+      console.error("Error creating student notification:", error);
+      return { success: false, error: error.message };
     }
 
-    return { success: true }
+    return { success: true };
   } catch (error) {
-    console.error('Unexpected error creating student notification:', error)
-    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+    console.error("Unexpected error creating student notification:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
   }
 }
 
@@ -76,12 +77,12 @@ export async function createStudentNotification(
  */
 export async function createCollegeNotification(
   data: CollegeNotificationData,
-  collegeAdminIds: string[]
+  collegeAdminIds: string[],
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const { title, message, type } = generateCollegeNotificationContent(data)
+    const { title, message, type } = generateCollegeNotificationContent(data);
 
-    const notifications = collegeAdminIds.map(adminId => ({
+    const notifications = collegeAdminIds.map((adminId) => ({
       user_id: adminId,
       title,
       message,
@@ -91,23 +92,26 @@ export async function createCollegeNotification(
         college_id: data.collegeId,
         student_name: data.studentName,
         student_email: data.studentEmail,
-        action: data.action
-      }
-    }))
+        action: data.action,
+      },
+    }));
 
     const { error } = await supabase
-      .from('notifications')
-      .insert(notifications)
+      .from("notifications")
+      .insert(notifications as never);
 
     if (error) {
-      console.error('Error creating college notifications:', error)
-      return { success: false, error: error.message }
+      console.error("Error creating college notifications:", error);
+      return { success: false, error: error.message };
     }
 
-    return { success: true }
+    return { success: true };
   } catch (error) {
-    console.error('Unexpected error creating college notifications:', error)
-    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+    console.error("Unexpected error creating college notifications:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
   }
 }
 
@@ -115,20 +119,23 @@ export async function createCollegeNotification(
  * Send email notification to student about status change
  */
 export async function sendStudentEmailNotification(
-  data: ApplicationStatusChangeData
+  data: ApplicationStatusChangeData,
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const { subject, html, text } = generateStudentEmailContent(data)
+    const { subject, html, text } = generateStudentEmailContent(data);
 
     return await sendEmailNotification({
       to: [data.studentEmail],
       subject,
       html,
-      text
-    })
+      text,
+    });
   } catch (error) {
-    console.error('Error sending student email notification:', error)
-    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+    console.error("Error sending student email notification:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
   }
 }
 
@@ -137,24 +144,27 @@ export async function sendStudentEmailNotification(
  */
 export async function sendCollegeEmailNotification(
   data: CollegeNotificationData,
-  collegeEmails: string[]
+  collegeEmails: string[],
 ): Promise<{ success: boolean; error?: string }> {
   try {
     if (collegeEmails.length === 0) {
-      return { success: true }
+      return { success: true };
     }
 
-    const { subject, html, text } = generateCollegeEmailContent(data)
+    const { subject, html, text } = generateCollegeEmailContent(data);
 
     return await sendEmailNotification({
       to: collegeEmails,
       subject,
       html,
-      text
-    })
+      text,
+    });
   } catch (error) {
-    console.error('Error sending college email notification:', error)
-    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+    console.error("Error sending college email notification:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
   }
 }
 
@@ -162,82 +172,89 @@ export async function sendCollegeEmailNotification(
  * Handle complete application status change notification flow
  */
 export async function handleApplicationStatusChange(
-  data: ApplicationStatusChangeData
+  data: ApplicationStatusChangeData,
 ): Promise<{ success: boolean; errors: string[] }> {
-  const errors: string[] = []
+  const errors: string[] = [];
 
   // Create in-app notification for student
-  const studentNotificationResult = await createStudentNotification(data)
+  const studentNotificationResult = await createStudentNotification(data);
   if (!studentNotificationResult.success) {
-    errors.push(`Student notification: ${studentNotificationResult.error}`)
+    errors.push(`Student notification: ${studentNotificationResult.error}`);
   }
 
   // Send email notification to student
-  const studentEmailResult = await sendStudentEmailNotification(data)
+  const studentEmailResult = await sendStudentEmailNotification(data);
   if (!studentEmailResult.success) {
-    errors.push(`Student email: ${studentEmailResult.error}`)
+    errors.push(`Student email: ${studentEmailResult.error}`);
   }
 
   return {
     success: errors.length === 0,
-    errors
-  }
+    errors,
+  };
 }
 
 /**
  * Handle new application notification to college
  */
 export async function handleNewApplicationNotification(
-  data: CollegeNotificationData
+  data: CollegeNotificationData,
 ): Promise<{ success: boolean; errors: string[] }> {
-  const errors: string[] = []
+  const errors: string[] = [];
 
   try {
     // Get college admin user IDs
     const { data: collegeAdmins, error: adminError } = await supabase
-      .from('college_profiles')
-      .select('id')
-      .eq('college_id', data.collegeId)
+      .from("college_profiles")
+      .select("id")
+      .eq("college_id", data.collegeId);
 
     if (adminError) {
-      errors.push(`Failed to get college admins: ${adminError.message}`)
-      return { success: false, errors }
+      errors.push(`Failed to get college admins: ${adminError.message}`);
+      return { success: false, errors };
     }
 
-    const adminIds = collegeAdmins?.map(admin => admin.id) || []
+    const adminIds = collegeAdmins?.map((admin: { id: string }) => admin.id) || [];
 
     if (adminIds.length > 0) {
       // Create in-app notifications for college admins
-      const collegeNotificationResult = await createCollegeNotification(data, adminIds)
+      const collegeNotificationResult = await createCollegeNotification(
+        data,
+        adminIds,
+      );
       if (!collegeNotificationResult.success) {
-        errors.push(`College notification: ${collegeNotificationResult.error}`)
+        errors.push(`College notification: ${collegeNotificationResult.error}`);
       }
     }
 
     // Get college email addresses
     const { data: college, error: collegeError } = await supabase
-      .from('colleges')
-      .select('email')
-      .eq('id', data.collegeId)
-      .single()
+      .from("colleges")
+      .select("email")
+      .eq("id", data.collegeId)
+      .single();
 
     if (collegeError) {
-      errors.push(`Failed to get college email: ${collegeError.message}`)
-    } else if (college?.email) {
+      errors.push(`Failed to get college email: ${collegeError.message}`);
+    } else if ((college as { email?: string })?.email) {
       // Send email notification to college
-      const collegeEmailResult = await sendCollegeEmailNotification(data, [college.email])
+      const collegeEmailResult = await sendCollegeEmailNotification(data, [
+        (college as { email: string }).email,
+      ]);
       if (!collegeEmailResult.success) {
-        errors.push(`College email: ${collegeEmailResult.error}`)
+        errors.push(`College email: ${collegeEmailResult.error}`);
       }
     }
 
     return {
       success: errors.length === 0,
-      errors
-    }
+      errors,
+    };
   } catch (error) {
-    errors.push(`Unexpected error: ${error instanceof Error ? error.message : 'Unknown error'}`)
-    return { success: false, errors }
+    errors.push(
+      `Unexpected error: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
+    return { success: false, errors };
   }
 }
 
@@ -246,30 +263,30 @@ export async function handleNewApplicationNotification(
  */
 function generateStudentNotificationContent(data: ApplicationStatusChangeData) {
   switch (data.newStatus) {
-    case 'approved':
+    case "approved":
       return {
-        title: '🎉 Application Approved!',
-        message: `Congratulations! Your application to ${data.collegeName} has been approved. ${data.feedback ? `Feedback: ${data.feedback}` : 'Please check your email for next steps.'}`,
-        type: 'general' as const
-      }
-    case 'rejected':
+        title: "🎉 Application Approved!",
+        message: `Congratulations! Your application to ${data.collegeName} has been approved. ${data.feedback ? `Feedback: ${data.feedback}` : "Please check your email for next steps."}`,
+        type: "general" as const,
+      };
+    case "rejected":
       return {
-        title: '📋 Application Update',
-        message: `Your application to ${data.collegeName} requires attention. ${data.feedback || 'Please review and update your documents if needed.'}`,
-        type: 'general' as const
-      }
-    case 'pending':
+        title: "📋 Application Update",
+        message: `Your application to ${data.collegeName} requires attention. ${data.feedback || "Please review and update your documents if needed."}`,
+        type: "general" as const,
+      };
+    case "pending":
       return {
-        title: '🔄 Application Under Review',
+        title: "🔄 Application Under Review",
         message: `Your updated application to ${data.collegeName} is now under review. We'll notify you once there's an update.`,
-        type: 'general' as const
-      }
+        type: "general" as const,
+      };
     default:
       return {
-        title: 'Application Status Update',
+        title: "Application Status Update",
         message: `Your application status to ${data.collegeName} has been updated.`,
-        type: 'general' as const
-      }
+        type: "general" as const,
+      };
   }
 }
 
@@ -278,24 +295,24 @@ function generateStudentNotificationContent(data: ApplicationStatusChangeData) {
  */
 function generateCollegeNotificationContent(data: CollegeNotificationData) {
   switch (data.action) {
-    case 'new_application':
+    case "new_application":
       return {
-        title: '📝 New Application Received',
+        title: "📝 New Application Received",
         message: `${data.studentName} (${data.studentEmail}) has submitted a new application to ${data.collegeName}.`,
-        type: 'general' as const
-      }
-    case 'document_updated':
+        type: "general" as const,
+      };
+    case "document_updated":
       return {
-        title: '📄 Application Documents Updated',
+        title: "📄 Application Documents Updated",
         message: `${data.studentName} (${data.studentEmail}) has updated their application documents for ${data.collegeName}.`,
-        type: 'general' as const
-      }
+        type: "general" as const,
+      };
     default:
       return {
-        title: 'Application Update',
+        title: "Application Update",
         message: `There's an update for an application to ${data.collegeName}.`,
-        type: 'general' as const
-      }
+        type: "general" as const,
+      };
   }
 }
 
@@ -303,33 +320,33 @@ function generateCollegeNotificationContent(data: CollegeNotificationData) {
  * Generate email content for student
  */
 function generateStudentEmailContent(data: ApplicationStatusChangeData) {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://pathniti.com'
-  
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://pathniti.com";
+
   switch (data.newStatus) {
-    case 'approved':
+    case "approved":
       return {
         subject: `🎉 Application Approved - ${data.collegeName}`,
         html: generateApprovedEmailHTML(data, baseUrl),
-        text: generateApprovedEmailText(data, baseUrl)
-      }
-    case 'rejected':
+        text: generateApprovedEmailText(data, baseUrl),
+      };
+    case "rejected":
       return {
         subject: `📋 Application Update Required - ${data.collegeName}`,
         html: generateRejectedEmailHTML(data, baseUrl),
-        text: generateRejectedEmailText(data, baseUrl)
-      }
-    case 'pending':
+        text: generateRejectedEmailText(data, baseUrl),
+      };
+    case "pending":
       return {
         subject: `🔄 Application Under Review - ${data.collegeName}`,
         html: generatePendingEmailHTML(data, baseUrl),
-        text: generatePendingEmailText(data, baseUrl)
-      }
+        text: generatePendingEmailText(data, baseUrl),
+      };
     default:
       return {
         subject: `Application Status Update - ${data.collegeName}`,
         html: `<p>Your application status has been updated.</p>`,
-        text: 'Your application status has been updated.'
-      }
+        text: "Your application status has been updated.",
+      };
   }
 }
 
@@ -337,32 +354,35 @@ function generateStudentEmailContent(data: ApplicationStatusChangeData) {
  * Generate email content for college
  */
 function generateCollegeEmailContent(data: CollegeNotificationData) {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://pathniti.com'
-  
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://pathniti.com";
+
   switch (data.action) {
-    case 'new_application':
+    case "new_application":
       return {
         subject: `📝 New Application - ${data.collegeName}`,
         html: generateNewApplicationEmailHTML(data, baseUrl),
-        text: generateNewApplicationEmailText(data, baseUrl)
-      }
-    case 'document_updated':
+        text: generateNewApplicationEmailText(data, baseUrl),
+      };
+    case "document_updated":
       return {
         subject: `📄 Application Documents Updated - ${data.collegeName}`,
         html: generateDocumentUpdatedEmailHTML(data, baseUrl),
-        text: generateDocumentUpdatedEmailText(data, baseUrl)
-      }
+        text: generateDocumentUpdatedEmailText(data, baseUrl),
+      };
     default:
       return {
         subject: `Application Update - ${data.collegeName}`,
         html: `<p>There's an update for an application.</p>`,
-        text: 'There\'s an update for an application.'
-      }
+        text: "There's an update for an application.",
+      };
   }
 }
 
 // Email HTML templates
-function generateApprovedEmailHTML(data: ApplicationStatusChangeData, baseUrl: string): string {
+function generateApprovedEmailHTML(
+  data: ApplicationStatusChangeData,
+  baseUrl: string,
+): string {
   return `
     <!DOCTYPE html>
     <html>
@@ -390,12 +410,16 @@ function generateApprovedEmailHTML(data: ApplicationStatusChangeData, baseUrl: s
           <h2>Dear ${data.studentName},</h2>
           <p>We're excited to inform you that your application to <strong>${data.collegeName}</strong> has been approved!</p>
           
-          ${data.feedback ? `
+          ${
+            data.feedback
+              ? `
             <div class="feedback">
               <strong>Message from ${data.collegeName}:</strong><br>
               ${data.feedback}
             </div>
-          ` : ''}
+          `
+              : ""
+          }
           
           <p>This is a significant step forward in your educational journey. Please check your email regularly for further instructions and next steps.</p>
           
@@ -409,10 +433,13 @@ function generateApprovedEmailHTML(data: ApplicationStatusChangeData, baseUrl: s
       </div>
     </body>
     </html>
-  `
+  `;
 }
 
-function generateApprovedEmailText(data: ApplicationStatusChangeData, baseUrl: string): string {
+function generateApprovedEmailText(
+  data: ApplicationStatusChangeData,
+  baseUrl: string,
+): string {
   return `
 🎉 CONGRATULATIONS! - Your Application Has Been Approved
 
@@ -420,7 +447,7 @@ Dear ${data.studentName},
 
 We're excited to inform you that your application to ${data.collegeName} has been APPROVED!
 
-${data.feedback ? `Message from ${data.collegeName}:\n${data.feedback}\n\n` : ''}
+${data.feedback ? `Message from ${data.collegeName}:\n${data.feedback}\n\n` : ""}
 
 This is a significant step forward in your educational journey. Please check your email regularly for further instructions and next steps.
 
@@ -431,10 +458,13 @@ If you have any questions, please don't hesitate to contact the college directly
 Best wishes for your future studies!
 
 The PathNiti Team
-  `.trim()
+  `.trim();
 }
 
-function generateRejectedEmailHTML(data: ApplicationStatusChangeData, baseUrl: string): string {
+function generateRejectedEmailHTML(
+  data: ApplicationStatusChangeData,
+  baseUrl: string,
+): string {
   return `
     <!DOCTYPE html>
     <html>
@@ -462,12 +492,16 @@ function generateRejectedEmailHTML(data: ApplicationStatusChangeData, baseUrl: s
           <h2>Dear ${data.studentName},</h2>
           <p>Thank you for your application to <strong>${data.collegeName}</strong>. After review, we need you to update some information or documents.</p>
           
-          ${data.feedback ? `
+          ${
+            data.feedback
+              ? `
             <div class="feedback">
               <strong>Feedback from ${data.collegeName}:</strong><br>
               ${data.feedback}
             </div>
-          ` : ''}
+          `
+              : ""
+          }
           
           <p>Don't worry - this is a common part of the application process. Please review the feedback above and update your application accordingly.</p>
           
@@ -483,10 +517,13 @@ function generateRejectedEmailHTML(data: ApplicationStatusChangeData, baseUrl: s
       </div>
     </body>
     </html>
-  `
+  `;
 }
 
-function generateRejectedEmailText(data: ApplicationStatusChangeData, baseUrl: string): string {
+function generateRejectedEmailText(
+  data: ApplicationStatusChangeData,
+  baseUrl: string,
+): string {
   return `
 📋 APPLICATION UPDATE REQUIRED
 
@@ -494,7 +531,7 @@ Dear ${data.studentName},
 
 Thank you for your application to ${data.collegeName}. After review, we need you to update some information or documents.
 
-${data.feedback ? `Feedback from ${data.collegeName}:\n${data.feedback}\n\n` : ''}
+${data.feedback ? `Feedback from ${data.collegeName}:\n${data.feedback}\n\n` : ""}
 
 Don't worry - this is a common part of the application process. Please review the feedback above and update your application accordingly.
 
@@ -506,10 +543,13 @@ If you have any questions about the required updates, please contact the college
 
 Best regards,
 The PathNiti Team
-  `.trim()
+  `.trim();
 }
 
-function generatePendingEmailHTML(data: ApplicationStatusChangeData, baseUrl: string): string {
+function generatePendingEmailHTML(
+  data: ApplicationStatusChangeData,
+  baseUrl: string,
+): string {
   return `
     <!DOCTYPE html>
     <html>
@@ -548,10 +588,13 @@ function generatePendingEmailHTML(data: ApplicationStatusChangeData, baseUrl: st
       </div>
     </body>
     </html>
-  `
+  `;
 }
 
-function generatePendingEmailText(data: ApplicationStatusChangeData, baseUrl: string): string {
+function generatePendingEmailText(
+  data: ApplicationStatusChangeData,
+  baseUrl: string,
+): string {
   return `
 🔄 APPLICATION UNDER REVIEW
 
@@ -567,10 +610,13 @@ Thank you for your patience during the review process.
 
 Best regards,
 The PathNiti Team
-  `.trim()
+  `.trim();
 }
 
-function generateNewApplicationEmailHTML(data: CollegeNotificationData, baseUrl: string): string {
+function generateNewApplicationEmailHTML(
+  data: CollegeNotificationData,
+  baseUrl: string,
+): string {
   return `
     <!DOCTYPE html>
     <html>
@@ -616,10 +662,13 @@ function generateNewApplicationEmailHTML(data: CollegeNotificationData, baseUrl:
       </div>
     </body>
     </html>
-  `
+  `;
 }
 
-function generateNewApplicationEmailText(data: CollegeNotificationData, baseUrl: string): string {
+function generateNewApplicationEmailText(
+  data: CollegeNotificationData,
+  baseUrl: string,
+): string {
   return `
 📝 NEW APPLICATION RECEIVED
 
@@ -639,10 +688,13 @@ We recommend reviewing applications promptly to provide students with timely fee
 
 Best regards,
 The PathNiti Team
-  `.trim()
+  `.trim();
 }
 
-function generateDocumentUpdatedEmailHTML(data: CollegeNotificationData, baseUrl: string): string {
+function generateDocumentUpdatedEmailHTML(
+  data: CollegeNotificationData,
+  baseUrl: string,
+): string {
   return `
     <!DOCTYPE html>
     <html>
@@ -688,10 +740,13 @@ function generateDocumentUpdatedEmailHTML(data: CollegeNotificationData, baseUrl
       </div>
     </body>
     </html>
-  `
+  `;
 }
 
-function generateDocumentUpdatedEmailText(data: CollegeNotificationData, baseUrl: string): string {
+function generateDocumentUpdatedEmailText(
+  data: CollegeNotificationData,
+  baseUrl: string,
+): string {
   return `
 📄 APPLICATION DOCUMENTS UPDATED
 
@@ -711,14 +766,16 @@ The student is waiting for your feedback on their updated submission.
 
 Best regards,
 The PathNiti Team
-  `.trim()
+  `.trim();
 }
 
-export default {
+const applicationNotificationService = {
   createStudentNotification,
   createCollegeNotification,
   sendStudentEmailNotification,
   sendCollegeEmailNotification,
   handleApplicationStatusChange,
-  handleNewApplicationNotification
-}
+  handleNewApplicationNotification,
+};
+
+export default applicationNotificationService;

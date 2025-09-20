@@ -7,6 +7,7 @@ The Student Application System allows students to apply to colleges through thei
 ## Components Implemented
 
 ### 1. StudentApplicationForm Component
+
 - **Location**: `src/components/StudentApplicationForm.tsx`
 - **Features**:
   - Personal information form (name, email, phone, class/stream)
@@ -18,6 +19,7 @@ The Student Application System allows students to apply to colleges through thei
   - Integration with Supabase Storage
 
 ### 2. API Endpoint
+
 - **Location**: `src/app/api/colleges/[slug]/apply/route.ts`
 - **Method**: POST
 - **Features**:
@@ -30,6 +32,7 @@ The Student Application System allows students to apply to colleges through thei
   - Notification system integration
 
 ### 3. File Validation Utilities
+
 - **Location**: `src/lib/utils/file-validation.ts`
 - **Features**:
   - File type validation (PDF, JPEG, PNG)
@@ -39,6 +42,7 @@ The Student Application System allows students to apply to colleges through thei
   - Image/PDF type detection
 
 ### 4. College Profile Integration
+
 - **Location**: `src/app/colleges/[slug]/page.tsx` (modified)
 - **Features**:
   - Application form modal integration
@@ -47,6 +51,7 @@ The Student Application System allows students to apply to colleges through thei
   - Success/error feedback
 
 ### 5. Supabase Storage Setup
+
 - **Location**: `src/lib/setup-storage.sql`
 - **Features**:
   - Storage bucket creation for student documents
@@ -81,6 +86,7 @@ student_applications (
 ## File Storage Structure
 
 Documents are stored in Supabase Storage with the following structure:
+
 ```
 student-documents/
 ├── marksheets/{college_id}/
@@ -94,6 +100,7 @@ student-documents/
 ## Validation Rules
 
 ### Form Validation
+
 - **Full Name**: Required, non-empty string
 - **Email**: Required, valid email format
 - **Phone**: Required, 10-digit Indian mobile number (6-9 prefix)
@@ -103,6 +110,7 @@ student-documents/
 - **Other Documents**: Optional file uploads
 
 ### File Validation
+
 - **Allowed Types**: PDF, JPEG, PNG, JPG
 - **Size Limit**: 5MB per file
 - **Required Documents**: 10th and 12th marksheets must be uploaded
@@ -111,6 +119,7 @@ student-documents/
 ## API Responses
 
 ### Success Response (200)
+
 ```json
 {
   "success": true,
@@ -125,6 +134,7 @@ student-documents/
 ```
 
 ### Error Responses
+
 - **401**: Authentication required
 - **404**: College not found
 - **400**: Validation errors (missing fields, invalid format, missing documents)
@@ -143,11 +153,13 @@ student-documents/
 ## Testing
 
 ### Test Files
+
 - `src/__tests__/student-application-form.test.tsx` - Component unit tests
 - `src/__tests__/student-application-integration.test.tsx` - Integration tests
 - `src/__tests__/api-college-apply.test.ts` - API endpoint tests
 
 ### Test Coverage
+
 - Form rendering and validation
 - File upload functionality
 - API endpoint validation
@@ -157,6 +169,7 @@ student-documents/
 ## Usage
 
 ### For Students
+
 1. Navigate to a college profile page
 2. Click "Apply Now" button (requires student login)
 3. Fill out the application form
@@ -165,15 +178,16 @@ student-documents/
 6. Submit the application
 
 ### For Developers
+
 ```tsx
-import StudentApplicationForm from '@/components/StudentApplicationForm'
+import StudentApplicationForm from "@/components/StudentApplicationForm";
 
 <StudentApplicationForm
   collegeId="college-uuid"
   collegeName="College Name"
-  onSuccess={() => console.log('Application submitted')}
-  onCancel={() => console.log('Application cancelled')}
-/>
+  onSuccess={() => console.log("Application submitted")}
+  onCancel={() => console.log("Application cancelled")}
+/>;
 ```
 
 ## Requirements Fulfilled

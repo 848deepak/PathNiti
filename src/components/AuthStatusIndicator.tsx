@@ -1,24 +1,24 @@
-"use client"
+"use client";
 
-import React from 'react'
-import { useAuth } from '@/app/providers'
-import { Badge } from '@/components/ui/badge'
+import React from "react";
+import { useAuth } from "@/app/providers";
+import { Badge } from "@/components/ui/badge";
 
 interface AuthStatusIndicatorProps {
-  showRole?: boolean
-  showEmail?: boolean
-  className?: string
+  showRole?: boolean;
+  showEmail?: boolean;
+  className?: string;
 }
 
 /**
  * Component that displays the current authentication status
  */
-export function AuthStatusIndicator({ 
-  showRole = true, 
+export function AuthStatusIndicator({
+  showRole = true,
   showEmail = false,
-  className = ""
+  className = "",
 }: AuthStatusIndicatorProps) {
-  const { user, profile, loading } = useAuth()
+  const { user, profile, loading } = useAuth();
 
   if (loading) {
     return (
@@ -27,7 +27,7 @@ export function AuthStatusIndicator({
           <div className="h-4 bg-gray-200 rounded w-20"></div>
         </div>
       </div>
-    )
+    );
   }
 
   if (!user || !profile) {
@@ -35,7 +35,7 @@ export function AuthStatusIndicator({
       <div className={`flex items-center space-x-2 ${className}`}>
         <Badge variant="secondary">Not Authenticated</Badge>
       </div>
-    )
+    );
   }
 
   return (
@@ -50,24 +50,30 @@ export function AuthStatusIndicator({
         <span className="text-sm text-gray-600">{user.email}</span>
       )}
     </div>
-  )
+  );
 }
 
 /**
  * Simple loading component for authentication states
  */
-export function AuthLoadingSpinner({ size = "default" }: { size?: "sm" | "default" | "lg" }) {
+export function AuthLoadingSpinner({
+  size = "default",
+}: {
+  size?: "sm" | "default" | "lg";
+}) {
   const sizeClasses = {
     sm: "h-4 w-4",
-    default: "h-8 w-8", 
-    lg: "h-12 w-12"
-  }
+    default: "h-8 w-8",
+    lg: "h-12 w-12",
+  };
 
   return (
     <div className="flex items-center justify-center">
-      <div className={`animate-spin rounded-full border-b-2 border-gray-900 ${sizeClasses[size]}`}></div>
+      <div
+        className={`animate-spin rounded-full border-b-2 border-gray-900 ${sizeClasses[size]}`}
+      ></div>
     </div>
-  )
+  );
 }
 
 /**
@@ -81,46 +87,52 @@ export function AuthPageLoading() {
         <p className="mt-4 text-gray-600">Checking authentication...</p>
       </div>
     </div>
-  )
+  );
 }
 
 /**
  * Component that shows different content based on authentication state
  */
 interface AuthGateProps {
-  children: React.ReactNode
-  fallback?: React.ReactNode
-  loadingFallback?: React.ReactNode
-  requireRole?: 'student' | 'admin' | 'college'
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
+  loadingFallback?: React.ReactNode;
+  requireRole?: "student" | "admin" | "college";
 }
 
-export function AuthGate({ 
-  children, 
-  fallback, 
+export function AuthGate({
+  children,
+  fallback,
   loadingFallback,
-  requireRole 
+  requireRole,
 }: AuthGateProps) {
-  const { user, profile, loading, hasRole } = useAuth()
+  const { user, profile, loading, hasRole } = useAuth();
 
   if (loading) {
-    return loadingFallback || <AuthLoadingSpinner />
+    return loadingFallback || <AuthLoadingSpinner />;
   }
 
   if (!user || !profile) {
-    return fallback || (
-      <div className="text-center py-8">
-        <p className="text-gray-600">Please log in to view this content.</p>
-      </div>
-    )
+    return (
+      fallback || (
+        <div className="text-center py-8">
+          <p className="text-gray-600">Please log in to view this content.</p>
+        </div>
+      )
+    );
   }
 
   if (requireRole && !hasRole(requireRole)) {
-    return fallback || (
-      <div className="text-center py-8">
-        <p className="text-gray-600">You don't have permission to view this content.</p>
-      </div>
-    )
+    return (
+      fallback || (
+        <div className="text-center py-8">
+          <p className="text-gray-600">
+            You don&apos;t have permission to view this content.
+          </p>
+        </div>
+      )
+    );
   }
 
-  return <>{children}</>
+  return <>{children}</>;
 }

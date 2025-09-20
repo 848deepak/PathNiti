@@ -102,6 +102,7 @@ CREATE TABLE public.colleges_enhanced (
 ### **Question Management**
 
 #### **Generate Questions**
+
 ```http
 POST /api/questions/generate
 Content-Type: application/json
@@ -114,6 +115,7 @@ Content-Type: application/json
 ```
 
 #### **Get Questions**
+
 ```http
 GET /api/questions/generate?grade=10&subject=mathematics&difficulty=medium&limit=50
 ```
@@ -121,6 +123,7 @@ GET /api/questions/generate?grade=10&subject=mathematics&difficulty=medium&limit
 ### **Test Generation**
 
 #### **Generate Test**
+
 ```http
 POST /api/tests/generate
 Content-Type: application/json
@@ -141,6 +144,7 @@ Content-Type: application/json
 ```
 
 #### **Submit Test**
+
 ```http
 POST /api/tests/submit
 Content-Type: application/json
@@ -161,6 +165,7 @@ Content-Type: application/json
 ### **Admin Management**
 
 #### **Approve Questions**
+
 ```http
 PATCH /api/admin/questions
 Content-Type: application/json
@@ -173,6 +178,7 @@ Content-Type: application/json
 ```
 
 #### **Verify Colleges**
+
 ```http
 PATCH /api/admin/colleges
 Content-Type: application/json
@@ -185,6 +191,7 @@ Content-Type: application/json
 ```
 
 #### **Setup System**
+
 ```http
 POST /api/admin/setup-system
 Content-Type: application/json
@@ -197,33 +204,39 @@ Content-Type: application/json
 ## 📝 **Question Types Supported**
 
 ### **1. MCQ Single Select**
+
 - Single correct answer
 - 2-6 options
 - Time: 30-60 seconds
 - Marks: 1-2
 
 ### **2. MCQ Multi Select**
+
 - Multiple correct answers
 - 2-6 options
 - Time: 60-90 seconds
 - Marks: 2-3
 
 ### **3. Short Answer**
+
 - 1-3 line responses
 - Time: 60-120 seconds
 - Marks: 2-3
 
 ### **4. Long Answer**
+
 - 4-6 line explanations
 - Time: 120-300 seconds
 - Marks: 4-6
 
 ### **5. Numerical Problems**
+
 - Step-by-step solutions
 - Time: 90-180 seconds
 - Marks: 3-5
 
 ### **6. Diagram/Label**
+
 - Science diagrams
 - Time: 120-180 seconds
 - Marks: 3-4
@@ -231,11 +244,13 @@ Content-Type: application/json
 ## 🎯 **Test Generation Rules**
 
 ### **Difficulty Distribution**
+
 - **Easy**: 40% (30-50% range)
 - **Medium**: 40% (30-50% range)
 - **Hard**: 20% (10-30% range)
 
 ### **Question Type Distribution**
+
 - **MCQ Single**: 50%
 - **MCQ Multi**: 10%
 - **Short Answer**: 20%
@@ -244,6 +259,7 @@ Content-Type: application/json
 - **Diagram**: 2%
 
 ### **Time Allocation**
+
 - **Total Test Time**: 90 minutes (default)
 - **Buffer Time**: 20% of calculated time
 - **Per Question**: Based on question type and difficulty
@@ -251,6 +267,7 @@ Content-Type: application/json
 ## 🔍 **Quality Validation**
 
 ### **Question Validation**
+
 - ✅ Text not empty
 - ✅ Proper punctuation
 - ✅ Appropriate reading level
@@ -259,6 +276,7 @@ Content-Type: application/json
 - ✅ Correct marks allocation
 
 ### **Test Validation**
+
 - ✅ Difficulty distribution within limits
 - ✅ Question type distribution balanced
 - ✅ Total time reasonable
@@ -268,11 +286,13 @@ Content-Type: application/json
 ## 🏫 **College Data Migration**
 
 ### **Replaced Mock Data**
+
 - ❌ Hardcoded college lists in frontend
 - ❌ Static college data in components
 - ❌ Mock API responses
 
 ### **Database-Driven Data**
+
 - ✅ Real college information
 - ✅ Verified college data
 - ✅ Admin approval workflow
@@ -281,12 +301,14 @@ Content-Type: application/json
 ## 🛠️ **Setup Instructions**
 
 ### **1. Database Setup**
+
 ```bash
 # Apply the new schema
 psql -d your_database -f src/lib/question-bank-schema.sql
 ```
 
 ### **2. System Initialization**
+
 ```bash
 # Setup the complete system
 curl -X POST http://localhost:3000/api/admin/setup-system \
@@ -295,6 +317,7 @@ curl -X POST http://localhost:3000/api/admin/setup-system \
 ```
 
 ### **3. Generate Sample Questions**
+
 ```bash
 # Generate questions for Grade 10 Mathematics
 curl -X POST http://localhost:3000/api/questions/generate \
@@ -305,54 +328,58 @@ curl -X POST http://localhost:3000/api/questions/generate \
 ## 📈 **Usage Examples**
 
 ### **Generate Stream Assessment Test**
+
 ```javascript
-const response = await fetch('/api/tests/generate', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
+const response = await fetch("/api/tests/generate", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
-    student_id: 'student-uuid',
+    student_id: "student-uuid",
     grade: 10,
-    test_type: 'stream_assessment',
+    test_type: "stream_assessment",
     total_questions: 50,
-    time_limit: 90
-  })
+    time_limit: 90,
+  }),
 });
 
 const { test } = await response.json();
-console.log('Generated test:', test);
+console.log("Generated test:", test);
 ```
 
 ### **Submit Test Responses**
+
 ```javascript
-const response = await fetch('/api/tests/submit', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
+const response = await fetch("/api/tests/submit", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
-    test_id: 'test-uuid',
-    student_id: 'student-uuid',
+    test_id: "test-uuid",
+    student_id: "student-uuid",
     responses: [
       {
-        question_id: 'question-uuid',
-        answer: 'option_a',
-        response_time_seconds: 45
-      }
-    ]
-  })
+        question_id: "question-uuid",
+        answer: "option_a",
+        response_time_seconds: 45,
+      },
+    ],
+  }),
 });
 
 const { metrics } = await response.json();
-console.log('Test metrics:', metrics);
+console.log("Test metrics:", metrics);
 ```
 
 ## 🔒 **Security Features**
 
 ### **Row Level Security (RLS)**
+
 - Students can only view their own tests
 - Students can only view active questions
 - Admins can manage all content
 - College admins can update their own college
 
 ### **Authentication**
+
 - All admin endpoints require authentication
 - Role-based access control
 - API key validation for external access
@@ -360,6 +387,7 @@ console.log('Test metrics:', metrics);
 ## 📊 **Monitoring and Analytics**
 
 ### **Test Metrics**
+
 - Accuracy percentage
 - Average response time
 - Speed score
@@ -367,6 +395,7 @@ console.log('Test metrics:', metrics);
 - Subject-wise performance
 
 ### **Question Analytics**
+
 - Usage frequency
 - Difficulty effectiveness
 - Student performance
@@ -413,6 +442,7 @@ console.log('Test metrics:', metrics);
 ## 📞 **Support**
 
 For technical support or questions about the system:
+
 - Check the API documentation
 - Review the database schema
 - Test with sample data first

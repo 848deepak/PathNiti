@@ -1,29 +1,42 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui"
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui";
 
 interface AuthPerformanceMonitorProps {
-  showInProduction?: boolean
+  showInProduction?: boolean;
 }
 
-export function AuthPerformanceMonitor({ showInProduction = false }: AuthPerformanceMonitorProps) {
-  const [mounted, setMounted] = useState(false)
-  
+export function AuthPerformanceMonitor({
+  showInProduction = false,
+}: AuthPerformanceMonitorProps) {
+  const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
   // Only show in development unless explicitly enabled for production
-  if (!mounted || (process.env.NODE_ENV === 'production' && !showInProduction)) {
-    return null
+  if (
+    !mounted ||
+    (process.env.NODE_ENV === "production" && !showInProduction)
+  ) {
+    return null;
   }
 
   return (
     <div className="fixed bottom-4 right-4 z-50 max-w-sm">
       <Card className="bg-white/95 backdrop-blur-sm border shadow-lg">
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium">Auth Performance</CardTitle>
+          <CardTitle className="text-sm font-medium">
+            Auth Performance
+          </CardTitle>
           <CardDescription className="text-xs">
             Development Mode Monitor
           </CardDescription>
@@ -38,7 +51,7 @@ export function AuthPerformanceMonitor({ showInProduction = false }: AuthPerform
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
 
-export default AuthPerformanceMonitor
+export default AuthPerformanceMonitor;

@@ -27,7 +27,7 @@ class UsageMonitor {
    */
   canMakeRequest(): boolean {
     const now = Date.now();
-    
+
     // Reset daily counter if it's a new day
     const today = new Date().toDateString();
     const lastRequestDate = new Date(this.stats.lastRequestTime).toDateString();
@@ -43,12 +43,14 @@ class UsageMonitor {
 
     // Check limits
     if (this.stats.requestsToday >= this.stats.dailyLimit) {
-      console.warn('Daily API limit reached. Using fallback recommendations.');
+      console.warn("Daily API limit reached. Using fallback recommendations.");
       return false;
     }
 
     if (this.stats.requestsThisMinute >= this.stats.perMinuteLimit) {
-      console.warn('Per-minute API limit reached. Using fallback recommendations.');
+      console.warn(
+        "Per-minute API limit reached. Using fallback recommendations.",
+      );
       return false;
     }
 
@@ -82,15 +84,11 @@ class UsageMonitor {
    * Check if we're approaching limits
    */
   isApproachingLimit(): boolean {
-    const dailyUsagePercent = (this.stats.requestsToday / this.stats.dailyLimit) * 100;
+    const dailyUsagePercent =
+      (this.stats.requestsToday / this.stats.dailyLimit) * 100;
     return dailyUsagePercent > 80; // Warning at 80% usage
   }
 }
 
 // Export singleton instance
 export const usageMonitor = new UsageMonitor();
-
-
-
-
-

@@ -14,15 +14,10 @@
     },
     "user_profile": {
       "age": 25,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -40,15 +35,10 @@
     },
     "user_profile": {
       "age": 23,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -66,15 +56,10 @@
     },
     "user_profile": {
       "age": 21,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -92,15 +77,10 @@
     },
     "user_profile": {
       "age": 22,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -118,15 +98,10 @@
     },
     "user_profile": {
       "age": 22,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -144,15 +119,10 @@
     },
     "user_profile": {
       "age": 21,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -170,15 +140,10 @@
     },
     "user_profile": {
       "age": 19,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -196,15 +161,10 @@
     },
     "user_profile": {
       "age": 24,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -222,15 +182,10 @@
     },
     "user_profile": {
       "age": 16,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -248,15 +203,10 @@
     },
     "user_profile": {
       "age": 21,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -274,15 +224,10 @@
     },
     "user_profile": {
       "age": 19,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -300,15 +245,10 @@
     },
     "user_profile": {
       "age": 25,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -326,15 +266,10 @@
     },
     "user_profile": {
       "age": 24,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -352,15 +287,10 @@
     },
     "user_profile": {
       "age": 23,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -378,15 +308,10 @@
     },
     "user_profile": {
       "age": 24,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -404,15 +329,10 @@
     },
     "user_profile": {
       "age": 21,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -430,15 +350,10 @@
     },
     "user_profile": {
       "age": 22,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -456,15 +371,10 @@
     },
     "user_profile": {
       "age": 18,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -482,15 +392,10 @@
     },
     "user_profile": {
       "age": 20,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -508,15 +413,10 @@
     },
     "user_profile": {
       "age": 21,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -534,15 +434,10 @@
     },
     "user_profile": {
       "age": 20,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -560,15 +455,10 @@
     },
     "user_profile": {
       "age": 20,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -586,15 +476,10 @@
     },
     "user_profile": {
       "age": 18,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -612,15 +497,10 @@
     },
     "user_profile": {
       "age": 21,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -638,15 +518,10 @@
     },
     "user_profile": {
       "age": 24,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -664,15 +539,10 @@
     },
     "user_profile": {
       "age": 18,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -690,15 +560,10 @@
     },
     "user_profile": {
       "age": 21,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -716,15 +581,10 @@
     },
     "user_profile": {
       "age": 24,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -742,15 +602,10 @@
     },
     "user_profile": {
       "age": 19,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -768,15 +623,10 @@
     },
     "user_profile": {
       "age": 23,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -794,15 +644,10 @@
     },
     "user_profile": {
       "age": 22,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -820,15 +665,10 @@
     },
     "user_profile": {
       "age": 17,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -846,15 +686,10 @@
     },
     "user_profile": {
       "age": 22,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -872,15 +707,10 @@
     },
     "user_profile": {
       "age": 25,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -898,15 +728,10 @@
     },
     "user_profile": {
       "age": 21,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -924,15 +749,10 @@
     },
     "user_profile": {
       "age": 16,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -950,15 +770,10 @@
     },
     "user_profile": {
       "age": 19,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -976,15 +791,10 @@
     },
     "user_profile": {
       "age": 23,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1002,15 +812,10 @@
     },
     "user_profile": {
       "age": 21,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1028,15 +833,10 @@
     },
     "user_profile": {
       "age": 19,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1054,15 +854,10 @@
     },
     "user_profile": {
       "age": 23,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1080,15 +875,10 @@
     },
     "user_profile": {
       "age": 20,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1106,15 +896,10 @@
     },
     "user_profile": {
       "age": 17,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1132,15 +917,10 @@
     },
     "user_profile": {
       "age": 17,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1158,15 +938,10 @@
     },
     "user_profile": {
       "age": 17,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1184,15 +959,10 @@
     },
     "user_profile": {
       "age": 17,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1210,15 +980,10 @@
     },
     "user_profile": {
       "age": 25,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1236,15 +1001,10 @@
     },
     "user_profile": {
       "age": 24,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1262,15 +1022,10 @@
     },
     "user_profile": {
       "age": 20,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1288,15 +1043,10 @@
     },
     "user_profile": {
       "age": 23,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1314,15 +1064,10 @@
     },
     "user_profile": {
       "age": 22,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1340,15 +1085,10 @@
     },
     "user_profile": {
       "age": 22,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1366,15 +1106,10 @@
     },
     "user_profile": {
       "age": 20,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1392,15 +1127,10 @@
     },
     "user_profile": {
       "age": 16,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1418,15 +1148,10 @@
     },
     "user_profile": {
       "age": 17,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1444,15 +1169,10 @@
     },
     "user_profile": {
       "age": 20,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1470,15 +1190,10 @@
     },
     "user_profile": {
       "age": 25,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1496,15 +1211,10 @@
     },
     "user_profile": {
       "age": 16,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1522,15 +1232,10 @@
     },
     "user_profile": {
       "age": 25,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1548,15 +1253,10 @@
     },
     "user_profile": {
       "age": 21,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1574,15 +1274,10 @@
     },
     "user_profile": {
       "age": 16,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1600,15 +1295,10 @@
     },
     "user_profile": {
       "age": 17,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1626,15 +1316,10 @@
     },
     "user_profile": {
       "age": 22,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1652,15 +1337,10 @@
     },
     "user_profile": {
       "age": 16,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1678,15 +1358,10 @@
     },
     "user_profile": {
       "age": 22,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1704,15 +1379,10 @@
     },
     "user_profile": {
       "age": 19,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1730,15 +1400,10 @@
     },
     "user_profile": {
       "age": 24,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1756,15 +1421,10 @@
     },
     "user_profile": {
       "age": 24,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1782,15 +1442,10 @@
     },
     "user_profile": {
       "age": 22,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1808,15 +1463,10 @@
     },
     "user_profile": {
       "age": 18,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1834,15 +1484,10 @@
     },
     "user_profile": {
       "age": 25,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1860,15 +1505,10 @@
     },
     "user_profile": {
       "age": 17,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1886,15 +1526,10 @@
     },
     "user_profile": {
       "age": 17,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1912,15 +1547,10 @@
     },
     "user_profile": {
       "age": 23,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1938,15 +1568,10 @@
     },
     "user_profile": {
       "age": 22,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1964,15 +1589,10 @@
     },
     "user_profile": {
       "age": 25,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -1990,15 +1610,10 @@
     },
     "user_profile": {
       "age": 19,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -2016,15 +1631,10 @@
     },
     "user_profile": {
       "age": 19,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -2042,15 +1652,10 @@
     },
     "user_profile": {
       "age": 24,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -2068,15 +1673,10 @@
     },
     "user_profile": {
       "age": 23,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -2094,15 +1694,10 @@
     },
     "user_profile": {
       "age": 22,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -2120,15 +1715,10 @@
     },
     "user_profile": {
       "age": 24,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -2146,15 +1736,10 @@
     },
     "user_profile": {
       "age": 23,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -2172,15 +1757,10 @@
     },
     "user_profile": {
       "age": 22,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -2198,15 +1778,10 @@
     },
     "user_profile": {
       "age": 22,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -2224,15 +1799,10 @@
     },
     "user_profile": {
       "age": 22,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -2250,15 +1820,10 @@
     },
     "user_profile": {
       "age": 25,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -2276,15 +1841,10 @@
     },
     "user_profile": {
       "age": 24,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -2302,15 +1862,10 @@
     },
     "user_profile": {
       "age": 19,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -2328,15 +1883,10 @@
     },
     "user_profile": {
       "age": 25,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -2354,15 +1904,10 @@
     },
     "user_profile": {
       "age": 24,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -2380,15 +1925,10 @@
     },
     "user_profile": {
       "age": 25,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -2406,15 +1946,10 @@
     },
     "user_profile": {
       "age": 20,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -2432,15 +1967,10 @@
     },
     "user_profile": {
       "age": 23,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -2458,15 +1988,10 @@
     },
     "user_profile": {
       "age": 17,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -2484,15 +2009,10 @@
     },
     "user_profile": {
       "age": 22,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -2510,15 +2030,10 @@
     },
     "user_profile": {
       "age": 25,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -2536,15 +2051,10 @@
     },
     "user_profile": {
       "age": 21,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -2562,15 +2072,10 @@
     },
     "user_profile": {
       "age": 20,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   },
   {
@@ -2588,15 +2093,10 @@
     },
     "user_profile": {
       "age": 24,
-      "interests": [
-        "technology"
-      ]
+      "interests": ["technology"]
     },
     "recommendation_data": {
-      "recommendations": [
-        "Software Engineer",
-        "Data Scientist"
-      ]
+      "recommendations": ["Software Engineer", "Data Scientist"]
     }
   }
 ]

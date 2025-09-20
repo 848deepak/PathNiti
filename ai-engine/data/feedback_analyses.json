@@ -25,9 +25,7 @@
     "total_feedback": 9,
     "average_rating": 3.6666666666666665,
     "sentiment_score": 0.5333333333333333,
-    "common_issues": [
-      "Performance Issues"
-    ],
+    "common_issues": ["Performance Issues"],
     "improvement_suggestions": [
       "User satisfaction is moderate - focus on key pain points",
       "Optimize system performance and reduce loading times",
@@ -43,10 +41,7 @@
     "total_feedback": 13,
     "average_rating": 3.076923076923077,
     "sentiment_score": 0.2269230769230769,
-    "common_issues": [
-      "High number of low ratings",
-      "Missing Information"
-    ],
+    "common_issues": ["High number of low ratings", "Missing Information"],
     "improvement_suggestions": [
       "User satisfaction is moderate - focus on key pain points",
       "Expand content and information coverage",
@@ -62,9 +57,7 @@
     "total_feedback": 11,
     "average_rating": 3.4545454545454546,
     "sentiment_score": 0.4590909090909091,
-    "common_issues": [
-      "Missing Information"
-    ],
+    "common_issues": ["Missing Information"],
     "improvement_suggestions": [
       "User satisfaction is moderate - focus on key pain points",
       "Expand content and information coverage",

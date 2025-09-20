@@ -2,42 +2,57 @@
  * Comprehensive loading states and user feedback components
  */
 
-import React from 'react'
-import { Loader2, CheckCircle, AlertCircle, Upload, Download, RefreshCw } from 'lucide-react'
-import { Button } from './button'
-import { Progress } from './progress'
-import { Alert, AlertDescription } from './alert'
-import { Card } from './card'
+import React from "react";
+import {
+  Loader2,
+  CheckCircle,
+  AlertCircle,
+  Upload,
+  RefreshCw,
+} from "lucide-react";
+import { Button } from "./button";
+import { Progress } from "./progress";
+import { Alert, AlertDescription } from "./alert";
+import { Card } from "./card";
 
 interface LoadingSpinnerProps {
-  size?: 'sm' | 'md' | 'lg'
-  className?: string
-  text?: string
+  size?: "sm" | "md" | "lg";
+  className?: string;
+  text?: string;
 }
 
-export function LoadingSpinner({ size = 'md', className = '', text }: LoadingSpinnerProps) {
+export function LoadingSpinner({
+  size = "md",
+  className = "",
+  text,
+}: LoadingSpinnerProps) {
   const sizeClasses = {
-    sm: 'h-4 w-4',
-    md: 'h-6 w-6',
-    lg: 'h-8 w-8'
-  }
+    sm: "h-4 w-4",
+    md: "h-6 w-6",
+    lg: "h-8 w-8",
+  };
 
   return (
     <div className={`flex items-center justify-center space-x-2 ${className}`}>
       <Loader2 className={`animate-spin ${sizeClasses[size]}`} />
       {text && <span className="text-sm text-gray-600">{text}</span>}
     </div>
-  )
+  );
 }
 
 interface LoadingOverlayProps {
-  isLoading: boolean
-  text?: string
-  children: React.ReactNode
-  className?: string
+  isLoading: boolean;
+  text?: string;
+  children: React.ReactNode;
+  className?: string;
 }
 
-export function LoadingOverlay({ isLoading, text, children, className = '' }: LoadingOverlayProps) {
+export function LoadingOverlay({
+  isLoading,
+  text,
+  children,
+  className = "",
+}: LoadingOverlayProps) {
   return (
     <div className={`relative ${className}`}>
       {children}
@@ -45,114 +60,131 @@ export function LoadingOverlay({ isLoading, text, children, className = '' }: Lo
         <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-lg p-6 flex flex-col items-center space-y-3">
             <LoadingSpinner size="lg" />
-            {text && <p className="text-sm text-gray-600 text-center">{text}</p>}
+            {text && (
+              <p className="text-sm text-gray-600 text-center">{text}</p>
+            )}
           </div>
         </div>
       )}
     </div>
-  )
+  );
 }
 
 interface ProgressLoaderProps {
-  progress: number
-  text?: string
-  subText?: string
-  className?: string
+  progress: number;
+  text?: string;
+  subText?: string;
+  className?: string;
 }
 
-export function ProgressLoader({ progress, text, subText, className = '' }: ProgressLoaderProps) {
+export function ProgressLoader({
+  progress,
+  text,
+  subText,
+  className = "",
+}: ProgressLoaderProps) {
   return (
     <div className={`space-y-3 ${className}`}>
       {text && <p className="text-sm font-medium text-gray-900">{text}</p>}
       <Progress value={progress} className="w-full" />
       <div className="flex justify-between items-center text-xs text-gray-500">
-        <span>{subText || 'Loading...'}</span>
+        <span>{subText || "Loading..."}</span>
         <span>{Math.round(progress)}%</span>
       </div>
     </div>
-  )
+  );
 }
 
 interface FileUploadProgressProps {
   files: Array<{
-    name: string
-    progress: number
-    status: 'uploading' | 'completed' | 'error'
-    error?: string
-  }>
-  className?: string
+    name: string;
+    progress: number;
+    status: "uploading" | "completed" | "error";
+    error?: string;
+  }>;
+  className?: string;
 }
 
-export function FileUploadProgress({ files, className = '' }: FileUploadProgressProps) {
+export function FileUploadProgress({
+  files,
+  className = "",
+}: FileUploadProgressProps) {
   return (
     <div className={`space-y-3 ${className}`}>
       {files.map((file, index) => (
         <div key={index} className="border rounded-lg p-3">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center space-x-2">
-              {file.status === 'uploading' && <Upload className="h-4 w-4 text-blue-500" />}
-              {file.status === 'completed' && <CheckCircle className="h-4 w-4 text-green-500" />}
-              {file.status === 'error' && <AlertCircle className="h-4 w-4 text-red-500" />}
+              {file.status === "uploading" && (
+                <Upload className="h-4 w-4 text-blue-500" />
+              )}
+              {file.status === "completed" && (
+                <CheckCircle className="h-4 w-4 text-green-500" />
+              )}
+              {file.status === "error" && (
+                <AlertCircle className="h-4 w-4 text-red-500" />
+              )}
               <span className="text-sm font-medium truncate">{file.name}</span>
             </div>
             <span className="text-xs text-gray-500">
-              {file.status === 'completed' && 'Complete'}
-              {file.status === 'uploading' && `${Math.round(file.progress)}%`}
-              {file.status === 'error' && 'Failed'}
+              {file.status === "completed" && "Complete"}
+              {file.status === "uploading" && `${Math.round(file.progress)}%`}
+              {file.status === "error" && "Failed"}
             </span>
           </div>
-          
-          {file.status === 'uploading' && (
+
+          {file.status === "uploading" && (
             <Progress value={file.progress} className="w-full h-2" />
           )}
-          
-          {file.status === 'error' && file.error && (
+
+          {file.status === "error" && file.error && (
             <p className="text-xs text-red-600 mt-1">{file.error}</p>
           )}
         </div>
       ))}
     </div>
-  )
+  );
 }
 
 interface SkeletonProps {
-  className?: string
-  variant?: 'text' | 'rectangular' | 'circular'
-  width?: string | number
-  height?: string | number
+  className?: string;
+  variant?: "text" | "rectangular" | "circular";
+  width?: string | number;
+  height?: string | number;
 }
 
-export function Skeleton({ 
-  className = '', 
-  variant = 'rectangular',
+export function Skeleton({
+  className = "",
+  variant = "rectangular",
   width,
-  height 
+  height,
 }: SkeletonProps) {
-  const baseClasses = 'animate-pulse bg-gray-200'
-  
-  const variantClasses = {
-    text: 'rounded h-4',
-    rectangular: 'rounded',
-    circular: 'rounded-full'
-  }
+  const baseClasses = "animate-pulse bg-gray-200";
 
-  const style: React.CSSProperties = {}
-  if (width) style.width = typeof width === 'number' ? `${width}px` : width
-  if (height) style.height = typeof height === 'number' ? `${height}px` : height
+  const variantClasses = {
+    text: "rounded h-4",
+    rectangular: "rounded",
+    circular: "rounded-full",
+  };
+
+  const style: React.CSSProperties = {};
+  if (width) style.width = typeof width === "number" ? `${width}px` : width;
+  if (height)
+    style.height = typeof height === "number" ? `${height}px` : height;
 
   return (
-    <div 
+    <div
       className={`${baseClasses} ${variantClasses[variant]} ${className}`}
       style={style}
     />
-  )
+  );
 }
 
 interface CardSkeletonProps {
-  className?: string
+  className?: string;
 }
 
-export function CardSkeleton({ className = '' }: CardSkeletonProps) {
+export function CardSkeleton({ className = "" }: CardSkeletonProps) {
   return (
     <Card className={`p-6 ${className}`}>
       <div className="space-y-4">
@@ -169,15 +201,18 @@ export function CardSkeleton({ className = '' }: CardSkeletonProps) {
         </div>
       </div>
     </Card>
-  )
+  );
 }
 
 interface FormSkeletonProps {
-  fields?: number
-  className?: string
+  fields?: number;
+  className?: string;
 }
 
-export function FormSkeleton({ fields = 5, className = '' }: FormSkeletonProps) {
+export function FormSkeleton({
+  fields = 5,
+  className = "",
+}: FormSkeletonProps) {
   return (
     <div className={`space-y-6 ${className}`}>
       {Array.from({ length: fields }).map((_, index) => (
@@ -191,51 +226,63 @@ export function FormSkeleton({ fields = 5, className = '' }: FormSkeletonProps) 
         <Skeleton variant="rectangular" width={80} height={40} />
       </div>
     </div>
-  )
+  );
 }
 
 interface OperationStatusProps {
-  status: 'idle' | 'loading' | 'success' | 'error'
-  loadingText?: string
-  successText?: string
-  errorText?: string
-  onRetry?: () => void
-  className?: string
+  status: "idle" | "loading" | "success" | "error";
+  loadingText?: string;
+  successText?: string;
+  errorText?: string;
+  onRetry?: () => void;
+  className?: string;
 }
 
 export function OperationStatus({
   status,
-  loadingText = 'Processing...',
-  successText = 'Operation completed successfully',
-  errorText = 'Operation failed',
+  loadingText = "Processing...",
+  successText = "Operation completed successfully",
+  errorText = "Operation failed",
   onRetry,
-  className = ''
+  className = "",
 }: OperationStatusProps) {
-  if (status === 'idle') return null
+  if (status === "idle") return null;
 
   return (
-    <Alert className={`${className} ${
-      status === 'success' ? 'border-green-200 bg-green-50' :
-      status === 'error' ? 'border-red-200 bg-red-50' :
-      'border-blue-200 bg-blue-50'
-    }`}>
-      {status === 'loading' && <Loader2 className="h-4 w-4 animate-spin text-blue-600" />}
-      {status === 'success' && <CheckCircle className="h-4 w-4 text-green-600" />}
-      {status === 'error' && <AlertCircle className="h-4 w-4 text-red-600" />}
-      
-      <AlertDescription className={
-        status === 'success' ? 'text-green-800' :
-        status === 'error' ? 'text-red-800' :
-        'text-blue-800'
-      }>
+    <Alert
+      className={`${className} ${
+        status === "success"
+          ? "border-green-200 bg-green-50"
+          : status === "error"
+            ? "border-red-200 bg-red-50"
+            : "border-blue-200 bg-blue-50"
+      }`}
+    >
+      {status === "loading" && (
+        <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+      )}
+      {status === "success" && (
+        <CheckCircle className="h-4 w-4 text-green-600" />
+      )}
+      {status === "error" && <AlertCircle className="h-4 w-4 text-red-600" />}
+
+      <AlertDescription
+        className={
+          status === "success"
+            ? "text-green-800"
+            : status === "error"
+              ? "text-red-800"
+              : "text-blue-800"
+        }
+      >
         <div className="flex items-center justify-between">
           <span>
-            {status === 'loading' && loadingText}
-            {status === 'success' && successText}
-            {status === 'error' && errorText}
+            {status === "loading" && loadingText}
+            {status === "success" && successText}
+            {status === "error" && errorText}
           </span>
-          
-          {status === 'error' && onRetry && (
+
+          {status === "error" && onRetry && (
             <Button
               size="sm"
               variant="outline"
@@ -249,15 +296,22 @@ export function OperationStatus({
         </div>
       </AlertDescription>
     </Alert>
-  )
+  );
 }
 
-interface LoadingButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  isLoading: boolean
-  loadingText?: string
-  children: React.ReactNode
-  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link'
-  size?: 'default' | 'sm' | 'lg'
+interface LoadingButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  isLoading: boolean;
+  loadingText?: string;
+  children: React.ReactNode;
+  variant?:
+    | "default"
+    | "destructive"
+    | "outline"
+    | "secondary"
+    | "ghost"
+    | "link";
+  size?: "default" | "sm" | "lg";
 }
 
 export function LoadingButton({
@@ -266,8 +320,8 @@ export function LoadingButton({
   children,
   disabled,
   className,
-  variant = 'default',
-  size = 'default',
+  variant = "default",
+  size = "default",
   ...props
 }: LoadingButtonProps) {
   return (
@@ -279,40 +333,36 @@ export function LoadingButton({
       className={className}
     >
       {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-      {isLoading ? (loadingText || 'Loading...') : children}
+      {isLoading ? loadingText || "Loading..." : children}
     </Button>
-  )
+  );
 }
 
 interface DataLoadingStateProps {
-  isLoading: boolean
-  error?: string | null
-  isEmpty?: boolean
-  emptyMessage?: string
-  errorMessage?: string
-  onRetry?: () => void
-  children: React.ReactNode
-  skeleton?: React.ReactNode
-  className?: string
+  isLoading: boolean;
+  error?: string | null;
+  isEmpty?: boolean;
+  emptyMessage?: string;
+  errorMessage?: string;
+  onRetry?: () => void;
+  children: React.ReactNode;
+  skeleton?: React.ReactNode;
+  className?: string;
 }
 
 export function DataLoadingState({
   isLoading,
   error,
   isEmpty = false,
-  emptyMessage = 'No data available',
+  emptyMessage = "No data available",
   errorMessage,
   onRetry,
   children,
   skeleton,
-  className = ''
+  className = "",
 }: DataLoadingStateProps) {
   if (isLoading) {
-    return (
-      <div className={className}>
-        {skeleton || <CardSkeleton />}
-      </div>
-    )
+    return <div className={className}>{skeleton || <CardSkeleton />}</div>;
   }
 
   if (error) {
@@ -336,7 +386,7 @@ export function DataLoadingState({
           </div>
         </AlertDescription>
       </Alert>
-    )
+    );
   }
 
   if (isEmpty) {
@@ -344,8 +394,8 @@ export function DataLoadingState({
       <div className={`text-center py-8 ${className}`}>
         <p className="text-gray-500">{emptyMessage}</p>
       </div>
-    )
+    );
   }
 
-  return <div className={className}>{children}</div>
+  return <div className={className}>{children}</div>;
 }

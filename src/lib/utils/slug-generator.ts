@@ -3,9 +3,8 @@
  * Provides functions for generating, validating, and ensuring unique slugs
  */
 
-import { createClient } from '@/lib/supabase/client'
-import type { CollegeSlugValidationResult } from '@/lib/types/college-profile'
-import type { Database } from '@/lib/supabase/types'
+import { createClient } from "@/lib/supabase/client";
+import type { CollegeSlugValidationResult } from "@/lib/types/college-profile";
 
 export interface CollegeSlugService {
   generateSlug(collegeName: string): string;
@@ -15,184 +14,196 @@ export interface CollegeSlugService {
 }
 
 export interface SlugGenerationOptions {
-  maxLength?: number
-  allowNumbers?: boolean
-  separator?: string
+  maxLength?: number;
+  allowNumbers?: boolean;
+  separator?: string;
 }
 
 /**
  * Generate a URL-friendly slug from a string
  */
 export function generateSlug(
-  input: string, 
-  options: SlugGenerationOptions = {}
+  input: string,
+  options: SlugGenerationOptions = {},
 ): string {
-  const {
-    maxLength = 50,
-    allowNumbers = true,
-    separator = '-'
-  } = options
+  const { maxLength = 50, allowNumbers = true, separator = "-" } = options;
 
-  if (!input || typeof input !== 'string') {
-    return 'college'
+  if (!input || typeof input !== "string") {
+    return "college";
   }
 
   let slug = input
     .toLowerCase()
     .trim()
     // Remove special characters, keep only letters, numbers, and spaces
-    .replace(/[^a-z0-9\s]/g, '')
-    
+    .replace(/[^a-z0-9\s]/g, "");
+
   if (!allowNumbers) {
-    slug = slug.replace(/[0-9]/g, '')
+    slug = slug.replace(/[0-9]/g, "");
   }
-  
+
   slug = slug
     // Replace multiple spaces with single space
-    .replace(/\s+/g, ' ')
+    .replace(/\s+/g, " ")
     .trim()
     // Replace spaces with separator
     .replace(/\s/g, separator)
     // Remove multiple separators
-    .replace(new RegExp(`${separator}+`, 'g'), separator)
+    .replace(new RegExp(`${separator}+`, "g"), separator)
     // Remove leading/trailing separators
-    .replace(new RegExp(`^${separator}+|${separator}+$`, 'g'), '')
+    .replace(new RegExp(`^${separator}+|${separator}+$`, "g"), "");
 
   // Ensure slug is not empty
   if (!slug) {
-    slug = 'college'
+    slug = "college";
   }
 
   // Truncate if too long, ensuring we don't break words
   if (slug.length > maxLength) {
-    slug = slug.substring(0, maxLength)
+    slug = slug.substring(0, maxLength);
     // Find the last separator to avoid breaking words
-    const lastSeparatorIndex = slug.lastIndexOf(separator)
+    const lastSeparatorIndex = slug.lastIndexOf(separator);
     if (lastSeparatorIndex > 0) {
-      slug = slug.substring(0, lastSeparatorIndex)
+      slug = slug.substring(0, lastSeparatorIndex);
     }
     // Remove trailing separators
-    slug = slug.replace(new RegExp(`${separator}+$`), '')
+    slug = slug.replace(new RegExp(`${separator}+$`), "");
   }
 
-  return slug
+  return slug;
 }
 
 /**
  * Validate if a slug meets the requirements
  */
 export function validateSlug(slug: string): CollegeSlugValidationResult {
-  if (!slug || typeof slug !== 'string') {
+  if (!slug || typeof slug !== "string") {
     return {
       isValid: false,
-      error: 'Slug cannot be empty'
-    }
+      error: "Slug cannot be empty",
+    };
   }
 
-  const trimmedSlug = slug.trim()
+  const trimmedSlug = slug.trim();
 
   // Check length (minimum 3, maximum 100)
   if (trimmedSlug.length < 3) {
     return {
       isValid: false,
-      error: 'Slug must be at least 3 characters long'
-    }
+      error: "Slug must be at least 3 characters long",
+    };
   }
 
   if (trimmedSlug.length > 100) {
     return {
       isValid: false,
-      error: 'Slug cannot exceed 100 characters'
-    }
+      error: "Slug cannot exceed 100 characters",
+    };
   }
 
   // Check that it doesn't start or end with hyphen
-  if (trimmedSlug.startsWith('-') || trimmedSlug.endsWith('-')) {
+  if (trimmedSlug.startsWith("-") || trimmedSlug.endsWith("-")) {
     return {
       isValid: false,
-      error: 'Slug cannot start or end with a hyphen'
-    }
+      error: "Slug cannot start or end with a hyphen",
+    };
   }
 
   // Check for consecutive hyphens
-  if (trimmedSlug.includes('--')) {
+  if (trimmedSlug.includes("--")) {
     return {
       isValid: false,
-      error: 'Slug cannot contain consecutive hyphens'
-    }
+      error: "Slug cannot contain consecutive hyphens",
+    };
   }
 
   // Check format: only lowercase letters, numbers, and hyphens
-  const slugRegex = /^[a-z0-9]+(-[a-z0-9]+)*$/
+  const slugRegex = /^[a-z0-9]+(-[a-z0-9]+)*$/;
   if (!slugRegex.test(trimmedSlug)) {
     return {
       isValid: false,
-      error: 'Slug can only contain lowercase letters, numbers, and hyphens'
-    }
+      error: "Slug can only contain lowercase letters, numbers, and hyphens",
+    };
   }
 
   // Check for reserved words
   const reservedWords = [
-    'admin', 'api', 'www', 'mail', 'ftp', 'localhost', 'dashboard',
-    'profile', 'settings', 'login', 'signup', 'auth', 'callback',
-    'about', 'contact', 'privacy', 'terms', 'help', 'support'
-  ]
-  
+    "admin",
+    "api",
+    "www",
+    "mail",
+    "ftp",
+    "localhost",
+    "dashboard",
+    "profile",
+    "settings",
+    "login",
+    "signup",
+    "auth",
+    "callback",
+    "about",
+    "contact",
+    "privacy",
+    "terms",
+    "help",
+    "support",
+  ];
+
   if (reservedWords.includes(trimmedSlug)) {
     return {
       isValid: false,
-      error: 'Slug cannot use reserved words'
-    }
+      error: "Slug cannot use reserved words",
+    };
   }
 
   return {
     isValid: true,
-    sanitized: trimmedSlug
-  }
+    sanitized: trimmedSlug,
+  };
 }
 
 /**
  * Ensure slug is unique in the database
  */
 export async function ensureUniqueSlug(
-  baseSlug: string, 
-  collegeId?: string
+  baseSlug: string,
+  collegeId?: string,
 ): Promise<string> {
-  const supabase = createClient<Database>()
-  
+  const supabase = createClient();
+
   // Validate base slug first
-  const validation = validateSlug(baseSlug)
+  const validation = validateSlug(baseSlug);
   if (!validation.isValid) {
-    baseSlug = generateSlug(baseSlug)
+    baseSlug = generateSlug(baseSlug);
   }
 
-  let finalSlug = baseSlug
-  let counter = 0
+  let finalSlug = baseSlug;
+  let counter = 0;
 
   while (true) {
     // Check if slug exists
     const { data, error } = await supabase
-      .from('colleges')
-      .select('id')
-      .eq('slug', finalSlug)
-      .maybeSingle()
+      .from("colleges")
+      .select("id")
+      .eq("slug", finalSlug)
+      .maybeSingle();
 
     if (error) {
-      console.error('Error checking slug uniqueness:', error)
-      throw new Error('Failed to validate slug uniqueness')
+      console.error("Error checking slug uniqueness:", error);
+      throw new Error("Failed to validate slug uniqueness");
     }
 
     // If no existing record, or it's the same college being updated
-    if (!data || (collegeId && data.id === collegeId)) {
-      break
+    if (!data || (collegeId && (data as { id: string }).id === collegeId)) {
+      break;
     }
 
     // Generate new slug with counter
-    counter++
-    finalSlug = `${baseSlug}-${counter}`
+    counter++;
+    finalSlug = `${baseSlug}-${counter}`;
   }
 
-  return finalSlug
+  return finalSlug;
 }
 
 /**
@@ -200,72 +211,72 @@ export async function ensureUniqueSlug(
  */
 export async function generateUniqueCollegeSlug(
   collegeName: string,
-  collegeId?: string
+  collegeId?: string,
 ): Promise<string> {
-  const baseSlug = generateSlug(collegeName)
-  return ensureUniqueSlug(baseSlug, collegeId)
+  const baseSlug = generateSlug(collegeName);
+  return ensureUniqueSlug(baseSlug, collegeId);
 }
 
 /**
  * Sanitize slug input from user
  */
 export function sanitizeSlug(input: string): string {
-  if (!input || typeof input !== 'string') {
-    return 'college'
+  if (!input || typeof input !== "string") {
+    return "college";
   }
 
   // Create a basic valid slug
-  let slug = input
+  const slug = input
     .toLowerCase()
     .trim()
-    .replace(/[^a-z0-9\s_-]/g, '') // Keep spaces, underscores, and hyphens
-    .replace(/[\s_]+/g, '-') // Replace spaces and underscores with hyphens
-    .replace(/-+/g, '-') // Replace multiple hyphens with single
-    .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
-    .substring(0, 100)
+    .replace(/[^a-z0-9\s_-]/g, "") // Keep spaces, underscores, and hyphens
+    .replace(/[\s_]+/g, "-") // Replace spaces and underscores with hyphens
+    .replace(/-+/g, "-") // Replace multiple hyphens with single
+    .replace(/^-+|-+$/g, "") // Remove leading/trailing hyphens
+    .substring(0, 100);
 
   // Ensure minimum length
   if (!slug || slug.length < 3) {
-    return 'college'
+    return "college";
   }
 
-  return slug
+  return slug;
 }
 
 /**
  * Legacy function name for backward compatibility
  */
 export function sanitizeSlugInput(input: string): string {
-  return sanitizeSlug(input)
+  return sanitizeSlug(input);
 }
 
 /**
  * Check if a slug is available
  */
 export async function isSlugAvailable(
-  slug: string, 
-  collegeId?: string
+  slug: string,
+  collegeId?: string,
 ): Promise<boolean> {
-  const validation = validateSlug(slug)
+  const validation = validateSlug(slug);
   if (!validation.isValid) {
-    return false
+    return false;
   }
 
-  const supabase = createClient<Database>()
-  
+  const supabase = createClient();
+
   const { data, error } = await supabase
-    .from('colleges')
-    .select('id')
-    .eq('slug', slug)
-    .maybeSingle()
+    .from("colleges")
+    .select("id")
+    .eq("slug", slug)
+    .maybeSingle();
 
   if (error) {
-    console.error('Error checking slug availability:', error)
-    return false
+    console.error("Error checking slug availability:", error);
+    return false;
   }
 
   // Available if no record exists, or it's the same college
-  return !data || (collegeId && data.id === collegeId)
+  return !data || (collegeId && (data as { id: string }).id === collegeId);
 }
 
 /**
@@ -273,14 +284,14 @@ export async function isSlugAvailable(
  */
 export async function getSlugSuggestions(
   collegeName: string,
-  count: number = 5
+  count: number = 5,
 ): Promise<string[]> {
-  const baseSlug = generateSlug(collegeName)
-  const suggestions: string[] = []
-  
+  const baseSlug = generateSlug(collegeName);
+  const suggestions: string[] = [];
+
   // Add base slug if available
   if (await isSlugAvailable(baseSlug)) {
-    suggestions.push(baseSlug)
+    suggestions.push(baseSlug);
   }
 
   // Generate variations
@@ -289,28 +300,28 @@ export async function getSlugSuggestions(
     `${baseSlug}-university`,
     `${baseSlug}-institute`,
     `${baseSlug}-academy`,
-    `${baseSlug}-school`
-  ]
+    `${baseSlug}-school`,
+  ];
 
   for (const variation of variations) {
-    if (suggestions.length >= count) break
-    
+    if (suggestions.length >= count) break;
+
     if (await isSlugAvailable(variation)) {
-      suggestions.push(variation)
+      suggestions.push(variation);
     }
   }
 
   // Add numbered variations if needed
-  let counter = 1
+  let counter = 1;
   while (suggestions.length < count && counter <= 10) {
-    const numberedSlug = `${baseSlug}-${counter}`
+    const numberedSlug = `${baseSlug}-${counter}`;
     if (await isSlugAvailable(numberedSlug)) {
-      suggestions.push(numberedSlug)
+      suggestions.push(numberedSlug);
     }
-    counter++
+    counter++;
   }
 
-  return suggestions.slice(0, count)
+  return suggestions.slice(0, count);
 }
 
 /**
@@ -320,5 +331,5 @@ export const collegeSlugService: CollegeSlugService = {
   generateSlug,
   ensureUniqueSlug,
   validateSlug,
-  sanitizeSlug
-}
+  sanitizeSlug,
+};

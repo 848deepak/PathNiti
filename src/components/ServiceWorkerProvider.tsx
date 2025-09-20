@@ -1,41 +1,48 @@
-"use client"
+"use client";
 
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState, useCallback } from "react";
 
 interface ServiceWorkerProviderProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
-export function ServiceWorkerProvider({ children }: ServiceWorkerProviderProps) {
-  const [isOnline, setIsOnline] = useState(true)
-  const [, setSwRegistration] = useState<ServiceWorkerRegistration | null>(null)
+export function ServiceWorkerProvider({
+  children,
+}: ServiceWorkerProviderProps) {
+  const [isOnline, setIsOnline] = useState(true);
+  const [, setSwRegistration] = useState<ServiceWorkerRegistration | null>(
+    null,
+  );
 
   const registerServiceWorker = useCallback(async () => {
     try {
-      const registration = await navigator.serviceWorker.register('/sw.js', {
-        scope: '/'
-      })
+      const registration = await navigator.serviceWorker.register("/sw.js", {
+        scope: "/",
+      });
 
-      setSwRegistration(registration)
+      setSwRegistration(registration);
 
       // Handle service worker updates
-      registration.addEventListener('updatefound', () => {
-        const newWorker = registration.installing
+      registration.addEventListener("updatefound", () => {
+        const newWorker = registration.installing;
         if (newWorker) {
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+          newWorker.addEventListener("statechange", () => {
+            if (
+              newWorker.state === "installed" &&
+              navigator.serviceWorker.controller
+            ) {
               // New service worker is available
-              showUpdateNotification()
+              showUpdateNotification();
             }
-          })
+          });
         }
-      })
+      });
 
-      console.log('Service Worker registered successfully:', registration)
+      console.log("Service Worker registered successfully:", registration);
     } catch (error) {
-      console.error('Service Worker registration failed:', error)
+      console.error("Service Worker registration failed:", error);
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
     // Temporarily disable service worker registration for development
@@ -44,109 +51,120 @@ export function ServiceWorkerProvider({ children }: ServiceWorkerProviderProps) 
     // }
 
     // Handle online/offline status
-    const handleOnline = () => setIsOnline(true)
-    const handleOffline = () => setIsOnline(false)
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
 
-    window.addEventListener('online', handleOnline)
-    window.addEventListener('offline', handleOffline)
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
 
     // Set initial online status
-    setIsOnline(typeof window !== 'undefined' ? navigator.onLine : true)
+    setIsOnline(typeof window !== "undefined" ? navigator.onLine : true);
 
     return () => {
-      window.removeEventListener('online', handleOnline)
-      window.removeEventListener('offline', handleOffline)
-    }
-  }, [registerServiceWorker])
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, [registerServiceWorker]);
 
   const showUpdateNotification = () => {
     // Show a notification that a new version is available
-    if (confirm('A new version of PathNiti is available. Would you like to update?')) {
-      window.location.reload()
+    if (
+      confirm(
+        "A new version of PathNiti is available. Would you like to update?",
+      )
+    ) {
+      window.location.reload();
     }
-  }
+  };
 
   const requestNotificationPermission = async () => {
-    if ('Notification' in window && Notification.permission === 'default') {
-      const permission = await Notification.requestPermission()
-      if (permission === 'granted') {
-        console.log('Notification permission granted')
+    if ("Notification" in window && Notification.permission === "default") {
+      const permission = await Notification.requestPermission();
+      if (permission === "granted") {
+        console.log("Notification permission granted");
       }
     }
-  }
+  };
 
   // Request notification permission on first visit
   useEffect(() => {
-    requestNotificationPermission()
-  }, [])
+    requestNotificationPermission();
+  }, []);
 
   return (
     <>
       {children}
-      
+
       {/* Offline indicator */}
       {!isOnline && (
         <div className="fixed top-0 left-0 right-0 bg-yellow-500 text-white text-center py-2 text-sm z-50">
-          📱 You're offline. Some features may be limited.
+          📱 You&apos;re offline. Some features may be limited.
         </div>
       )}
 
       {/* Install prompt */}
       <InstallPrompt />
     </>
-  )
+  );
 }
 
 // Install prompt component
 function InstallPrompt() {
-  const [deferredPrompt, setDeferredPrompt] = useState<Event | null>(null)
-  const [showInstallPrompt, setShowInstallPrompt] = useState(false)
+  const [deferredPrompt, setDeferredPrompt] = useState<Event | null>(null);
+  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault()
-      setDeferredPrompt(e)
-      setShowInstallPrompt(true)
-    }
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstallPrompt(true);
+    };
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
-    }
-  }, [])
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt,
+      );
+    };
+  }, []);
 
   const handleInstallClick = async () => {
     if (deferredPrompt) {
-      (deferredPrompt as any).prompt()
-      const { outcome } = await (deferredPrompt as any).userChoice
-      
-      if (outcome === 'accepted') {
-        console.log('User accepted the install prompt')
+      const promptEvent = deferredPrompt as unknown as {
+        prompt: () => void;
+        userChoice: Promise<{ outcome: string }>;
+      };
+      promptEvent.prompt();
+      const { outcome } = await promptEvent.userChoice;
+
+      if (outcome === "accepted") {
+        console.log("User accepted the install prompt");
       } else {
-        console.log('User dismissed the install prompt')
+        console.log("User dismissed the install prompt");
       }
-      
-      setDeferredPrompt(null)
-      setShowInstallPrompt(false)
+
+      setDeferredPrompt(null);
+      setShowInstallPrompt(false);
     }
-  }
+  };
 
   const handleDismiss = () => {
-    setShowInstallPrompt(false)
+    setShowInstallPrompt(false);
     // Don't show again for this session
-    localStorage.setItem('installPromptDismissed', 'true')
-  }
+    localStorage.setItem("installPromptDismissed", "true");
+  };
 
   // Don't show if user has dismissed it
   useEffect(() => {
-    const dismissed = localStorage.getItem('installPromptDismissed')
+    const dismissed = localStorage.getItem("installPromptDismissed");
     if (dismissed) {
-      setShowInstallPrompt(false)
+      setShowInstallPrompt(false);
     }
-  }, [])
+  }, []);
 
-  if (!showInstallPrompt) return null
+  if (!showInstallPrompt) return null;
 
   return (
     <div className="fixed bottom-4 left-4 right-4 bg-white border border-gray-200 rounded-lg shadow-lg p-4 z-50 max-w-sm mx-auto">
@@ -182,11 +200,21 @@ function InstallPrompt() {
           onClick={handleDismiss}
           className="flex-shrink-0 text-gray-400 hover:text-gray-600"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
       </div>
     </div>
-  )
+  );
 }

@@ -1,47 +1,60 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
-  Database, 
-  Brain, 
-  MapPin, 
-  MessageSquare, 
+import React, { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  CheckCircle,
+  XCircle,
+  Clock,
+  Database,
+  Brain,
+  MapPin,
+  MessageSquare,
   RefreshCw,
   Wifi,
-  WifiOff
-} from 'lucide-react';
-import { offlineTestSuite, TestResult, TestSuiteResult } from '@/lib/offline-test-suite';
-import { offlineStorage } from '@/lib/offline-storage';
-import { syncEngine } from '@/lib/sync-engine';
+  WifiOff,
+} from "lucide-react";
+import {
+  offlineTestSuite,
+  TestResult,
+  TestSuiteResult,
+} from "@/lib/offline-test-suite";
+import { offlineStorage } from "@/lib/offline-storage";
+import { syncEngine } from "@/lib/sync-engine";
 
 export default function TestOfflinePage() {
   const [isRunning, setIsRunning] = useState(false);
   const [testResults, setTestResults] = useState<TestSuiteResult | null>(null);
-  const [isOnline, setIsOnline] = useState(typeof window !== 'undefined' ? navigator.onLine : true);
-  const [storageStats, setStorageStats] = useState<any>(null);
-  const [syncStatus, setSyncStatus] = useState<any>(null);
+  const [isOnline, setIsOnline] = useState(
+    typeof window !== "undefined" ? navigator.onLine : true,
+  );
+  const [storageStats, setStorageStats] = useState<{
+    totalSize: number;
+    itemCount: number;
+    lastUpdated: string;
+  } | null>(null);
+  const [syncStatus, setSyncStatus] = useState<{
+    lastSyncTime: string;
+    syncInProgress: boolean;
+    pendingItems: number;
+  } | null>(null);
 
   useEffect(() => {
     // Listen for online/offline status changes
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
 
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
 
     // Load initial data
     loadInitialData();
 
     return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
     };
   }, []);
 
@@ -49,12 +62,12 @@ export default function TestOfflinePage() {
     try {
       await offlineStorage.initialize();
       const stats = await offlineStorage.getStorageStats();
-      setStorageStats(stats);
+      setStorageStats(stats as unknown as { totalSize: number; itemCount: number; lastUpdated: string });
 
       const status = syncEngine.getSyncStatus();
-      setSyncStatus(status);
+      setSyncStatus(status as unknown as { lastSyncTime: string; syncInProgress: boolean; pendingItems: number });
     } catch (error) {
-      console.error('Failed to load initial data:', error);
+      console.error("Failed to load initial data:", error);
     }
   };
 
@@ -66,7 +79,7 @@ export default function TestOfflinePage() {
       const results = await offlineTestSuite.runAllTests();
       setTestResults(results);
     } catch (error) {
-      console.error('Test suite failed:', error);
+      console.error("Test suite failed:", error);
     } finally {
       setIsRunning(false);
     }
@@ -78,34 +91,34 @@ export default function TestOfflinePage() {
 
     try {
       let results: TestResult[] = [];
-      
+
       switch (testType) {
-        case 'storage':
+        case "storage":
           results = await offlineTestSuite.runStorageTests();
           break;
-        case 'quiz':
+        case "quiz":
           results = await offlineTestSuite.runQuizTests();
           break;
-        case 'recommendations':
+        case "recommendations":
           results = await offlineTestSuite.runRecommendationTests();
           break;
-        case 'ai':
+        case "ai":
           results = await offlineTestSuite.runAITests();
           break;
-        case 'maps':
+        case "maps":
           results = await offlineTestSuite.runMapsTests();
           break;
-        case 'sync':
+        case "sync":
           results = await offlineTestSuite.runSyncTests();
           break;
-        case 'transitions':
+        case "transitions":
           results = await offlineTestSuite.runTransitionTests();
           break;
       }
 
       const totalDuration = results.reduce((sum, r) => sum + r.duration, 0);
-      const passedTests = results.filter(r => r.passed).length;
-      const failedTests = results.filter(r => !r.passed).length;
+      const passedTests = results.filter((r) => r.passed).length;
+      const failedTests = results.filter((r) => !r.passed).length;
 
       setTestResults({
         totalTests: results.length,
@@ -116,7 +129,7 @@ export default function TestOfflinePage() {
         summary: `Tests: ${passedTests}/${results.length} passed in ${totalDuration}ms`,
       });
     } catch (error) {
-      console.error('Specific tests failed:', error);
+      console.error("Specific tests failed:", error);
     } finally {
       setIsRunning(false);
     }
@@ -126,56 +139,58 @@ export default function TestOfflinePage() {
     try {
       await offlineStorage.clearAllData();
       await loadInitialData();
-      alert('Offline data cleared successfully');
+      alert("Offline data cleared successfully");
     } catch (error) {
-      console.error('Failed to clear offline data:', error);
-      alert('Failed to clear offline data');
+      console.error("Failed to clear offline data:", error);
+      alert("Failed to clear offline data");
     }
   };
 
   const triggerSync = async () => {
     try {
       const result = await syncEngine.triggerSync();
-      console.log('Sync result:', result);
+      console.log("Sync result:", result);
       await loadInitialData();
       alert(`Sync completed: ${result.syncedItems} items synced`);
     } catch (error) {
-      console.error('Sync failed:', error);
-      alert('Sync failed');
+      console.error("Sync failed:", error);
+      alert("Sync failed");
     }
   };
 
   const getTestIcon = (testName: string) => {
-    if (testName.includes('Storage')) return <Database className="h-4 w-4" />;
-    if (testName.includes('Quiz')) return <Brain className="h-4 w-4" />;
-    if (testName.includes('Recommendation')) return <CheckCircle className="h-4 w-4" />;
-    if (testName.includes('AI') || testName.includes('Sarthi')) return <MessageSquare className="h-4 w-4" />;
-    if (testName.includes('Maps')) return <MapPin className="h-4 w-4" />;
-    if (testName.includes('Sync')) return <RefreshCw className="h-4 w-4" />;
+    if (testName.includes("Storage")) return <Database className="h-4 w-4" />;
+    if (testName.includes("Quiz")) return <Brain className="h-4 w-4" />;
+    if (testName.includes("Recommendation"))
+      return <CheckCircle className="h-4 w-4" />;
+    if (testName.includes("AI") || testName.includes("Sarthi"))
+      return <MessageSquare className="h-4 w-4" />;
+    if (testName.includes("Maps")) return <MapPin className="h-4 w-4" />;
+    if (testName.includes("Sync")) return <RefreshCw className="h-4 w-4" />;
     return <Clock className="h-4 w-4" />;
   };
 
   const getTestCategory = (testName: string) => {
-    if (testName.includes('Storage')) return 'storage';
-    if (testName.includes('Quiz')) return 'quiz';
-    if (testName.includes('Recommendation')) return 'recommendations';
-    if (testName.includes('AI') || testName.includes('Sarthi')) return 'ai';
-    if (testName.includes('Maps')) return 'maps';
-    if (testName.includes('Sync')) return 'sync';
-    if (testName.includes('Transition')) return 'transitions';
-    return 'other';
+    if (testName.includes("Storage")) return "storage";
+    if (testName.includes("Quiz")) return "quiz";
+    if (testName.includes("Recommendation")) return "recommendations";
+    if (testName.includes("AI") || testName.includes("Sarthi")) return "ai";
+    if (testName.includes("Maps")) return "maps";
+    if (testName.includes("Sync")) return "sync";
+    if (testName.includes("Transition")) return "transitions";
+    return "other";
   };
 
   const getCategoryColor = (category: string) => {
     const colors = {
-      storage: 'bg-blue-100 text-blue-800',
-      quiz: 'bg-green-100 text-green-800',
-      recommendations: 'bg-purple-100 text-purple-800',
-      ai: 'bg-pink-100 text-pink-800',
-      maps: 'bg-orange-100 text-orange-800',
-      sync: 'bg-cyan-100 text-cyan-800',
-      transitions: 'bg-yellow-100 text-yellow-800',
-      other: 'bg-gray-100 text-gray-800',
+      storage: "bg-blue-100 text-blue-800",
+      quiz: "bg-green-100 text-green-800",
+      recommendations: "bg-purple-100 text-purple-800",
+      ai: "bg-pink-100 text-pink-800",
+      maps: "bg-orange-100 text-orange-800",
+      sync: "bg-cyan-100 text-cyan-800",
+      transitions: "bg-yellow-100 text-yellow-800",
+      other: "bg-gray-100 text-gray-800",
     };
     return colors[category as keyof typeof colors] || colors.other;
   };
@@ -190,7 +205,8 @@ export default function TestOfflinePage() {
               Offline-First Test Suite
             </h1>
             <p className="text-gray-600">
-              Comprehensive testing of PathNiti's offline capabilities and sync functionality
+              Comprehensive testing of PathNiti&apos;s offline capabilities and
+              sync functionality
             </p>
           </div>
 
@@ -210,8 +226,14 @@ export default function TestOfflinePage() {
               </CardHeader>
               <CardContent>
                 <div className="flex items-center space-x-2">
-                  <Badge className={isOnline ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}>
-                    {isOnline ? 'Online' : 'Offline'}
+                  <Badge
+                    className={
+                      isOnline
+                        ? "bg-green-100 text-green-800"
+                        : "bg-orange-100 text-orange-800"
+                    }
+                  >
+                    {isOnline ? "Online" : "Offline"}
                   </Badge>
                   {syncStatus?.syncInProgress && (
                     <Badge className="bg-blue-100 text-blue-800">
@@ -234,13 +256,13 @@ export default function TestOfflinePage() {
                 {storageStats ? (
                   <div className="space-y-1">
                     <div className="text-sm">
-                      Quiz Responses: {storageStats.quizResponses}
+                      Quiz Responses: {(storageStats as Record<string, unknown>).quizResponses as number}
                     </div>
                     <div className="text-sm">
-                      Cached Colleges: {storageStats.cachedColleges}
+                      Cached Colleges: {(storageStats as Record<string, unknown>).cachedColleges as number}
                     </div>
                     <div className="text-sm">
-                      Chat Messages: {storageStats.chatMessages}
+                      Chat Messages: {(storageStats as Record<string, unknown>).chatMessages as number}
                     </div>
                   </div>
                 ) : (
@@ -261,17 +283,17 @@ export default function TestOfflinePage() {
                 {syncStatus ? (
                   <div className="space-y-1">
                     <div className="text-sm">
-                      Last Sync: {syncStatus.lastSyncTime ? 
-                        new Date(syncStatus.lastSyncTime).toLocaleString() : 
-                        'Never'
-                      }
+                      Last Sync:{" "}
+                      {syncStatus.lastSyncTime
+                        ? new Date(syncStatus.lastSyncTime).toLocaleString()
+                        : "Never"}
                     </div>
                     <div className="text-sm">
                       Pending Items: {syncStatus.pendingItems || 0}
                     </div>
-                    {syncStatus.lastError && (
+                    {((syncStatus as Record<string, unknown>).lastError as string) && (
                       <div className="text-sm text-red-600">
-                        Error: {syncStatus.lastError}
+                        Error: {(syncStatus as Record<string, unknown>).lastError as string}
                       </div>
                     )}
                   </div>
@@ -289,8 +311,8 @@ export default function TestOfflinePage() {
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-4">
-                <Button 
-                  onClick={runAllTests} 
+                <Button
+                  onClick={runAllTests}
                   disabled={isRunning}
                   className="bg-blue-600 hover:bg-blue-700"
                 >
@@ -300,12 +322,20 @@ export default function TestOfflinePage() {
                       Running Tests...
                     </>
                   ) : (
-                    'Run All Tests'
+                    "Run All Tests"
                   )}
                 </Button>
 
                 <div className="flex flex-wrap gap-2">
-                  {['storage', 'quiz', 'recommendations', 'ai', 'maps', 'sync', 'transitions'].map((testType) => (
+                  {[
+                    "storage",
+                    "quiz",
+                    "recommendations",
+                    "ai",
+                    "maps",
+                    "sync",
+                    "transitions",
+                  ].map((testType) => (
                     <Button
                       key={testType}
                       variant="outline"
@@ -377,7 +407,11 @@ export default function TestOfflinePage() {
                           {getTestIcon(result.testName)}
                           <span className="font-medium">{result.testName}</span>
                         </div>
-                        <Badge className={getCategoryColor(getTestCategory(result.testName))}>
+                        <Badge
+                          className={getCategoryColor(
+                            getTestCategory(result.testName),
+                          )}
+                        >
                           {getTestCategory(result.testName)}
                         </Badge>
                       </div>
@@ -406,19 +440,33 @@ export default function TestOfflinePage() {
             <CardContent>
               <div className="space-y-4 text-sm text-gray-600">
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-2">How to Test Offline Functionality:</h4>
+                  <h4 className="font-medium text-gray-900 mb-2">
+                    How to Test Offline Functionality:
+                  </h4>
                   <ol className="list-decimal list-inside space-y-1">
-                    <li>Run the test suite while online to verify all systems work</li>
-                    <li>Disconnect from the internet (or use browser dev tools to simulate offline)</li>
+                    <li>
+                      Run the test suite while online to verify all systems work
+                    </li>
+                    <li>
+                      Disconnect from the internet (or use browser dev tools to
+                      simulate offline)
+                    </li>
                     <li>Run tests again to verify offline functionality</li>
-                    <li>Reconnect to the internet and trigger sync to test data synchronization</li>
+                    <li>
+                      Reconnect to the internet and trigger sync to test data
+                      synchronization
+                    </li>
                     <li>Check that offline data persists after page refresh</li>
                   </ol>
                 </div>
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Expected Behavior:</h4>
+                  <h4 className="font-medium text-gray-900 mb-2">
+                    Expected Behavior:
+                  </h4>
                   <ul className="list-disc list-inside space-y-1">
-                    <li>All tests should pass in both online and offline modes</li>
+                    <li>
+                      All tests should pass in both online and offline modes
+                    </li>
                     <li>Data should persist in offline storage</li>
                     <li>Sync should work when coming back online</li>
                     <li>UI should show appropriate online/offline status</li>

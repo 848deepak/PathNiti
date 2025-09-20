@@ -1,38 +1,44 @@
-"use client"
+"use client";
 
-import React from 'react'
-import { useAuth } from '@/app/providers'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { AuthInlineLoading } from './AuthLoading'
-import { getUserDisplayName, getUserInitials } from '@/lib/auth-utils'
+import React from "react";
+import { useAuth } from "@/app/providers";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { AuthInlineLoading } from "./AuthLoading";
+import { getUserDisplayName, getUserInitials } from "@/lib/auth-utils";
 
 interface AuthStatusProps {
-  variant?: 'compact' | 'detailed' | 'card'
-  showActions?: boolean
-  className?: string
+  variant?: "compact" | "detailed" | "card";
+  showActions?: boolean;
+  className?: string;
 }
 
 /**
  * Comprehensive authentication status component
  */
-export function AuthStatus({ 
-  variant = 'compact', 
+export function AuthStatus({
+  variant = "compact",
   showActions = false,
-  className = "" 
+  className = "",
 }: AuthStatusProps) {
-  const { user, profile, loading, signOut } = useAuth()
+  const { user, profile, loading } = useAuth();
 
   if (loading) {
     return (
       <div className={className}>
         <AuthInlineLoading message="Checking status..." />
       </div>
-    )
+    );
   }
 
-  if (variant === 'card') {
+  if (variant === "card") {
     return (
       <Card className={className}>
         <CardHeader>
@@ -52,10 +58,10 @@ export function AuthStatus({
           )}
         </CardContent>
       </Card>
-    )
+    );
   }
 
-  if (variant === 'detailed') {
+  if (variant === "detailed") {
     return (
       <div className={`space-y-2 ${className}`}>
         <div className="flex items-center space-x-2">
@@ -72,7 +78,7 @@ export function AuthStatus({
           <UnauthenticatedDetails showActions={showActions} />
         )}
       </div>
-    )
+    );
   }
 
   // Compact variant (default)
@@ -89,25 +95,25 @@ export function AuthStatus({
       )}
       {showActions && <AuthActions />}
     </div>
-  )
+  );
 }
 
 /**
  * Authentication status badge
  */
 function AuthStatusBadge() {
-  const { user, profile, loading } = useAuth()
+  const { user, profile, loading } = useAuth();
 
   if (loading) {
-    return <Badge variant="secondary">Checking...</Badge>
+    return <Badge variant="secondary">Checking...</Badge>;
   }
 
   if (!user) {
-    return <Badge variant="destructive">Not Authenticated</Badge>
+    return <Badge variant="destructive">Not Authenticated</Badge>;
   }
 
   if (!profile) {
-    return <Badge variant="outline">Profile Incomplete</Badge>
+    return <Badge variant="outline">Profile Incomplete</Badge>;
   }
 
   return (
@@ -117,28 +123,28 @@ function AuthStatusBadge() {
         {profile.role}
       </Badge>
     </div>
-  )
+  );
 }
 
 /**
  * User avatar component
  */
 function UserAvatar() {
-  const { profile } = useAuth()
-  const initials = getUserInitials(profile)
+  const { profile } = useAuth();
+  const initials = getUserInitials(profile);
 
   return (
     <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-medium">
       {initials}
     </div>
-  )
+  );
 }
 
 /**
  * Details for authenticated users
  */
 function AuthenticatedDetails({ showActions }: { showActions: boolean }) {
-  const { user, profile } = useAuth()
+  const { user, profile } = useAuth();
 
   return (
     <div className="space-y-3">
@@ -157,14 +163,12 @@ function AuthenticatedDetails({ showActions }: { showActions: boolean }) {
         </div>
         <div>
           <span className="font-medium text-gray-500">Verified:</span>
-          <p className="text-gray-900">
-            {profile?.is_verified ? 'Yes' : 'No'}
-          </p>
+          <p className="text-gray-900">{profile?.is_verified ? "Yes" : "No"}</p>
         </div>
       </div>
       {showActions && <AuthActions />}
     </div>
-  )
+  );
 }
 
 /**
@@ -174,41 +178,42 @@ function UnauthenticatedDetails({ showActions }: { showActions: boolean }) {
   return (
     <div className="space-y-3">
       <p className="text-gray-600">
-        You are not currently authenticated. Please log in to access your account.
+        You are not currently authenticated. Please log in to access your
+        account.
       </p>
       {showActions && <AuthActions />}
     </div>
-  )
+  );
 }
 
 /**
  * Authentication action buttons
  */
 function AuthActions() {
-  const { user, signOut } = useAuth()
+  const { user, signOut } = useAuth();
 
   const handleSignOut = async () => {
     try {
-      await signOut()
-      if (typeof window !== 'undefined') {
-        window.location.href = '/'
+      await signOut();
+      if (typeof window !== "undefined") {
+        window.location.href = "/";
       }
     } catch (error) {
-      console.error('Sign out error:', error)
+      console.error("Sign out error:", error);
     }
-  }
+  };
 
   const handleSignIn = () => {
-    if (typeof window !== 'undefined') {
-      window.location.href = '/auth/login'
+    if (typeof window !== "undefined") {
+      window.location.href = "/auth/login";
     }
-  }
+  };
 
   const handleDashboard = () => {
-    if (typeof window !== 'undefined') {
-      window.location.href = '/dashboard'
+    if (typeof window !== "undefined") {
+      window.location.href = "/dashboard";
     }
-  }
+  };
 
   if (user) {
     return (
@@ -220,7 +225,7 @@ function AuthActions() {
           Sign Out
         </Button>
       </div>
-    )
+    );
   }
 
   return (
@@ -228,35 +233,39 @@ function AuthActions() {
       <Button size="sm" onClick={handleSignIn}>
         Sign In
       </Button>
-      <Button size="sm" variant="outline" onClick={() => window.location.href = '/auth/signup'}>
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={() => (window.location.href = "/auth/signup")}
+      >
         Sign Up
       </Button>
     </div>
-  )
+  );
 }
 
 /**
  * Simple authentication indicator for headers/navbars
  */
 export function AuthIndicator() {
-  return <AuthStatus variant="compact" />
+  return <AuthStatus variant="compact" />;
 }
 
 /**
  * Detailed authentication panel for settings/profile pages
  */
 export function AuthPanel() {
-  return <AuthStatus variant="card" showActions={true} />
+  return <AuthStatus variant="card" showActions={true} />;
 }
 
 /**
  * Authentication status for debugging/development
  */
 export function AuthDebugStatus() {
-  const { user, session, profile, loading } = useAuth()
+  const { user, session, profile, loading } = useAuth();
 
-  if (process.env.NODE_ENV !== 'development') {
-    return null
+  if (process.env.NODE_ENV !== "development") {
+    return null;
   }
 
   return (
@@ -269,17 +278,21 @@ export function AuthDebugStatus() {
       </CardHeader>
       <CardContent>
         <pre className="text-xs text-yellow-800 overflow-auto">
-          {JSON.stringify({
-            loading,
-            hasUser: !!user,
-            hasSession: !!session,
-            hasProfile: !!profile,
-            userEmail: user?.email,
-            profileRole: profile?.role,
-            sessionExpiry: session?.expires_at
-          }, null, 2)}
+          {JSON.stringify(
+            {
+              loading,
+              hasUser: !!user,
+              hasSession: !!session,
+              hasProfile: !!profile,
+              userEmail: user?.email,
+              profileRole: profile?.role,
+              sessionExpiry: session?.expires_at,
+            },
+            null,
+            2,
+          )}
         </pre>
       </CardContent>
     </Card>
-  )
+  );
 }

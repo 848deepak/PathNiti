@@ -2,18 +2,30 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
 import { ServiceWorkerProvider } from "@/components/ServiceWorkerProvider";
-import { AuthErrorNotification, AuthErrorBanner } from "@/components/AuthErrorNotification";
+import {
+  AuthErrorNotification,
+  AuthErrorBanner,
+} from "@/components/AuthErrorNotification";
 import { SarthiChatWidget } from "@/components/SarthiChatWidget";
 
 // Use system fonts as fallback to avoid network dependency during build
 const inter = {
-  variable: '--font-inter'
+  variable: "--font-inter",
 };
 
 export const metadata: Metadata = {
   title: "PathNiti - Your Path. Your Future. Simplified.",
-  description: "One-Stop Personalized Career & Education Advisor for Indian Students",
-  keywords: ["education", "career", "guidance", "colleges", "admissions", "scholarships", "India"],
+  description:
+    "One-Stop Personalized Career & Education Advisor for Indian Students",
+  keywords: [
+    "education",
+    "career",
+    "guidance",
+    "colleges",
+    "admissions",
+    "scholarships",
+    "India",
+  ],
   authors: [{ name: "PathNiti Team" }],
   creator: "PathNiti",
   publisher: "PathNiti",
@@ -22,10 +34,13 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+  ),
   openGraph: {
     title: "PathNiti - Your Path. Your Future. Simplified.",
-    description: "One-Stop Personalized Career & Education Advisor for Indian Students",
+    description:
+      "One-Stop Personalized Career & Education Advisor for Indian Students",
     url: "/",
     siteName: "PathNiti",
     locale: "en_IN",
@@ -34,7 +49,8 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "PathNiti - Your Path. Your Future. Simplified.",
-    description: "One-Stop Personalized Career & Education Advisor for Indian Students",
+    description:
+      "One-Stop Personalized Career & Education Advisor for Indian Students",
   },
   robots: {
     index: true,

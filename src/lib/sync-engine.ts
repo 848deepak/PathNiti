@@ -3,8 +3,11 @@
  * Handles synchronization between offline storage and server database
  */
 
-import { offlineStorage, OfflineQuizResponse, OfflineAssessmentSession, OfflineChatMessage } from './offline-storage';
-import { supabase } from './supabase';
+import {
+  offlineStorage,
+  OfflineChatMessage,
+} from "./offline-storage";
+import { supabase } from "./supabase";
 
 export interface SyncStatus {
   isOnline: boolean;
@@ -25,11 +28,12 @@ export interface SyncResult {
 class SyncEngine {
   private syncInProgress = false;
   private syncInterval: NodeJS.Timeout | null = null;
-  private onlineStatus = typeof window !== 'undefined' ? navigator.onLine : true;
+  private onlineStatus =
+    typeof window !== "undefined" ? navigator.onLine : true;
   private listeners: Array<(status: SyncStatus) => void> = [];
 
   constructor() {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       this.setupEventListeners();
       this.startPeriodicSync();
     }
@@ -37,19 +41,19 @@ class SyncEngine {
 
   private setupEventListeners(): void {
     // Listen for online/offline status changes
-    window.addEventListener('online', () => {
+    window.addEventListener("online", () => {
       this.onlineStatus = true;
       this.notifyListeners();
       this.triggerSync();
     });
 
-    window.addEventListener('offline', () => {
+    window.addEventListener("offline", () => {
       this.onlineStatus = false;
       this.notifyListeners();
     });
 
     // Listen for visibility changes to sync when user returns
-    document.addEventListener('visibilitychange', () => {
+    document.addEventListener("visibilitychange", () => {
       if (!document.hidden && this.onlineStatus) {
         this.triggerSync();
       }
@@ -58,11 +62,14 @@ class SyncEngine {
 
   private startPeriodicSync(): void {
     // Sync every 5 minutes when online
-    this.syncInterval = setInterval(() => {
-      if (this.onlineStatus && !this.syncInProgress) {
-        this.triggerSync();
-      }
-    }, 5 * 60 * 1000); // 5 minutes
+    this.syncInterval = setInterval(
+      () => {
+        if (this.onlineStatus && !this.syncInProgress) {
+          this.triggerSync();
+        }
+      },
+      5 * 60 * 1000,
+    ); // 5 minutes
   }
 
   public addStatusListener(listener: (status: SyncStatus) => void): () => void {
@@ -77,16 +84,16 @@ class SyncEngine {
 
   private notifyListeners(): void {
     const status = this.getSyncStatus();
-    this.listeners.forEach(listener => listener(status));
+    this.listeners.forEach((listener) => listener(status));
   }
 
   public getSyncStatus(): SyncStatus {
     return {
       isOnline: this.onlineStatus,
-      lastSyncTime: localStorage.getItem('lastSyncTime'),
+      lastSyncTime: localStorage.getItem("lastSyncTime"),
       pendingItems: 0, // Will be calculated dynamically
       syncInProgress: this.syncInProgress,
-      lastError: localStorage.getItem('lastSyncError'),
+      lastError: localStorage.getItem("lastSyncError"),
     };
   }
 
@@ -96,7 +103,7 @@ class SyncEngine {
         success: false,
         syncedItems: 0,
         failedItems: 0,
-        errors: ['Sync already in progress or offline'],
+        errors: ["Sync already in progress or offline"],
         duration: 0,
       };
     }
@@ -115,25 +122,33 @@ class SyncEngine {
       ]);
 
       const syncedItems = results
-        .filter(result => result.status === 'fulfilled')
-        .reduce((sum, result) => sum + (result as PromiseFulfilledResult<number>).value, 0);
+        .filter((result) => result.status === "fulfilled")
+        .reduce(
+          (sum, result) =>
+            sum + (result as PromiseFulfilledResult<number>).value,
+          0,
+        );
 
-      const failedItems = results
-        .filter(result => result.status === 'rejected')
-        .length;
+      const failedItems = results.filter(
+        (result) => result.status === "rejected",
+      ).length;
 
       const errors = results
-        .filter(result => result.status === 'rejected')
-        .map(result => (result as PromiseRejectedResult).reason?.message || 'Unknown error');
+        .filter((result) => result.status === "rejected")
+        .map(
+          (result) =>
+            (result as PromiseRejectedResult).reason?.message ||
+            "Unknown error",
+        );
 
       const success = failedItems === 0;
       const duration = Date.now() - startTime;
 
       if (success) {
-        localStorage.setItem('lastSyncTime', new Date().toISOString());
-        localStorage.removeItem('lastSyncError');
+        localStorage.setItem("lastSyncTime", new Date().toISOString());
+        localStorage.removeItem("lastSyncError");
       } else {
-        localStorage.setItem('lastSyncError', errors.join('; '));
+        localStorage.setItem("lastSyncError", errors.join("; "));
       }
 
       const syncResult: SyncResult = {
@@ -156,7 +171,7 @@ class SyncEngine {
         success: false,
         syncedItems: 0,
         failedItems: 1,
-        errors: [error instanceof Error ? error.message : 'Unknown error'],
+        errors: [error instanceof Error ? error.message : "Unknown error"],
         duration: Date.now() - startTime,
       };
     }
@@ -168,26 +183,24 @@ class SyncEngine {
 
     for (const response of unsyncedResponses) {
       try {
-        const { error } = await supabase
-          .from('assessment_responses')
-          .insert({
-            session_id: response.session_id,
-            question_id: response.question_id,
-            user_answer: response.user_answer,
-            time_taken: response.time_taken,
-            is_correct: response.is_correct,
-            answered_at: response.answered_at,
-          });
+        const { error } = await (supabase as any).from("assessment_responses").insert({
+          session_id: response.session_id,
+          question_id: response.question_id,
+          user_answer: response.user_answer,
+          time_taken: response.time_taken,
+          is_correct: response.is_correct,
+          answered_at: response.answered_at,
+        });
 
         if (error) {
-          console.error('Failed to sync quiz response:', error);
+          console.error("Failed to sync quiz response:", error);
           continue;
         }
 
         await offlineStorage.markQuizResponseSynced(response.id);
         syncedCount++;
       } catch (error) {
-        console.error('Error syncing quiz response:', error);
+        console.error("Error syncing quiz response:", error);
       }
     }
 
@@ -195,40 +208,41 @@ class SyncEngine {
   }
 
   private async syncAssessmentSessions(): Promise<number> {
-    const unsyncedSessions = await offlineStorage.getUnsyncedAssessmentSessions();
+    const unsyncedSessions =
+      await offlineStorage.getUnsyncedAssessmentSessions();
     let syncedCount = 0;
 
     for (const session of unsyncedSessions) {
       try {
-        const { error } = await supabase
-          .from('assessment_sessions')
-          .upsert({
-            id: session.id,
-            user_id: session.user_id,
-            status: session.status,
-            started_at: session.started_at,
-            completed_at: session.completed_at,
-            aptitude_scores: session.aptitude_scores,
-            riasec_scores: session.riasec_scores,
-            personality_scores: session.personality_scores,
-            subject_performance: session.subject_performance,
-            practical_constraints: session.practical_constraints,
-            total_score: session.total_score,
-            total_questions: session.total_questions,
-            answered_questions: session.answered_questions,
-            time_spent: session.time_spent,
-            session_type: session.session_type,
-          });
+        const { error } = await (supabase as any).from("assessment_sessions").upsert({
+          id: session.id,
+          user_id: session.user_id,
+          status: session.status,
+          started_at: session.started_at,
+          completed_at: session.completed_at,
+          aptitude_scores: session.aptitude_scores,
+          riasec_scores: session.riasec_scores,
+          personality_scores: session.personality_scores,
+          subject_performance: session.subject_performance,
+          practical_constraints: session.practical_constraints,
+          total_score: session.total_score,
+          total_questions: session.total_questions,
+          answered_questions: session.answered_questions,
+          time_spent: session.time_spent,
+          session_type: session.session_type,
+        });
 
         if (error) {
-          console.error('Failed to sync assessment session:', error);
+          console.error("Failed to sync assessment session:", error);
           continue;
         }
 
-        await offlineStorage.updateAssessmentSession(session.id, { synced: true });
+        await offlineStorage.updateAssessmentSession(session.id, {
+          synced: true,
+        });
         syncedCount++;
       } catch (error) {
-        console.error('Error syncing assessment session:', error);
+        console.error("Error syncing assessment session:", error);
       }
     }
 
@@ -238,32 +252,32 @@ class SyncEngine {
   private async syncChatMessages(): Promise<number> {
     // Get unsynced chat messages from sync queue
     const syncQueue = await offlineStorage.getSyncQueue();
-    const chatMessages = syncQueue.filter(item => item.type === 'chat_message');
+    const chatMessages = syncQueue.filter(
+      (item) => item.type === "chat_message",
+    );
     let syncedCount = 0;
 
     for (const item of chatMessages) {
       try {
-        const message = item.data as OfflineChatMessage;
-        
-        const { error } = await supabase
-          .from('chat_messages')
-          .insert({
-            session_id: message.session_id,
-            type: message.type,
-            content: message.content,
-            timestamp: message.timestamp,
-            metadata: message.metadata,
-          });
+        const message = item.data as unknown as OfflineChatMessage;
+
+        const { error } = await (supabase as any).from("chat_messages").insert({
+          session_id: message.session_id,
+          type: message.type,
+          content: message.content,
+          timestamp: message.timestamp,
+          metadata: message.metadata,
+        });
 
         if (error) {
-          console.error('Failed to sync chat message:', error);
+          console.error("Failed to sync chat message:", error);
           continue;
         }
 
         await offlineStorage.removeFromSyncQueue(item.id);
         syncedCount++;
       } catch (error) {
-        console.error('Error syncing chat message:', error);
+        console.error("Error syncing chat message:", error);
       }
     }
 
@@ -277,8 +291,8 @@ class SyncEngine {
     }
 
     try {
-      const { error } = await supabase
-        .from('profiles')
+      const { error } = await (supabase as any)
+        .from("profiles")
         .update({
           phone: profile.phone,
           first_name: profile.first_name,
@@ -292,10 +306,10 @@ class SyncEngine {
           avatar_url: profile.avatar_url,
           updated_at: new Date().toISOString(),
         })
-        .eq('id', profile.id);
+        .eq("id", profile.id);
 
       if (error) {
-        console.error('Failed to sync user profile:', error);
+        console.error("Failed to sync user profile:", error);
         return 0;
       }
 
@@ -308,7 +322,7 @@ class SyncEngine {
 
       return 1;
     } catch (error) {
-      console.error('Error syncing user profile:', error);
+      console.error("Error syncing user profile:", error);
       return 0;
     }
   }
@@ -322,7 +336,7 @@ class SyncEngine {
       await this.refreshAwarenessContentCache();
       return 1;
     } catch (error) {
-      console.error('Error syncing cache data:', error);
+      console.error("Error syncing cache data:", error);
       return 0;
     }
   }
@@ -330,54 +344,56 @@ class SyncEngine {
   private async refreshCollegesCache(): Promise<void> {
     try {
       const { data: colleges, error } = await supabase
-        .from('colleges')
-        .select(`
+        .from("colleges")
+        .select(
+          `
           id, name, type, location, address, website, phone, email,
           established_year, accreditation, facilities, is_active,
           programs(name, stream, level, duration, eligibility, fees)
-        `)
-        .eq('is_active', true)
+        `,
+        )
+        .eq("is_active", true)
         .limit(100); // Limit to prevent large downloads
 
       if (error) {
-        console.error('Failed to fetch colleges:', error);
+        console.error("Failed to fetch colleges:", error);
         return;
       }
 
-      const offlineColleges = colleges.map(college => ({
-        ...college,
+      const offlineColleges = colleges.map((college) => ({
+        ...(college as { [key: string]: unknown }),
         cached_at: new Date().toISOString(),
         last_synced: new Date().toISOString(),
       }));
 
-      await offlineStorage.cacheColleges(offlineColleges);
+      await offlineStorage.cacheColleges(offlineColleges as any);
     } catch (error) {
-      console.error('Error refreshing colleges cache:', error);
+      console.error("Error refreshing colleges cache:", error);
     }
   }
 
   private async refreshScholarshipsCache(): Promise<void> {
     try {
       const { data: scholarships, error } = await supabase
-        .from('scholarships')
-        .select('*')
-        .eq('is_active', true)
+        .from("scholarships")
+        .select("*")
+        .eq("is_active", true)
         .limit(50);
 
       if (error) {
-        console.error('Failed to fetch scholarships:', error);
+        console.error("Failed to fetch scholarships:", error);
         return;
       }
 
-      const offlineScholarships = scholarships.map(scholarship => ({
-        ...scholarship,
+      const offlineScholarships = scholarships.map((scholarship) => ({
+        ...(scholarship as { [key: string]: unknown }),
         cached_at: new Date().toISOString(),
         last_synced: new Date().toISOString(),
       }));
 
-      await offlineStorage.cacheScholarships(offlineScholarships);
+      await offlineStorage.cacheScholarships(offlineScholarships as any);
     } catch (error) {
-      console.error('Error refreshing scholarships cache:', error);
+      console.error("Error refreshing scholarships cache:", error);
     }
   }
 
@@ -387,22 +403,24 @@ class SyncEngine {
       // For now, we'll create some sample content
       const sampleContent = [
         {
-          id: 'awareness_1',
-          title: 'Career Guidance for Class 10 Students',
-          content: 'Choosing the right stream after Class 10 is crucial for your future career...',
-          type: 'career_guide' as const,
-          category: 'stream_selection',
-          tags: ['class10', 'stream', 'career'],
+          id: "awareness_1",
+          title: "Career Guidance for Class 10 Students",
+          content:
+            "Choosing the right stream after Class 10 is crucial for your future career...",
+          type: "career_guide" as const,
+          category: "stream_selection",
+          tags: ["class10", "stream", "career"],
           created_at: new Date().toISOString(),
           cached_at: new Date().toISOString(),
         },
         {
-          id: 'awareness_2',
-          title: 'Government Scholarship Programs',
-          content: 'Various government scholarship programs are available for students...',
-          type: 'faq' as const,
-          category: 'scholarships',
-          tags: ['scholarship', 'government', 'financial_aid'],
+          id: "awareness_2",
+          title: "Government Scholarship Programs",
+          content:
+            "Various government scholarship programs are available for students...",
+          type: "faq" as const,
+          category: "scholarships",
+          tags: ["scholarship", "government", "financial_aid"],
           created_at: new Date().toISOString(),
           cached_at: new Date().toISOString(),
         },
@@ -410,7 +428,7 @@ class SyncEngine {
 
       await offlineStorage.cacheAwarenessContent(sampleContent);
     } catch (error) {
-      console.error('Error refreshing awareness content cache:', error);
+      console.error("Error refreshing awareness content cache:", error);
     }
   }
 
@@ -418,7 +436,7 @@ class SyncEngine {
     // Force sync regardless of online status (for testing)
     const originalStatus = this.onlineStatus;
     this.onlineStatus = true;
-    
+
     try {
       return await this.triggerSync();
     } finally {

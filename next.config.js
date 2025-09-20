@@ -7,6 +7,12 @@ const __dirname = path.dirname(__filename);
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // For mobile builds, we'll use a regular build, not static export
+  // output: process.env.CAPACITOR_BUILD === 'true' ? 'export' : undefined,
+  trailingSlash: true,
+  images: {
+    unoptimized: process.env.CAPACITOR_BUILD === 'true',
+  },
   // For Next.js 15, serverComponentsExternalPackages moved to root level
   serverExternalPackages: [
     "@supabase/ssr",
@@ -18,6 +24,7 @@ const nextConfig = {
     optimizePackageImports: ['@supabase/supabase-js'],
   },
   images: {
+    unoptimized: process.env.CAPACITOR_BUILD === 'true',
     domains: ["localhost", "maps.googleapis.com"],
     remotePatterns: [
       {

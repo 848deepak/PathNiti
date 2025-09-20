@@ -1,0 +1,196 @@
+/**
+ * Mobile Provider
+ * Provides mobile-specific features and device integration
+ */
+
+'use client';
+
+import React, { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
+import { capacitorService, DeviceInfo } from '@/lib/capacitor-service';
+import { offlineStorageService, SyncResult } from '@/lib/offline-storage';
+
+interface MobileContextType {
+  // Device info
+  deviceInfo: DeviceInfo | null;
+  isNative: boolean;
+  isMobile: boolean;
+  isOnline: boolean;
+  
+  // Offline storage
+  syncStatus: { pending: number; lastSync: number | null };
+  isDataAvailableOffline: (key: string) => Promise<boolean>;
+  
+  // Mobile features
+  takePhoto: () => Promise<string | null>;
+  getCurrentLocation: () => Promise<any>;
+  triggerHapticFeedback: () => Promise<void>;
+  showNotification: (title: string, body: string, data?: any) => Promise<void>;
+  
+  // Sync
+  syncOfflineData: () => Promise<SyncResult>;
+  isSyncing: boolean;
+}
+
+const MobileContext = createContext<MobileContextType | null>(null);
+
+interface MobileProviderProps {
+  children: ReactNode;
+}
+
+export function MobileProvider({ children }: MobileProviderProps) {
+  const [deviceInfo, setDeviceInfo] = useState<DeviceInfo | null>(null);
+  const [isOnline, setIsOnline] = useState(true);
+  const [syncStatus, setSyncStatus] = useState<{ pending: number; lastSync: number | null }>({ pending: 0, lastSync: null });
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Handle offline data sync
+  const handleSyncOfflineData = useCallback(async (): Promise<SyncResult> => {
+    if (isSyncing) {
+      return { success: false, synced: 0, failed: 0, errors: ['Sync already in progress'] };
+    }
+
+    setIsSyncing(true);
+    try {
+      const result = await offlineStorageService.syncOfflineData();
+      
+      if (result.success) {
+        await offlineStorageService.setLastSyncTime();
+        const newStatus = await offlineStorageService.getSyncStatus();
+        setSyncStatus(newStatus);
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Sync failed:', error);
+      return { success: false, synced: 0, failed: 0, errors: [error instanceof Error ? error.message : 'Unknown error'] };
+    } finally {
+      setIsSyncing(false);
+    }
+  }, [isSyncing]);
+
+  // Initialize mobile services
+  useEffect(() => {
+    const initializeMobile = async () => {
+      try {
+        // Initialize Capacitor services
+        await capacitorService.initialize();
+        
+        // Initialize offline storage
+        await offlineStorageService.initialize();
+        
+        // Get device info
+        const info = capacitorService.getDeviceInfoSync();
+        setDeviceInfo(info);
+        
+        // Check online status
+        const online = await capacitorService.isOnline();
+        setIsOnline(online);
+        
+        // Get sync status
+        const status = await offlineStorageService.getSyncStatus();
+        setSyncStatus(status);
+        
+        setIsInitialized(true);
+        console.log('Mobile services initialized');
+      } catch (error) {
+        console.error('Failed to initialize mobile services:', error);
+      }
+    };
+
+    initializeMobile();
+  }, []);
+
+  // Listen for network status changes
+  useEffect(() => {
+    const handleNetworkChange = async () => {
+      const online = await capacitorService.isOnline();
+      setIsOnline(online);
+      
+      // Auto-sync when back online
+      if (online && syncStatus.pending > 0) {
+        handleSyncOfflineData();
+      }
+    };
+
+    // Listen for network status changes
+    window.addEventListener('networkStatusChange', handleNetworkChange);
+    window.addEventListener('online', handleNetworkChange);
+    window.addEventListener('offline', handleNetworkChange);
+
+    return () => {
+      window.removeEventListener('networkStatusChange', handleNetworkChange);
+      window.removeEventListener('online', handleNetworkChange);
+      window.removeEventListener('offline', handleNetworkChange);
+    };
+  }, [syncStatus.pending, handleSyncOfflineData]);
+
+  // Periodic sync check
+  useEffect(() => {
+    if (!isInitialized) return;
+
+    const syncInterval = setInterval(async () => {
+      if (isOnline && syncStatus.pending > 0) {
+        await handleSyncOfflineData();
+      }
+    }, 30000); // Check every 30 seconds
+
+    return () => clearInterval(syncInterval);
+  }, [isInitialized, isOnline, syncStatus.pending, handleSyncOfflineData]);
+
+  // Check if data is available offline
+  const isDataAvailableOffline = async (key: string): Promise<boolean> => {
+    return await offlineStorageService.isDataAvailableOffline(key);
+  };
+
+  // Take photo
+  const takePhoto = async (): Promise<string | null> => {
+    return await capacitorService.takePhoto();
+  };
+
+  // Get current location
+  const getCurrentLocation = async () => {
+    return await capacitorService.getCurrentLocation();
+  };
+
+  // Trigger haptic feedback
+  const triggerHapticFeedback = async (): Promise<void> => {
+    await capacitorService.triggerHapticFeedback();
+  };
+
+  // Show notification
+  const showNotification = async (title: string, body: string, data?: any): Promise<void> => {
+    await capacitorService.showLocalNotification({ title, body, data });
+  };
+
+  const contextValue: MobileContextType = {
+    deviceInfo,
+    isNative: capacitorService.isNative(),
+    isMobile: deviceInfo?.isNative || false,
+    isOnline,
+    syncStatus,
+    isDataAvailableOffline,
+    takePhoto,
+    getCurrentLocation,
+    triggerHapticFeedback,
+    showNotification,
+    syncOfflineData: handleSyncOfflineData,
+    isSyncing,
+  };
+
+  return (
+    <MobileContext.Provider value={contextValue}>
+      {children}
+    </MobileContext.Provider>
+  );
+}
+
+export function useMobile(): MobileContextType {
+  const context = useContext(MobileContext);
+  if (!context) {
+    throw new Error('useMobile must be used within a MobileProvider');
+  }
+  return context;
+}
+
+export default MobileProvider;

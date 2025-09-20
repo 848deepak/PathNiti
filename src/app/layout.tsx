@@ -9,6 +9,8 @@ import {
 import { SarthiChatWidget } from "@/components/SarthiChatWidget";
 import { NetworkStatusIndicator } from "@/components/NetworkStatusIndicator";
 import { OfflineErrorBoundary } from "@/components/OfflineErrorBoundary";
+import { MobileWrapper } from "@/components/MobileWrapper";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 
 // Use system fonts as fallback to avoid network dependency during build
 const inter = {
@@ -107,11 +109,14 @@ export default function RootLayout({
         <Providers>
           <ServiceWorkerProvider>
             <OfflineErrorBoundary>
-              <AuthErrorBanner />
-              <NetworkStatusIndicator />
-              {children}
-              <AuthErrorNotification />
-              <SarthiChatWidget />
+              <MobileWrapper>
+                <AuthErrorBanner />
+                <NetworkStatusIndicator />
+                {children}
+                <AuthErrorNotification />
+                <SarthiChatWidget />
+                <PWAInstallPrompt />
+              </MobileWrapper>
             </OfflineErrorBoundary>
           </ServiceWorkerProvider>
         </Providers>

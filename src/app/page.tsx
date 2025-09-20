@@ -18,6 +18,7 @@ import Link from "next/link";
 import { useAuth } from "./providers";
 import { useState, useEffect } from "react";
 import { DynamicHeader } from "@/components/DynamicHeader";
+import { InstallAppButton } from "@/components/InstallAppButton";
 
 export default function Home() {
   const [mounted, setMounted] = useState(false);
@@ -538,6 +539,12 @@ export default function Home() {
                   </span>
                 </Link>
               </Button>
+              
+              <InstallAppButton 
+                variant="outline"
+                size="lg"
+                className="px-8 py-4 text-lg border-2 border-white/30 bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-all duration-500 hover:scale-110 shadow-xl hover:shadow-2xl"
+              />
             </div>
 
             {/* Stats */}

@@ -63,6 +63,13 @@ export async function GET(request: Request) {
 
       if (profileError) {
         console.error("Profile fetch error for user:", userId, profileError);
+        // If profile doesn't exist, return empty notifications instead of error
+        if (profileError.code === "PGRST116") {
+          return NextResponse.json({
+            success: true,
+            data: [],
+          });
+        }
         return NextResponse.json(
           { 
             error: "Profile not found or access denied.", 

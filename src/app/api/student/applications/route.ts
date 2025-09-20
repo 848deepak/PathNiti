@@ -49,7 +49,22 @@ export async function GET() {
       .eq("id", user.id)
       .single();
 
-    if (profileError || (profile as { role?: string })?.role !== "student") {
+    if (profileError) {
+      console.error("Profile fetch error for user:", user.id, profileError);
+      // If profile doesn't exist, return empty applications instead of error
+      if (profileError.code === "PGRST116") {
+        return NextResponse.json({
+          success: true,
+          data: [],
+        });
+      }
+      return NextResponse.json(
+        { error: "Access denied. Student role required." },
+        { status: 403 },
+      );
+    }
+
+    if ((profile as { role?: string })?.role !== "student") {
       return NextResponse.json(
         { error: "Access denied. Student role required." },
         { status: 403 },

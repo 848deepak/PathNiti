@@ -184,20 +184,12 @@ export function ApplicationNotifications({
           <CardDescription>Stay updated on your applications</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-center py-8">
-            <AlertCircle className="h-6 w-6 text-red-500 mr-2" />
-            <div className="text-center">
-              <p className="text-sm text-red-500 mb-2">{error}</p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={fetchNotifications}
-                className="flex items-center"
-              >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Retry
-              </Button>
-            </div>
+          <div className="text-center py-8">
+            <Bell className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-sm text-gray-500 mb-2">No notifications yet</p>
+            <p className="text-xs text-gray-400">
+              You&apos;ll receive updates about your applications here
+            </p>
           </div>
         </CardContent>
       </Card>

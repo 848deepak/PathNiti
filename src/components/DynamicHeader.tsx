@@ -20,7 +20,7 @@ import {
   Search,
   ChevronDown,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 interface DynamicHeaderProps {
   showNavigation?: boolean;
@@ -37,6 +37,9 @@ export function DynamicHeader({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   // Handle scroll effect for header
   useEffect(() => {
@@ -47,6 +50,42 @@ export function DynamicHeader({
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/student/notifications?userId=${user?.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setNotifications(data.notifications || []);
+        setUnreadCount(data.unreadCount || 0);
+      }
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    }
+  }, [user?.id]);
+
+  // Fetch notifications
+  useEffect(() => {
+    if (user?.id) {
+      fetchNotifications();
+    }
+  }, [user?.id, fetchNotifications]);
+
+  const markAllAsRead = async () => {
+    try {
+      const response = await fetch("/api/student/notifications/mark-all-read", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user?.id }),
+      });
+      if (response.ok) {
+        setUnreadCount(0);
+        setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+      }
+    } catch (error) {
+      console.error("Error marking notifications as read:", error);
+    }
+  };
+
   // Handle click outside to close dropdowns
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -55,10 +94,14 @@ export function DynamicHeader({
       if (showUserDropdown && !target.closest('.user-dropdown-container')) {
         setShowUserDropdown(false);
       }
+      // Check if click is outside the notifications dropdown
+      if (showNotifications && !target.closest('.notifications-container')) {
+        setShowNotifications(false);
+      }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [showUserDropdown]);
+  }, [showUserDropdown, showNotifications]);
 
   const handleSignOut = async () => {
     try {
@@ -157,10 +200,90 @@ export function DynamicHeader({
               {user ? (
                 <div className="flex items-center space-x-3">
                   {/* Notifications */}
-                  <Button variant="ghost" size="sm" className="relative">
-                    <Bell className="w-4 h-4" />
-                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                  </Button>
+                  <div className="relative notifications-container">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="relative"
+                      onClick={() => setShowNotifications(!showNotifications)}
+                    >
+                      <Bell className="w-4 h-4" />
+                      {unreadCount > 0 && (
+                        <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                      )}
+                    </Button>
+
+                    {showNotifications && (
+                      <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-lg shadow-lg border z-50">
+                        <div className="p-4 border-b">
+                          <div className="flex items-center justify-between">
+                            <h3 className="text-lg font-semibold">Notifications</h3>
+                            <div className="flex items-center space-x-2">
+                              {unreadCount > 0 && (
+                                <Button size="sm" variant="outline" onClick={markAllAsRead}>
+                                  Mark all read
+                                </Button>
+                              )}
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setShowNotifications(false)}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="max-h-96 overflow-y-auto">
+                          {notifications.length === 0 ? (
+                            <div className="p-4 text-center text-gray-500">
+                              No notifications yet
+                            </div>
+                          ) : (
+                            notifications.slice(0, 5).map((notification) => (
+                              <div
+                                key={notification.id}
+                                className={`p-4 border-b hover:bg-gray-50 cursor-pointer ${
+                                  !notification.is_read ? "bg-blue-50" : ""
+                                }`}
+                              >
+                                <div className="flex items-start space-x-3">
+                                  <div className={`w-2 h-2 rounded-full mt-2 ${
+                                    !notification.is_read ? "bg-blue-500" : "bg-gray-300"
+                                  }`}></div>
+                                  <div className="flex-1">
+                                    <p className="text-sm font-medium text-gray-900">
+                                      {notification.title}
+                                    </p>
+                                    <p className="text-sm text-gray-600 mt-1">
+                                      {notification.message}
+                                    </p>
+                                    <p className="text-xs text-gray-400 mt-1">
+                                      {new Date(notification.created_at).toLocaleDateString()}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
+
+                        {notifications.length > 5 && (
+                          <div className="p-4 border-t">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full"
+                              asChild
+                            >
+                              <Link href="/dashboard">View all notifications</Link>
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
 
                   {/* User Dropdown */}
                   <div className="relative user-dropdown-container">

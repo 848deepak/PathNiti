@@ -30,6 +30,7 @@ const ROUTE_CONFIG = {
     "/auth/signup",
     "/auth/callback",
     "/auth/complete-profile",
+    "/auth/forgot-password",
     "/auth/reset-password",
     "/offline",
     "/privacy",

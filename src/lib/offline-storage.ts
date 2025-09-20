@@ -3,7 +3,7 @@
  * Handles offline data storage and synchronization with Supabase
  */
 
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from './supabase';
 import { capacitorService } from './capacitor-service';
 
 export interface OfflineData {
@@ -34,7 +34,6 @@ export interface SyncResult {
 
 class OfflineStorageService {
   private db: IDBDatabase | null = null;
-  private supabase: any = null;
   private isInitialized = false;
   private syncInProgress = false;
 
@@ -47,12 +46,6 @@ class OfflineStorageService {
     try {
       // Initialize IndexedDB
       await this.initializeIndexedDB();
-
-      // Initialize Supabase client
-      this.supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      );
 
       this.isInitialized = true;
       console.log('OfflineStorageService: Initialized successfully');
@@ -304,8 +297,8 @@ class OfflineStorageService {
    * Sync offline data with Supabase
    */
   async syncOfflineData(): Promise<SyncResult> {
-    if (!this.supabase || this.syncInProgress) {
-      return { success: false, synced: 0, failed: 0, errors: ['Sync already in progress or not initialized'] };
+    if (this.syncInProgress) {
+      return { success: false, synced: 0, failed: 0, errors: ['Sync already in progress'] };
     }
 
     this.syncInProgress = true;
@@ -323,14 +316,14 @@ class OfflineStorageService {
 
           switch (item.action) {
             case 'INSERT':
-              const { error: insertError } = await this.supabase
+              const { error: insertError } = await (supabase as any)
                 .from(item.table)
                 .insert(item.data);
               success = !insertError;
               break;
 
             case 'UPDATE':
-              const { error: updateError } = await this.supabase
+              const { error: updateError } = await (supabase as any)
                 .from(item.table)
                 .update(item.data)
                 .eq('id', item.data.id);
@@ -338,7 +331,7 @@ class OfflineStorageService {
               break;
 
             case 'DELETE':
-              const { error: deleteError } = await this.supabase
+              const { error: deleteError } = await (supabase as any)
                 .from(item.table)
                 .delete()
                 .eq('id', item.data.id);

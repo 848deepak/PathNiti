@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, useCallback, Suspense } from "react";
 import { useAuth } from "@/app/providers";
 import { useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -87,13 +87,7 @@ function CareerResultsContent() {
   const [loadingResults, setLoadingResults] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!loading && user && assessmentId) {
-      loadResults();
-    }
-  }, [user, loading, assessmentId]);
-
-  const loadResults = async () => {
+  const loadResults = useCallback(async () => {
     try {
       setLoadingResults(true);
       
@@ -143,7 +137,13 @@ function CareerResultsContent() {
     } finally {
       setLoadingResults(false);
     }
-  };
+  }, [assessmentId]);
+
+  useEffect(() => {
+    if (!loading && user && assessmentId) {
+      loadResults();
+    }
+  }, [user, loading, assessmentId, loadResults]);
 
   const getCategoryIcon = (category: string) => {
     const IconComponent = CATEGORY_ICONS[category as keyof typeof CATEGORY_ICONS] || Brain;
@@ -300,64 +300,123 @@ function CareerResultsContent() {
           </CardContent>
         </Card>
 
-        {/* Career Recommendations */}
-        <Card className="mb-6">
+        {/* Primary Career Recommendation */}
+        <Card className="mb-6 border-l-4 border-l-green-500">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Star className="w-5 h-5" />
-              Recommended Career Paths
+              <Star className="w-5 h-5 text-green-600" />
+              Your Best Career Match
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-6">
-              {results.recommended_path.map((recommendation, index) => (
-                <div key={index} className="border rounded-lg p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <h3 className="text-xl font-semibold mb-2">
-                        {index + 1}. {recommendation.stream_or_course}
-                      </h3>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Badge className={getDemandColor(recommendation.job_demand_trend)}>
-                          {recommendation.job_demand_trend.replace('_', ' ').toUpperCase()} DEMAND
-                        </Badge>
-                        <Badge variant="outline">
-                          {recommendation.time_to_earn}
-                        </Badge>
-                        <Badge variant="outline">
-                          {recommendation.average_salary}
-                        </Badge>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className={`text-2xl font-bold ${getConfidenceColor(recommendation.confidence_score)}`}>
-                        {(recommendation.confidence_score * 100).toFixed(0)}%
-                      </div>
-                      <div className="text-sm text-gray-600">Confidence</div>
+            {results.recommended_path.length > 0 && (
+              <div className="border rounded-lg p-6 bg-green-50">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h3 className="text-2xl font-bold mb-2 text-green-800">
+                      {results.recommended_path[0].stream_or_course}
+                    </h3>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Badge className={getDemandColor(results.recommended_path[0].job_demand_trend)}>
+                        {results.recommended_path[0].job_demand_trend.replace('_', ' ').toUpperCase()} DEMAND
+                      </Badge>
+                      <Badge variant="outline">
+                        {results.recommended_path[0].time_to_earn}
+                      </Badge>
+                      <Badge variant="outline">
+                        {results.recommended_path[0].average_salary}
+                      </Badge>
                     </div>
                   </div>
-                  
-                  <p className="text-gray-700 mb-4">{recommendation.reasoning}</p>
-                  
-                  <div>
-                    <h4 className="font-semibold mb-2 flex items-center gap-2">
-                      <Briefcase className="w-4 h-4" />
-                      Career Opportunities
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      {recommendation.career_opportunities.map((career, careerIndex) => (
-                        <div key={careerIndex} className="flex items-center gap-2 text-sm">
-                          <CheckCircle className="w-4 h-4 text-green-500" />
-                          <span>{career}</span>
-                        </div>
-                      ))}
+                  <div className="text-right">
+                    <div className={`text-3xl font-bold ${getConfidenceColor(results.recommended_path[0].confidence_score)}`}>
+                      {(results.recommended_path[0].confidence_score * 100).toFixed(0)}%
                     </div>
+                    <div className="text-sm text-gray-600">Match Confidence</div>
                   </div>
                 </div>
-              ))}
-            </div>
+                
+                <p className="text-gray-700 mb-4 text-lg">{results.recommended_path[0].reasoning}</p>
+                
+                <div>
+                  <h4 className="font-semibold mb-3 flex items-center gap-2 text-lg">
+                    <Briefcase className="w-5 h-5" />
+                    Career Opportunities
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {results.recommended_path[0].career_opportunities.map((career, careerIndex) => (
+                      <div key={careerIndex} className="flex items-center gap-2 text-sm bg-white p-2 rounded">
+                        <CheckCircle className="w-4 h-4 text-green-500" />
+                        <span>{career}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
+
+        {/* Alternative Career Recommendations */}
+        {results.recommended_path.length > 1 && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Target className="w-5 h-5" />
+                Alternative Options
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {results.recommended_path.slice(1).map((recommendation, index) => (
+                  <div key={index} className="border rounded-lg p-4 bg-gray-50">
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <h3 className="text-lg font-semibold mb-2">
+                          {index + 2}. {recommendation.stream_or_course}
+                        </h3>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge className={getDemandColor(recommendation.job_demand_trend)}>
+                            {recommendation.job_demand_trend.replace('_', ' ').toUpperCase()} DEMAND
+                          </Badge>
+                          <Badge variant="outline">
+                            {recommendation.time_to_earn}
+                          </Badge>
+                          <Badge variant="outline">
+                            {recommendation.average_salary}
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className={`text-xl font-bold ${getConfidenceColor(recommendation.confidence_score)}`}>
+                          {(recommendation.confidence_score * 100).toFixed(0)}%
+                        </div>
+                        <div className="text-sm text-gray-600">Confidence</div>
+                      </div>
+                    </div>
+                    
+                    <p className="text-gray-700 mb-3">{recommendation.reasoning}</p>
+                    
+                    <div>
+                      <h4 className="font-semibold mb-2 flex items-center gap-2">
+                        <Briefcase className="w-4 h-4" />
+                        Career Opportunities
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        {recommendation.career_opportunities.slice(0, 4).map((career, careerIndex) => (
+                          <div key={careerIndex} className="flex items-center gap-2 text-sm">
+                            <CheckCircle className="w-4 h-4 text-green-500" />
+                            <span>{career}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* AI Insights */}
         <Card className="mb-6">

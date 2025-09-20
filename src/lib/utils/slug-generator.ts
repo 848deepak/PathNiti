@@ -3,7 +3,7 @@
  * Provides functions for generating, validating, and ensuring unique slugs
  */
 
-import { createClient } from "@/lib/supabase/client";
+import { createServiceClient } from "@/lib/supabase/service";
 import type { CollegeSlugValidationResult } from "@/lib/types/college-profile";
 
 export interface CollegeSlugService {
@@ -169,7 +169,7 @@ export async function ensureUniqueSlug(
   baseSlug: string,
   collegeId?: string,
 ): Promise<string> {
-  const supabase = createClient();
+  const client = createServiceClient();
 
   // Validate base slug first
   const validation = validateSlug(baseSlug);
@@ -182,7 +182,7 @@ export async function ensureUniqueSlug(
 
   while (true) {
     // Check if slug exists
-    const { data, error } = await supabase
+    const { data, error } = await client
       .from("colleges")
       .select("id")
       .eq("slug", finalSlug)
@@ -262,9 +262,9 @@ export async function isSlugAvailable(
     return false;
   }
 
-  const supabase = createClient();
+  const client = createServiceClient();
 
-  const { data, error } = await supabase
+  const { data, error } = await client
     .from("colleges")
     .select("id")
     .eq("slug", slug)
@@ -276,7 +276,7 @@ export async function isSlugAvailable(
   }
 
   // Available if no record exists, or it's the same college
-  return !data || (collegeId && (data as { id: string }).id === collegeId);
+  return !data || (collegeId ? (data as { id: string }).id === collegeId : false);
 }
 
 /**

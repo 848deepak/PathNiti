@@ -76,8 +76,12 @@ export default function LastTestReview({
         );
         const result = await response.json();
 
-        if (result.success) {
+        if (response.ok && result.success) {
           setTestData(result.data);
+        } else if (response.status === 404) {
+          // No quiz sessions found - this is normal for new users
+          setTestData(null);
+          setError("No completed assessments found. Complete a quiz to see your results here!");
         } else {
           setError(result.error || "Failed to fetch last test");
         }
@@ -162,6 +166,17 @@ export default function LastTestReview({
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
               {error || "No test data found. Please complete an assessment first."}
+              {!error && (
+                <div className="mt-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => window.location.href = '/assessment'}
+                  >
+                    Take Assessment
+                  </Button>
+                </div>
+              )}
             </AlertDescription>
           </Alert>
         </CardContent>
@@ -170,7 +185,7 @@ export default function LastTestReview({
   }
 
   const { session, questions, summary } = testData;
-  const accuracy = (summary.correct_answers / summary.total_questions) * 100;
+  const accuracy = summary.total_questions > 0 ? (summary.correct_answers / summary.total_questions) * 100 : 0;
 
   return (
     <Card className={className}>

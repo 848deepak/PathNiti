@@ -324,23 +324,22 @@ class ProfileValidator {
   /**
    * Fetch and validate user profile with proper error handling
    */
-  static async validateProfile(supabase: { from: (table: string) => { select: (fields: string) => { eq: (field: string, value: string) => { single: () => Promise<{ data: unknown; error: unknown }> } } } }, userId: string) {
+  static async validateProfile(supabase: { from: (table: string) => { select: (fields: string) => { eq: (field: string, value: string) => { maybeSingle: () => Promise<{ data: unknown; error: unknown }> } } } }, userId: string) {
     try {
       const { data: profile, error } = await supabase
         .from("profiles")
         .select("role, is_verified, first_name, last_name")
         .eq("id", userId)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error("Profile fetch error:", error);
-
-        // Handle specific error cases
-        if ((error as { code?: string }).code === "PGRST116") {
-          return { profile: null, error, needsProfileCreation: true };
-        }
-
         return { profile: null, error, needsProfileCreation: false };
+      }
+
+      // If no profile data, user needs to create a profile
+      if (!profile) {
+        return { profile: null, error: null, needsProfileCreation: true };
       }
 
       // Validate profile completeness
@@ -393,8 +392,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Add debug logging for development
-  if (process.env.NODE_ENV === "development") {
+  // Add debug logging for development (skip health checks)
+  if (process.env.NODE_ENV === "development" && !pathname.includes("/api/health")) {
     console.log(`[Middleware] Processing request for: ${pathname}`);
   }
 

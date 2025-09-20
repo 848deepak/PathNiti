@@ -55,9 +55,21 @@ export default function CollegeProfilePage({
   } | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
 
-  const supabase = createClient();
+  // Use the singleton client instead of creating a new instance
+  const [supabaseClient, setSupabaseClient] = useState<any>(null);
+
+  // Initialize supabase client
+  useEffect(() => {
+    const initSupabase = async () => {
+      const { supabase } = await import("@/lib/supabase");
+      setSupabaseClient(supabase);
+    };
+    initSupabase();
+  }, []);
 
   useEffect(() => {
+    if (!supabaseClient) return; // Wait for supabase to be initialized
+
     const fetchCollegeProfile = async () => {
       try {
         setLoading(true);
@@ -90,7 +102,7 @@ export default function CollegeProfilePage({
       try {
         const {
           data: { user },
-        } = await supabase.auth.getUser();
+        } = await supabaseClient.auth.getUser();
         setUser(user ? {
           id: user.id,
           email: user.email || '',
@@ -99,7 +111,7 @@ export default function CollegeProfilePage({
 
         if (user) {
           // Get user profile to check role
-          const { data: profile, error: profileError } = await supabase
+          const { data: profile, error: profileError } = await supabaseClient
             .from("profiles")
             .select("role")
             .eq("id", user.id)
@@ -115,7 +127,7 @@ export default function CollegeProfilePage({
 
     fetchCollegeProfile();
     fetchUser();
-  }, [params, supabase]);
+  }, [params, supabaseClient]);
 
   if (loading) {
     return (

@@ -6,13 +6,23 @@ import { createOfflineAwareClient } from "./supabase/offline-client";
 import type { Database, UserProfile } from "./supabase/types";
 
 // Create a singleton client instance with offline support
-let supabase: ReturnType<typeof createOfflineAwareClient>;
-try {
-  supabase = createOfflineAwareClient();
-} catch (error) {
-  console.error("Failed to create Supabase client:", error);
-  throw error;
+let supabaseClient: ReturnType<typeof createOfflineAwareClient> | null = null;
+
+function getSupabaseClient(): ReturnType<typeof createOfflineAwareClient> {
+  if (!supabaseClient) {
+    try {
+      supabaseClient = createOfflineAwareClient();
+      console.log("[Supabase] Singleton client created successfully");
+    } catch (error) {
+      console.error("Failed to create Supabase client:", error);
+      throw error;
+    }
+  }
+  return supabaseClient;
 }
+
+// Export the singleton client instance directly
+export const supabase = getSupabaseClient();
 
 // Safe wrapper for getUser() that checks for session first
 export async function safeGetUser() {
@@ -30,8 +40,7 @@ export async function safeGetUser() {
   }
 }
 
-// Export the client and types
-export { supabase };
+// Export types
 export type { Database, UserProfile };
 
 // Re-export the client creation function for browser usage

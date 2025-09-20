@@ -18,26 +18,33 @@ export async function GET(request: NextRequest) {
 
     const supabase = createServiceClient();
 
-    // Get the latest completed assessment session
+    // Get the latest quiz session (regardless of status)
     const { data: latestSession, error: sessionError } = await supabase
-      .from("assessment_sessions")
+      .from("quiz_sessions")
       .select("*")
       .eq("user_id", user_id)
-      .eq("status", "completed")
-      .order("completed_at", { ascending: false })
+      .order("created_at", { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
 
-    if (sessionError || !latestSession) {
+    if (sessionError) {
+      console.error("Error fetching latest session:", sessionError);
       return NextResponse.json(
-        { error: "No completed assessment found" },
+        { error: `Failed to fetch assessment data: ${sessionError.message}` },
+        { status: 500 },
+      );
+    }
+
+    if (!latestSession) {
+      return NextResponse.json(
+        { error: "No quiz sessions found for this user" },
         { status: 404 },
       );
     }
 
     // Get all responses for this session with question details
     const { data: responses, error: responsesError } = await supabase
-      .from("assessment_responses")
+      .from("quiz_responses")
       .select(`
         *,
         quiz_questions (
@@ -46,8 +53,9 @@ export async function GET(request: NextRequest) {
           options,
           correct_answer,
           category,
-          difficulty_level,
-          explanation
+          question_type,
+          time_limit,
+          scoring_weight
         )
       `)
       .eq("session_id", (latestSession as any).id)
@@ -70,25 +78,31 @@ export async function GET(request: NextRequest) {
         riasec_scores: (latestSession as any).riasec_scores,
         personality_scores: (latestSession as any).personality_scores,
       },
-      questions: responses.map((response: any) => ({
+      questions: responses?.map((response: any) => ({
         question_id: response.question_id,
-        question_text: response.quiz_questions?.question_text,
-        options: response.quiz_questions?.options,
+        question_text: response.quiz_questions?.question_text || "Question text not available",
+        options: response.quiz_questions?.options || [],
         correct_answer: response.quiz_questions?.correct_answer,
         user_answer: response.user_answer,
         is_correct: response.is_correct,
-        time_taken: response.time_taken,
-        category: response.quiz_questions?.category,
-        difficulty_level: response.quiz_questions?.difficulty_level,
-        explanation: response.quiz_questions?.explanation,
+        time_taken: response.time_taken || 0,
+        category: response.quiz_questions?.category || "general",
+        question_type: response.quiz_questions?.question_type || "aptitude",
+        time_limit: response.quiz_questions?.time_limit || 60,
+        scoring_weight: response.quiz_questions?.scoring_weight || 1.0,
+        // Provide default values for fields that don't exist in the database
+        difficulty_level: "medium", // Default difficulty level
+        explanation: "No explanation available for this question.", // Default explanation
         answered_at: response.answered_at,
-      })),
+      })) || [],
       summary: {
-        total_questions: responses.length,
-        correct_answers: responses.filter((r: any) => r.is_correct === true).length,
-        incorrect_answers: responses.filter((r: any) => r.is_correct === false).length,
-        unanswered: responses.filter((r: any) => r.is_correct === null).length,
-        average_time_per_question: responses.reduce((sum: number, r: any) => sum + (r.time_taken || 0), 0) / responses.length,
+        total_questions: responses?.length || 0,
+        correct_answers: responses?.filter((r: any) => r.is_correct === true).length || 0,
+        incorrect_answers: responses?.filter((r: any) => r.is_correct === false).length || 0,
+        unanswered: responses?.filter((r: any) => r.is_correct === null).length || 0,
+        average_time_per_question: responses?.length > 0 
+          ? responses.reduce((sum: number, r: any) => sum + (r.time_taken || 0), 0) / responses.length 
+          : 0,
       },
     };
 

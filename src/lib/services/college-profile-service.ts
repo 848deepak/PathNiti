@@ -5,6 +5,7 @@
  */
 
 import { collegeSlugService } from "@/lib/utils/slug-generator";
+import { createServiceClient } from "@/lib/supabase/service";
 import {
   createCollegeProfile,
   getCollegeBySlug,
@@ -300,9 +301,8 @@ export const collegeProfileServiceEnhanced = {
     }
 
     try {
-      // Use client-side database function for compatibility
-      const { createClient } = await import("@/lib/supabase/client");
-      const supabase = createClient();
+      // Use service client for server-side compatibility
+      const supabase = createServiceClient();
 
       const { data, error } = await supabase
         .rpc("get_college_profile_optimized", { college_slug: slug } as never)
@@ -356,8 +356,7 @@ export const collegeProfileServiceEnhanced = {
     }
 
     try {
-      const { createClient } = await import("@/lib/supabase/client");
-      const supabase = createClient();
+      const supabase = createServiceClient();
 
       const limit = filters.limit || 20;
       const offset = filters.offset || 0;

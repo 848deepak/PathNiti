@@ -54,22 +54,16 @@ export async function GET(request: Request) {
     }
 
     // Verify user is a student (only if we have a valid userId)
+    // Skip profile check for performance if no userId
     if (userId) {
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("role, first_name, last_name")
         .eq("id", userId)
-        .single();
+        .maybeSingle();
 
       if (profileError) {
         console.error("Profile fetch error for user:", userId, profileError);
-        // If profile doesn't exist, return empty notifications instead of error
-        if (profileError.code === "PGRST116") {
-          return NextResponse.json({
-            success: true,
-            data: [],
-          });
-        }
         return NextResponse.json(
           { 
             error: "Profile not found or access denied.", 
@@ -80,16 +74,14 @@ export async function GET(request: Request) {
         );
       }
 
+      // If no profile data, return empty notifications
       if (!profile) {
-        console.error("No profile found for user:", userId);
-        return NextResponse.json(
-          { 
-            error: "User profile not found. Please complete your profile setup.", 
-            userId: userId 
-          },
-          { status: 403 },
-        );
+        return NextResponse.json({
+          success: true,
+          data: [],
+        });
       }
+
 
       if ((profile as { role?: string }).role !== "student") {
         console.error("User role mismatch. Expected 'student', got:", (profile as { role?: string }).role, "for user:", userId);

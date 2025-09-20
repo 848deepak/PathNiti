@@ -329,37 +329,24 @@ export function Providers({ children }: { children: React.ReactNode }) {
               .from("profiles")
               .select("*")
               .eq("id", userId)
-              .single();
+              .maybeSingle();
 
             if (error) {
-              // Check if error object has meaningful content
-              const hasErrorContent =
-                error.message || error.details || error.hint || error.code;
-
-              if (hasErrorContent) {
-                console.error("Error fetching profile:", {
-                  message: error.message,
-                  details: error.details,
-                  hint: error.hint,
-                  code: error.code,
-                  userId,
-                });
-
-                // If profile doesn't exist, that's not necessarily an error
-                if (error.code === "PGRST116") {
-                  console.log("Profile not found for user:", userId);
-                  profileOperationStates.current.set(userId, "idle");
-                  return null;
-                }
-              } else {
-                // Empty error object - likely means no data found
-                console.log(
-                  "No profile found for user (empty error object):",
-                  userId,
-                );
-              }
-
+              console.error("Error fetching profile:", {
+                message: error.message,
+                details: error.details,
+                hint: error.hint,
+                code: error.code,
+                userId,
+              });
               profileOperationStates.current.set(userId, "error");
+              return null;
+            }
+
+            // If no data returned, profile doesn't exist
+            if (!data) {
+              console.log("Profile not found for user:", userId);
+              profileOperationStates.current.set(userId, "idle");
               return null;
             }
 
@@ -445,7 +432,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
               .from("profiles")
               .select("*")
               .eq("id", user.id)
-              .single();
+              .maybeSingle();
 
             if (existingProfile) {
               console.log("Profile already exists for user:", user.id);
@@ -456,10 +443,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
               return existingProfile as UserProfile;
             }
 
-            // If profile doesn't exist (PGRST116 error is expected), create new one
-            if (fetchError && fetchError.code !== "PGRST116") {
+            // If there was an error fetching profile, handle it
+            if (fetchError) {
               console.error(
-                "Unexpected error checking profile existence:",
+                "Error checking profile existence:",
                 fetchError,
               );
               profileOperationStates.current.set(user.id, "error");

@@ -21,6 +21,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
+import { useScrollPosition } from "@/hooks/useOptimizedScroll";
 
 interface DynamicHeaderProps {
   showNavigation?: boolean;
@@ -35,20 +36,14 @@ export function DynamicHeader({
 }: DynamicHeaderProps) {
   const { user, profile, signOut } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  // Handle scroll effect for header
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  // Use optimized scroll position tracking
+  const scrollY = useScrollPosition();
+  const isScrolled = scrollY > 10;
 
   const fetchNotifications = useCallback(async () => {
     try {

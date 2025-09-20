@@ -21,7 +21,7 @@ import {
   Alert,
   AlertDescription,
 } from "@/components/ui";
-import { createClient } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase";
 import {
   validateFile,
   generateUniqueFilename,
@@ -90,7 +90,7 @@ export default function StudentApplicationForm({
     other_documents: useRef<HTMLInputElement>(null),
   };
 
-  const supabase = createClient();
+  // Using the singleton supabase client from the import
 
   const uploadFile = async (
     file: File,

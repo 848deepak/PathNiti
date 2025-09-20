@@ -652,7 +652,10 @@ export interface Database {
           subject_performance: Json | null;
           practical_constraints: Json | null;
           total_score: number;
-          assessment_type: string;
+          total_questions: number;
+          answered_questions: number;
+          time_spent: number;
+          session_type: string;
           created_at: string;
           updated_at: string;
         };
@@ -668,7 +671,10 @@ export interface Database {
           subject_performance?: Json | null;
           practical_constraints?: Json | null;
           total_score?: number;
-          assessment_type?: string;
+          total_questions?: number;
+          answered_questions?: number;
+          time_spent?: number;
+          session_type?: string;
           created_at?: string;
           updated_at?: string;
         };
@@ -684,7 +690,10 @@ export interface Database {
           subject_performance?: Json | null;
           practical_constraints?: Json | null;
           total_score?: number;
-          assessment_type?: string;
+          total_questions?: number;
+          answered_questions?: number;
+          time_spent?: number;
+          session_type?: string;
           created_at?: string;
           updated_at?: string;
         };

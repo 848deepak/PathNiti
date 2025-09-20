@@ -379,47 +379,58 @@ export class EnhancedAIRecommendationEngine {
       for (const career of streamData.careers) {
         let careerScore = 0;
 
-        // Aptitude matching (50% weight) - with strong penalty for weak required skills
+        // Aptitude matching (60% weight) - with stronger differentiation
         let aptitudeMatchCount = 0;
         const totalRequiredAptitudes = career.required_aptitudes.length;
         let hasWeakRequiredSkill = false;
+        let strongAptitudeCount = 0;
         
         for (const aptitude of career.required_aptitudes) {
           const aptitudeScore =
             aptitude_scores[aptitude as keyof AptitudeScores] || 0;
           
-          // Strong aptitude gets high positive score
-          if (aptitudeScore > 0.7) {
-            careerScore += aptitudeScore * 0.5;
-            aptitudeMatchCount++;
-            reasons.push(
-              `Your strong ${aptitude.replace("_", " ")} skills align well with ${career.title}`,
-            );
-          } else if (aptitudeScore > 0.4) {
-            // Moderate aptitude gets partial score
-            careerScore += aptitudeScore * 0.3;
-            aptitudeMatchCount++;
-            reasons.push(
-              `Your ${aptitude.replace("_", " ")} skills are suitable for ${career.title}`,
-            );
-          } else {
-            // Weak aptitude gets strong penalty
-            careerScore -= 0.5; // Strong penalty for weak required skill
-            hasWeakRequiredSkill = true;
-            reasons.push(
-              `Your ${aptitude.replace("_", " ")} skills may need improvement for ${career.title}`,
-            );
-          }
+        // More strict aptitude scoring - only reward strong matches
+        if (aptitudeScore > 0.7) {
+          careerScore += aptitudeScore * 0.7; // Strong aptitude gets good score
+          aptitudeMatchCount++;
+          strongAptitudeCount++;
+          reasons.push(
+            `Your excellent ${aptitude.replace("_", " ")} skills make ${career.title} ideal`,
+          );
+        } else if (aptitudeScore > 0.5) {
+          // Good aptitude gets moderate score
+          careerScore += aptitudeScore * 0.3;
+          aptitudeMatchCount++;
+          reasons.push(
+            `Your strong ${aptitude.replace("_", " ")} skills align well with ${career.title}`,
+          );
+        } else if (aptitudeScore > 0.3) {
+          // Moderate aptitude gets minimal score
+          careerScore += aptitudeScore * 0.1;
+          aptitudeMatchCount++;
+          reasons.push(
+            `Your ${aptitude.replace("_", " ")} skills are suitable for ${career.title}`,
+          );
+        } else {
+          // Weak aptitude gets very strong penalty
+          careerScore -= 1.2; // Much stronger penalty for weak required skill
+          hasWeakRequiredSkill = true;
+          reasons.push(
+            `Your ${aptitude.replace("_", " ")} skills may limit success in ${career.title}`,
+          );
+        }
         }
         
-        // Strong bonus for matching all required aptitudes
-        if (aptitudeMatchCount === totalRequiredAptitudes) {
-          careerScore += 0.3;
+        // Only give bonus if ALL required aptitudes are strong
+        if (aptitudeMatchCount === totalRequiredAptitudes && strongAptitudeCount === totalRequiredAptitudes) {
+          careerScore += 0.8; // Strong bonus for perfect match
+        } else if (aptitudeMatchCount === totalRequiredAptitudes && strongAptitudeCount > 0) {
+          careerScore += 0.3; // Moderate bonus for good match
         }
         
-        // Strong penalty if any required skill is weak
+        // Very strong penalty if any required skill is weak
         if (hasWeakRequiredSkill) {
-          careerScore -= 0.4;
+          careerScore -= 1.5; // Much stronger penalty
         }
         
         // Special bonus for careers that match user's strongest skills
@@ -477,8 +488,8 @@ export class EnhancedAIRecommendationEngine {
         );
         careerScore *= demandMultiplier;
 
-        if (careerScore > 1.5) {
-          // Threshold for viable career match
+        if (careerScore > 2.0) {
+          // Higher threshold for viable career match - only strong matches
           matchingCareers.push({
             ...career,
             score: careerScore,
@@ -496,12 +507,11 @@ export class EnhancedAIRecommendationEngine {
         reasons,
       );
 
-      // Calculate average score and ensure minimum visibility
-      const averageScore = totalScore / streamData.careers.length;
-      const minimumScore = 0.5; // Lower minimum to allow for more score variation
+      // Calculate average score - handle NaN values
+      const averageScore = isNaN(totalScore) ? 0 : totalScore / streamData.careers.length;
       
       streamScores[stream] = {
-        score: Math.max(averageScore, minimumScore), // Ensure minimum visibility but allow variation
+        score: isNaN(averageScore) ? 0 : averageScore, // Ensure no NaN values
         reasons: Array.from(new Set(reasons)), // Remove duplicates
         careers: matchingCareers.sort((a, b) => b.score - a.score),
       };
@@ -706,8 +716,37 @@ Format as structured analysis focusing on career fit, earning potential, and per
       },
     );
 
-    const primary_recommendations: StreamRecommendation[] = sortedStreams
-      .slice(0, 5) // Show top 5 streams instead of just 3
+    // Filter out streams with very low scores (less than 0.5)
+    const viableStreams = sortedStreams.filter(([, data]) => {
+      const dataObj = data as { score?: number };
+      return (dataObj.score || 0) > 0.5; // Only include streams with decent scores
+    });
+
+    // If no streams are viable, suggest skill development
+    if (viableStreams.length === 0) {
+      return {
+        primary_recommendations: [{
+          stream: "Skill Development",
+          reasoning: "Based on your current assessment, we recommend focusing on skill development in key areas before choosing a specific career path. Consider taking additional courses or training in areas where you showed interest.",
+          time_to_earn: "6-12 months",
+          average_salary: "Varies based on skills developed",
+          job_demand_trend: "high",
+          confidence_score: 0.8
+        }],
+        secondary_recommendations: [],
+        backup_options: [{
+          course: "Online Skill Development Courses",
+          why_considered: "Flexible learning to improve weak areas"
+        }],
+        colleges: [],
+        scholarships: [],
+        overall_reasoning: "Your assessment shows potential in multiple areas, but no single stream stands out strongly. We recommend focusing on skill development first.",
+        confidence_score: 0.6
+      };
+    }
+
+    const primary_recommendations: StreamRecommendation[] = viableStreams
+      .slice(0, 1) // Show ONLY the top 1 viable stream as primary recommendation
       .map(([stream, data]: [string, unknown]) => {
         const dataObj = data as { 
           score?: number; 
@@ -761,8 +800,8 @@ Format as structured analysis focusing on career fit, earning potential, and per
         };
       });
 
-    const secondary_recommendations: StreamRecommendation[] = sortedStreams
-      .slice(5, 10) // Show more secondary options
+    const secondary_recommendations: StreamRecommendation[] = viableStreams
+      .slice(1, 3) // Show only 2 secondary options from viable streams
       .map(([stream, data]: [string, unknown]) => {
         const dataObj = data as { 
           score?: number; 

@@ -258,6 +258,7 @@ export default function AdminSignupPage() {
                     value={formData.email}
                     onChange={handleInputChange}
                     className="pl-10"
+                    autoComplete="email"
                     required
                   />
                 </div>
@@ -295,6 +296,7 @@ export default function AdminSignupPage() {
                     value={formData.password}
                     onChange={handleInputChange}
                     className="pl-10 pr-10"
+                    autoComplete="new-password"
                     required
                   />
                   <button
@@ -324,6 +326,7 @@ export default function AdminSignupPage() {
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
                     className="pl-10 pr-10"
+                    autoComplete="new-password"
                     required
                   />
                   <button

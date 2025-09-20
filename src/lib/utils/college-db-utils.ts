@@ -3,7 +3,7 @@
  * Provides functions for CRUD operations on college profiles and related data
  */
 
-import { createClient } from "@/lib/supabase/client";
+import { createServiceClient } from "@/lib/supabase/service";
 import { generateUniqueCollegeSlug } from "./slug-generator";
 import type {
   CollegeProfileData,
@@ -77,7 +77,7 @@ export async function createCollegeProfile(
   profileData: CollegeProfileCreateData,
 ): Promise<{ data: CollegeProfileData | null; error: string | null }> {
   try {
-    const supabase = createClient();
+    const client = createServiceClient();
 
     // Generate unique slug
     const slug = await generateUniqueCollegeSlug(profileData.name);
@@ -111,7 +111,7 @@ export async function createCollegeProfile(
       } : null,
     };
 
-    const { data, error } = await (supabase as any)
+    const { data, error } = await (createServiceClient() as any)
       .from("colleges")
       .insert([insertData] as CollegeInsert[])
       .select(
@@ -151,9 +151,9 @@ export async function getCollegeBySlug(
   slug: string,
 ): Promise<{ data: CollegeProfileData | null; error: string | null }> {
   try {
-    const supabase = createClient();
+    const client = createServiceClient();
 
-    const { data, error } = await supabase
+    const { data, error } = await client
       .from("colleges")
       .select(
         `
@@ -197,7 +197,7 @@ export async function updateCollegeProfile(
   updates: CollegeProfileUpdateData,
 ): Promise<{ data: CollegeProfileData | null; error: string | null }> {
   try {
-    const supabase = createClient();
+    const client = createServiceClient();
 
     // If name is being updated, regenerate slug
     if (updates.name && !updates.slug) {
@@ -229,7 +229,7 @@ export async function updateCollegeProfile(
       } : undefined,
     };
 
-    const { data, error } = await (supabase as any)
+    const { data, error } = await (createServiceClient() as any)
       .from("colleges")
       .update(updateData as CollegeUpdate)
       .eq("id", collegeId)
@@ -270,9 +270,9 @@ export async function getCollegeCourses(
   collegeId: string,
 ): Promise<{ data: Course[] | null; error: string | null }> {
   try {
-    const supabase = createClient();
+    const client = createServiceClient();
 
-    const { data, error } = await supabase
+    const { data, error } = await client
       .from("college_courses")
       .select("*")
       .eq("college_id", collegeId)
@@ -298,7 +298,7 @@ export async function createCollegeCourse(
   courseData: CollegeCourseCreateData,
 ): Promise<{ data: Course | null; error: string | null }> {
   try {
-    const supabase = createClient();
+    const client = createServiceClient();
 
     const insertData: CollegeCourseInsert = {
       ...courseData,
@@ -313,7 +313,7 @@ export async function createCollegeCourse(
       } : null,
     };
 
-    const { data, error } = await (supabase as any)
+    const { data, error } = await (createServiceClient() as any)
       .from("college_courses")
       .insert([insertData] as CollegeCourseInsert[])
       .select()
@@ -339,14 +339,14 @@ export async function updateCollegeCourse(
   updates: Partial<CollegeCourseCreateData>,
 ): Promise<{ data: Course | null; error: string | null }> {
   try {
-    const supabase = createClient();
+    const client = createServiceClient();
 
     const updateData = {
       ...updates,
       updated_at: new Date().toISOString(),
     };
 
-    const { data, error } = await (supabase as any)
+    const { data, error } = await (createServiceClient() as any)
       .from("college_courses")
       .update(updateData as Partial<CollegeCourseInsert>)
       .eq("id", courseId)
@@ -372,9 +372,9 @@ export async function deleteCollegeCourse(
   courseId: string,
 ): Promise<{ data: Course | null; error: string | null }> {
   try {
-    const supabase = createClient();
+    const client = createServiceClient();
 
-    const { data, error } = await (supabase as any)
+    const { data, error } = await (createServiceClient() as any)
       .from("college_courses")
       .update({
         is_active: false,
@@ -404,9 +404,9 @@ export async function getAllCollegeCourses(
   includeInactive: boolean = false,
 ): Promise<{ data: Course[] | null; error: string | null }> {
   try {
-    const supabase = createClient();
+    const client = createServiceClient();
 
-    let query = supabase
+    let query = client
       .from("college_courses")
       .select("*")
       .eq("college_id", collegeId)
@@ -437,9 +437,9 @@ export async function getCollegeNotices(
   collegeId: string,
 ): Promise<{ data: Notice[] | null; error: string | null }> {
   try {
-    const supabase = createClient();
+    const client = createServiceClient();
 
-    const { data, error } = await supabase
+    const { data, error } = await client
       .from("college_notices")
       .select("*")
       .eq("college_id", collegeId)
@@ -465,7 +465,7 @@ export async function createCollegeNotice(
   noticeData: CollegeNoticeCreateData,
 ): Promise<{ data: Notice | null; error: string | null }> {
   try {
-    const supabase = createClient();
+    const client = createServiceClient();
 
     const insertData: CollegeNoticeInsert = {
       ...noticeData,
@@ -476,7 +476,7 @@ export async function createCollegeNotice(
       updated_at: new Date().toISOString(),
     };
 
-    const { data, error } = await (supabase as any)
+    const { data, error } = await (createServiceClient() as any)
       .from("college_notices")
       .insert([insertData] as CollegeNoticeInsert[])
       .select()
@@ -501,7 +501,7 @@ export async function createStudentApplication(
   applicationData: StudentApplicationData,
 ): Promise<{ data: StudentApplicationData | null; error: string | null }> {
   try {
-    const supabase = createClient();
+    const client = createServiceClient();
 
     const insertData: StudentApplicationInsert = {
       ...applicationData,
@@ -516,7 +516,7 @@ export async function createStudentApplication(
       },
     };
 
-    const { data, error } = await (supabase as any)
+    const { data, error } = await (createServiceClient() as any)
       .from("student_applications")
       .insert([insertData] as StudentApplicationInsert[])
       .select()
@@ -542,9 +542,9 @@ export async function getCollegeApplications(
   status?: "pending" | "approved" | "rejected",
 ): Promise<{ data: StudentApplicationData[] | null; error: string | null }> {
   try {
-    const supabase = createClient();
+    const client = createServiceClient();
 
-    let query = supabase
+    let query = client
       .from("student_applications")
       .select("*")
       .eq("college_id", collegeId)
@@ -583,9 +583,9 @@ export async function getStudentApplications(
   error: string | null;
 }> {
   try {
-    const supabase = createClient();
+    const client = createServiceClient();
 
-    const { data, error } = await supabase
+    const { data, error } = await client
       .from("student_applications")
       .select(
         `
@@ -626,7 +626,7 @@ export async function updateApplicationStatus(
   reviewerId?: string,
 ): Promise<{ data: StudentApplicationData | null; error: string | null }> {
   try {
-    const supabase = createClient();
+    const client = createServiceClient();
 
     const updates: StudentApplicationUpdate = {
       status,
@@ -642,7 +642,7 @@ export async function updateApplicationStatus(
       updates.reviewed_by = reviewerId;
     }
 
-    const { data, error } = await (supabase as any)
+    const { data, error } = await (createServiceClient() as any)
       .from("student_applications")
       .update(updates as StudentApplicationUpdate)
       .eq("id", applicationId)
@@ -669,9 +669,9 @@ export async function getAllColleges(): Promise<{
   error: string | null;
 }> {
   try {
-    const supabase = createClient();
+    const client = createServiceClient();
 
-    const { data, error } = await supabase
+    const { data, error } = await client
       .from("colleges")
       .select(
         `

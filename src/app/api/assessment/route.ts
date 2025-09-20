@@ -55,17 +55,29 @@ export async function POST(request: NextRequest) {
 
     const supabase = createServiceClient();
 
-    // 1. Create assessment session
-    const sessionData: AssessmentSessionInsert = {
+    // 1. Calculate real scores from quiz responses first
+    const realScores = calculateRealScoresFromResponses(responses);
+    console.log("=== REAL SCORES CALCULATED FROM QUIZ RESPONSES ===");
+    console.log("Real aptitude scores:", realScores.aptitude_scores);
+    console.log("Real RIASEC scores:", realScores.riasec_scores);
+    console.log("Real personality scores:", realScores.personality_scores);
+    console.log("Real subject performance:", realScores.subject_performance);
+
+    // 2. Create assessment session with proper structure (matching assessment_sessions table)
+    const sessionData = {
       user_id,
       status: "completed",
       started_at: new Date().toISOString(),
       completed_at: new Date().toISOString(),
-      aptitude_scores: assessment_data.aptitude_scores as unknown as Json,
-      riasec_scores: assessment_data.riasec_scores as unknown as Json,
-      personality_scores: assessment_data.personality_scores as unknown as Json,
-      subject_performance: assessment_data.subject_performance as unknown as Json,
+      aptitude_scores: realScores.aptitude_scores as unknown as Json,
+      riasec_scores: realScores.riasec_scores as unknown as Json,
+      personality_scores: realScores.personality_scores as unknown as Json,
+      subject_performance: realScores.subject_performance as unknown as Json,
       practical_constraints: assessment_data.practical_constraints as unknown as Json,
+      total_questions: responses.length,
+      answered_questions: responses.length,
+      time_spent: Math.round(responses.reduce((total, r) => total + (r.time_taken || 0), 0)),
+      session_type: "comprehensive",
     };
 
     // Insert assessment session into database
@@ -111,6 +123,12 @@ export async function POST(request: NextRequest) {
           ? response.selected_answer === correctAnswer 
           : null; // For interest/personality questions, is_correct is null
 
+        // Skip storing responses with invalid question IDs (like test data)
+        if (!response.question_id || response.question_id.startsWith('test-')) {
+          console.log(`Skipping response with invalid question_id: ${response.question_id}`);
+          return null;
+        }
+
         return {
           session_id: (session as any).id,
           question_id: response.question_id,
@@ -118,14 +136,21 @@ export async function POST(request: NextRequest) {
           time_taken: response.time_taken,
           is_correct: isCorrect,
         };
-      });
+      }).filter(Boolean); // Remove null entries
 
-      const { error: responsesError } = await supabase
-        .from("assessment_responses")
-        .insert(responseData as any);
+      // Only insert if there are valid responses
+      if (responseData.length > 0) {
+        const { error: responsesError } = await supabase
+          .from("assessment_responses")
+          .insert(responseData as any);
 
-      if (responsesError) {
-        console.error("Error storing quiz responses:", responsesError);
+        if (responsesError) {
+          console.error("Error storing quiz responses:", responsesError);
+        } else {
+          console.log(`Successfully stored ${responseData.length} responses`);
+        }
+      } else {
+        console.log("No valid responses to store (all were test data)");
       }
     }
 
@@ -144,7 +169,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 4. Prepare enhanced user profile for AI
+    // 4. Prepare enhanced user profile for AI using REAL quiz data (already calculated above)
     const enhancedProfile: EnhancedUserProfile = {
       user_id,
       basic_info: {
@@ -156,7 +181,13 @@ export async function POST(request: NextRequest) {
         current_stream: profile.stream as string,
         location: profile.location as Record<string, unknown>,
       },
-      assessment_results: assessment_data,
+      assessment_results: {
+        aptitude_scores: realScores.aptitude_scores,
+        riasec_scores: realScores.riasec_scores,
+        personality_scores: realScores.personality_scores,
+        subject_performance: realScores.subject_performance,
+        practical_constraints: assessment_data.practical_constraints,
+      },
       timestamp: new Date().toISOString(),
     };
 
@@ -223,7 +254,7 @@ export async function POST(request: NextRequest) {
       success: true,
       session_id: (session as any).id,
       assessment_summary: {
-        total_score: sessionData.total_score,
+        total_score: 0, // Will be calculated from recommendations
         completed_at: new Date().toISOString(),
       },
       recommendations,
@@ -278,9 +309,10 @@ function calculateRealScoresFromResponses(responses: any[]): {
 
   // Group responses by question type and category
   const groupedResponses = responses.reduce((acc, response) => {
-    const question = response.quiz_questions;
-    const type = question.question_type;
-    const category = question.category;
+    // Handle both cases: responses with quiz_questions (from GET) and direct responses (from POST)
+    const question = response.quiz_questions || response;
+    const type = question.question_type || response.question_type;
+    const category = question.category || response.category;
     
     if (!acc[type]) acc[type] = {};
     if (!acc[type][category]) acc[type][category] = [];
@@ -376,9 +408,13 @@ async function getRelevantCollegesAndScholarships(
     .eq("is_active", true)
     .limit(20);
 
-  // Filter by streams
-  if (recommendedStreams.length > 0) {
-    collegeQuery = collegeQuery.in("programs.stream", recommendedStreams);
+  // Filter by streams (only valid enum values)
+  const validStreams = recommendedStreams.filter(stream => 
+    ['arts', 'science', 'commerce', 'vocational', 'engineering', 'medical'].includes(stream)
+  );
+  
+  if (validStreams.length > 0) {
+    collegeQuery = collegeQuery.in("programs.stream", validStreams);
   }
 
   const { data: colleges, error: collegeError } = await collegeQuery;

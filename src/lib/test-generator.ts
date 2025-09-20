@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+import { createServiceClient } from "./supabase/service";
 import { QuestionTemplate } from "./question-generator";
 import { QualityValidator } from "./quality-validator";
 
@@ -42,14 +42,11 @@ export interface GeneratedTest {
 }
 
 export class TestGenerator {
-  private supabase: ReturnType<typeof createClient>;
+  private supabase: ReturnType<typeof createServiceClient>;
   private qualityValidator: QualityValidator;
 
   constructor() {
-    this.supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    );
+    this.supabase = createServiceClient();
     this.qualityValidator = new QualityValidator();
   }
 

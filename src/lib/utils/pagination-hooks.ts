@@ -65,16 +65,24 @@ export function useInfiniteScroll(
   useEffect(() => {
     if (!hasMore || loading) return;
 
-    const handleScroll = () => {
-      const { scrollTop, scrollHeight, clientHeight } =
-        document.documentElement;
+    let ticking = false;
 
-      if (scrollTop + clientHeight >= scrollHeight - threshold) {
-        callback();
+    const handleScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const { scrollTop, scrollHeight, clientHeight } =
+            document.documentElement;
+
+          if (scrollTop + clientHeight >= scrollHeight - threshold) {
+            callback();
+          }
+          ticking = false;
+        });
+        ticking = true;
       }
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, [callback, hasMore, loading, threshold]);
 }

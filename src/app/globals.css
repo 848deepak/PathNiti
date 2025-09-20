@@ -2,6 +2,47 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Performance optimization styles to prevent forced reflows */
+
+/* Use transform instead of changing layout properties for animations */
+.animate-transform {
+  will-change: transform;
+  transform: translateZ(0); /* Force hardware acceleration */
+}
+
+/* Optimize scroll performance */
+.scroll-optimized {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* Prevent layout shifts during animations */
+.animate-layout {
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* GPU acceleration utilities */
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+.no-layout-shift {
+  contain: layout;
+}
+
+.no-paint {
+  contain: paint;
+}
+
+/* Optimize for frequent updates */
+.frequent-updates {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+}
+
 :root {
   --font-inter:
     -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",

@@ -279,6 +279,7 @@ export default function StudentSignupPage() {
                       value={formData.email}
                       onChange={handleInputChange}
                       className="pl-10"
+                      autoComplete="email"
                       required
                     />
                   </div>
@@ -298,6 +299,7 @@ export default function StudentSignupPage() {
                       value={formData.password}
                       onChange={handleInputChange}
                       className="pl-10 pr-10"
+                      autoComplete="new-password"
                       required
                     />
                     <button
@@ -327,6 +329,7 @@ export default function StudentSignupPage() {
                       value={formData.confirmPassword}
                       onChange={handleInputChange}
                       className="pl-10 pr-10"
+                      autoComplete="new-password"
                       required
                     />
                     <button

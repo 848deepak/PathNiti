@@ -72,27 +72,7 @@ export default function CareerAssessmentPage() {
   const [assessmentLoading, setAssessmentLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Load assessment on component mount
-  useEffect(() => {
-    if (!loading && user) {
-      loadAssessment();
-    }
-  }, [user, loading]);
-
-  // Timer effect
-  useEffect(() => {
-    if (timeRemaining > 0) {
-      const timer = setTimeout(() => {
-        setTimeRemaining(timeRemaining - 1);
-      }, 1000);
-      return () => clearTimeout(timer);
-    } else if (timeRemaining === 0 && assessmentData) {
-      // Auto-submit current question when time runs out
-      handleNextQuestion();
-    }
-  }, [timeRemaining]);
-
-  const loadAssessment = async () => {
+  const loadAssessment = useCallback(async () => {
     try {
       setAssessmentLoading(true);
       const response = await fetch("/api/career-assessment", {
@@ -121,42 +101,13 @@ export default function CareerAssessmentPage() {
     } finally {
       setAssessmentLoading(false);
     }
-  };
+  }, [user?.id]);
 
   const handleAnswerSelect = (answerIndex: number) => {
     setSelectedAnswer(answerIndex);
   };
 
-  const handleNextQuestion = useCallback(() => {
-    if (!assessmentData || selectedAnswer === null || selectedAnswer === undefined || selectedAnswer < 0) return;
-
-    const currentQuestion = assessmentData.questions[currentQuestionIndex];
-    const timeTaken = Math.floor((Date.now() - questionStartTime) / 1000);
-
-    // Save current response
-    const response: AssessmentResponse = {
-      question_id: currentQuestion.id,
-      selected_answer: selectedAnswer,
-      time_taken: timeTaken,
-      category: currentQuestion.category,
-    };
-
-    const newResponses = [...responses, response];
-    setResponses(newResponses);
-
-    // Move to next question or submit assessment
-    if (currentQuestionIndex < assessmentData.questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-      setSelectedAnswer(null);
-      setTimeRemaining(assessmentData.questions[currentQuestionIndex + 1].time_limit);
-      setQuestionStartTime(Date.now());
-    } else {
-      // Submit assessment
-      submitAssessment(newResponses);
-    }
-  }, [assessmentData, selectedAnswer, currentQuestionIndex, responses, questionStartTime]);
-
-  const submitAssessment = async (finalResponses: AssessmentResponse[]) => {
+  const submitAssessment = useCallback(async (finalResponses: AssessmentResponse[]) => {
     if (!assessmentData) return;
 
     setIsSubmitting(true);
@@ -190,7 +141,56 @@ export default function CareerAssessmentPage() {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [assessmentData, user?.id, router]);
+
+  const handleNextQuestion = useCallback(() => {
+    if (!assessmentData || selectedAnswer === null || selectedAnswer === undefined || selectedAnswer < 0) return;
+
+    const currentQuestion = assessmentData.questions[currentQuestionIndex];
+    const timeTaken = (Date.now() - questionStartTime) / 1000; // Keep millisecond precision
+
+    // Save current response
+    const response: AssessmentResponse = {
+      question_id: currentQuestion.id,
+      selected_answer: selectedAnswer,
+      time_taken: timeTaken,
+      category: currentQuestion.category,
+    };
+
+    const newResponses = [...responses, response];
+    setResponses(newResponses);
+
+    // Move to next question or submit assessment
+    if (currentQuestionIndex < assessmentData.questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setSelectedAnswer(null);
+      setTimeRemaining(assessmentData.questions[currentQuestionIndex + 1].time_limit);
+      setQuestionStartTime(Date.now());
+    } else {
+      // Submit assessment
+      submitAssessment(newResponses);
+    }
+  }, [assessmentData, selectedAnswer, currentQuestionIndex, responses, questionStartTime, submitAssessment]);
+
+  // Load assessment on component mount
+  useEffect(() => {
+    if (!loading && user) {
+      loadAssessment();
+    }
+  }, [user, loading, loadAssessment]);
+
+  // Timer effect
+  useEffect(() => {
+    if (timeRemaining > 0) {
+      const timer = setTimeout(() => {
+        setTimeRemaining(timeRemaining - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else if (timeRemaining === 0 && assessmentData) {
+      // Auto-submit current question when time runs out
+      handleNextQuestion();
+    }
+  }, [timeRemaining, assessmentData, handleNextQuestion]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);

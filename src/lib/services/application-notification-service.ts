@@ -3,14 +3,11 @@
  * Handles notifications for student application status changes
  */
 
-import { createClient } from "@supabase/supabase-js";
+import { createServiceClient } from "@/lib/supabase/service";
 import { Database } from "@/lib/supabase/types";
 import { sendEmailNotification } from "./email-notification-service";
 
-const supabase = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-);
+const supabase = createServiceClient();
 
 export interface ApplicationStatusChangeData {
   applicationId: string;

@@ -1,24 +1,22 @@
 // PathNiti Service Worker
 // Version 1.0.0
 
-const STATIC_CACHE = "pathniti-static-v1.0.0";
-const DYNAMIC_CACHE = "pathniti-dynamic-v1.0.0";
+const STATIC_CACHE = "pathniti-static-v1.0.3";
+const DYNAMIC_CACHE = "pathniti-dynamic-v1.0.3";
 
 // Files to cache for offline functionality
 const STATIC_FILES = [
   "/",
-  "/offline",
-  "/quiz",
-  "/timeline",
-  "/colleges",
-  "/scholarships",
-  "/dashboard",
   "/manifest.json",
+  "/favicon-pathniti.svg",
+  "/icons/icon-72x72.svg",
+  "/icons/icon-96x96.svg",
+  "/icons/icon-128x128.svg",
+  "/icons/icon-144x144.svg",
+  "/icons/icon-152x152.svg",
   "/icons/icon-192x192.svg",
+  "/icons/icon-384x384.svg",
   "/icons/icon-512x512.svg",
-  // Add critical CSS and JS files
-  "/_next/static/css/",
-  "/_next/static/js/",
 ];
 
 // API routes that should be cached
@@ -38,14 +36,26 @@ self.addEventListener("install", (event) => {
       .open(STATIC_CACHE)
       .then((cache) => {
         console.log("Service Worker: Caching static files");
-        return cache.addAll(STATIC_FILES);
+        // Cache files individually to handle failures gracefully
+        return Promise.allSettled(
+          STATIC_FILES.map((file) => {
+            return cache.add(file).catch((error) => {
+              console.warn(`Service Worker: Failed to cache ${file}:`, error);
+              return null; // Continue with other files
+            });
+          })
+        );
       })
-      .then(() => {
-        console.log("Service Worker: Static files cached");
+      .then((results) => {
+        const successful = results.filter(r => r.status === 'fulfilled').length;
+        const failed = results.filter(r => r.status === 'rejected').length;
+        console.log(`Service Worker: Cached ${successful} files, ${failed} failed`);
         return self.skipWaiting();
       })
       .catch((error) => {
-        console.error("Service Worker: Failed to cache static files", error);
+        console.error("Service Worker: Installation failed", error);
+        // Still skip waiting even if caching fails
+        return self.skipWaiting();
       }),
   );
 });
@@ -68,7 +78,19 @@ self.addEventListener("activate", (event) => {
         );
       })
       .then(() => {
-        console.log("Service Worker: Activated");
+        console.log("Service Worker: Activated - clearing all caches to fix port issue");
+        // Clear all caches to fix port mismatch issue
+        return caches.keys().then((cacheNames) => {
+          return Promise.all(
+            cacheNames.map((cacheName) => {
+              console.log("Service Worker: Clearing cache", cacheName);
+              return caches.delete(cacheName);
+            })
+          );
+        });
+      })
+      .then(() => {
+        console.log("Service Worker: All caches cleared");
         return self.clients.claim();
       }),
   );
@@ -81,6 +103,15 @@ self.addEventListener("fetch", (event) => {
 
   // Skip non-GET requests
   if (request.method !== "GET") {
+    return;
+  }
+
+  // Fix port mismatch issue - redirect requests from old port to current port
+  if (url.port === "3000" && location.port === "3001") {
+    console.log("Service Worker: Redirecting request from port 3000 to 3001", url.href);
+    const newUrl = new URL(request.url);
+    newUrl.port = "3001";
+    event.respondWith(fetch(newUrl.href));
     return;
   }
 

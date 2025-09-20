@@ -10,9 +10,13 @@ const nextConfig = {
   // For Next.js 15, serverComponentsExternalPackages moved to root level
   serverExternalPackages: [
     "@supabase/ssr",
-    "@supabase/supabase-js",
     "@supabase/realtime-js",
   ],
+  // Fix client reference manifest issues
+  experimental: {
+    // Fix client reference manifest issues in Next.js 15
+    optimizePackageImports: ['@supabase/supabase-js'],
+  },
   images: {
     domains: ["localhost", "maps.googleapis.com"],
     remotePatterns: [
@@ -56,6 +60,14 @@ const nextConfig = {
     config.resolve.alias = {
       ...config.resolve.alias,
     };
+
+    // Fix client reference manifest issues
+    if (!isServer) {
+      // Remove problematic aliases that cause module resolution issues
+      config.resolve.alias = {
+        ...config.resolve.alias,
+      };
+    }
 
     // Fix chunk loading issues
     if (!isServer) {

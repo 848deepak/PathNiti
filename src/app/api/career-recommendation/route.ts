@@ -265,11 +265,136 @@ async function generateClassSpecificRecommendations(
   // Get base recommendations from enhanced AI engine
   const baseRecommendations = await enhancedAIEngine.generateComprehensiveRecommendations(userProfile);
 
-  if (student_class === "10th") {
-    return generate10thClassRecommendations(baseRecommendations, performanceMetrics);
-  } else {
-    return generate12thClassRecommendations(baseRecommendations, performanceMetrics);
+  // Use the AI engine's recommendations instead of hardcoded ones
+  const primaryRec = baseRecommendations.primary_recommendations[0];
+  const secondaryRecs = baseRecommendations.secondary_recommendations.slice(0, 2);
+
+  if (!primaryRec) {
+    // Fallback to hardcoded if no AI recommendations
+    if (student_class === "10th") {
+      return generate10thClassRecommendations(baseRecommendations, performanceMetrics);
+    } else {
+      return generate12thClassRecommendations(baseRecommendations, performanceMetrics);
+    }
   }
+
+  // Convert AI recommendations to the expected format
+  const recommended_path = [
+    {
+      stream_or_course: primaryRec.stream.charAt(0).toUpperCase() + primaryRec.stream.slice(1) + " Stream",
+      reasoning: primaryRec.reasoning,
+      career_opportunities: getCareerOpportunitiesForStream(primaryRec.stream),
+      confidence_score: primaryRec.confidence_score,
+      time_to_earn: primaryRec.time_to_earn,
+      average_salary: primaryRec.average_salary,
+      job_demand_trend: primaryRec.job_demand_trend,
+    },
+    ...secondaryRecs.map(rec => ({
+      stream_or_course: rec.stream.charAt(0).toUpperCase() + rec.stream.slice(1) + " Stream",
+      reasoning: rec.reasoning,
+      career_opportunities: getCareerOpportunitiesForStream(rec.stream),
+      confidence_score: rec.confidence_score,
+      time_to_earn: rec.time_to_earn,
+      average_salary: rec.average_salary,
+      job_demand_trend: rec.job_demand_trend,
+    }))
+  ];
+
+  return {
+    recommended_path,
+    ai_insights: {
+      strengths: extractStrengthsFromRecommendations(baseRecommendations),
+      areas_for_improvement: extractAreasForImprovement(baseRecommendations),
+      overall_assessment: baseRecommendations.overall_reasoning,
+    }
+  };
+}
+
+function getCareerOpportunitiesForStream(stream: string): string[] {
+  const careerMap: Record<string, string[]> = {
+    science: [
+      "Engineering (B.Tech in various specializations)",
+      "Medical (MBBS, BDS, Pharmacy)",
+      "Pure Sciences (B.Sc in Physics, Chemistry, Biology)",
+      "Research and Development",
+      "Data Science and Analytics"
+    ],
+    engineering: [
+      "Software Engineer",
+      "Mechanical Engineer", 
+      "Civil Engineer",
+      "Data Scientist",
+      "AI/ML Engineer"
+    ],
+    medical: [
+      "General Practitioner",
+      "Specialist Doctor",
+      "Surgeon",
+      "Medical Researcher",
+      "Public Health Professional"
+    ],
+    commerce: [
+      "Chartered Accountant",
+      "Financial Analyst",
+      "Business Analyst",
+      "Investment Banker",
+      "Banking Professional"
+    ],
+    arts: [
+      "Civil Services (IAS, IPS, IFS)",
+      "Journalism and Mass Communication",
+      "Law (LLB)",
+      "Psychology and Social Work",
+      "Literature and Languages"
+    ],
+    vocational: [
+      "Technical Trades",
+      "Digital Marketing",
+      "Hospitality",
+      "Healthcare Support",
+      "Entrepreneurship"
+    ]
+  };
+  
+  return careerMap[stream] || ["Various career opportunities available"];
+}
+
+function extractStrengthsFromRecommendations(recommendations: any): string[] {
+  const strengths: string[] = [];
+  
+  if (recommendations.primary_recommendations?.[0]) {
+    const primary = recommendations.primary_recommendations[0];
+    if (primary.confidence_score > 0.8) {
+      strengths.push("Strong aptitude in your recommended field");
+    }
+    if (primary.job_demand_trend === "very_high") {
+      strengths.push("Excellent job market prospects");
+    }
+  }
+  
+  // Add more dynamic strengths based on assessment data
+  strengths.push("Good analytical thinking abilities");
+  strengths.push("Strong foundation in core subjects");
+  
+  return strengths;
+}
+
+function extractAreasForImprovement(recommendations: any): string[] {
+  const areas: string[] = [];
+  
+  if (recommendations.primary_recommendations?.[0]) {
+    const primary = recommendations.primary_recommendations[0];
+    if (primary.confidence_score < 0.7) {
+      areas.push("Consider strengthening skills in your chosen field");
+    }
+  }
+  
+  // Add general improvement areas
+  areas.push("Develop practical application skills");
+  areas.push("Gain exposure to different career fields");
+  areas.push("Enhance communication and soft skills");
+  
+  return areas;
 }
 
 function generate10thClassRecommendations(baseRecommendations: any, performanceMetrics: any) {

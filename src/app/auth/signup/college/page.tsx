@@ -465,6 +465,7 @@ function CollegeSignupPageContent() {
                     placeholder="Enter your email"
                     {...getFieldProps("email")}
                     className={`pl-10 ${formState.email?.error ? "border-red-300 focus:border-red-500" : ""}`}
+                    autoComplete="email"
                     required
                   />
                 </div>
@@ -617,6 +618,7 @@ function CollegeSignupPageContent() {
                     placeholder="Create a password"
                     {...getFieldProps("password")}
                     className={`pl-10 pr-10 ${formState.password?.error ? "border-red-300 focus:border-red-500" : ""}`}
+                    autoComplete="new-password"
                     required
                   />
                   <button
@@ -650,6 +652,7 @@ function CollegeSignupPageContent() {
                     placeholder="Confirm your password"
                     {...getFieldProps("confirmPassword")}
                     className={`pl-10 pr-10 ${formState.confirmPassword?.error ? "border-red-300 focus:border-red-500" : ""}`}
+                    autoComplete="new-password"
                     required
                   />
                   <button

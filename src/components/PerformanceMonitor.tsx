@@ -51,8 +51,8 @@ export default function PerformanceMonitor() {
       setIsVisible(true);
       loadMetrics();
 
-      // Update metrics every 30 seconds
-      const interval = setInterval(loadMetrics, 30000);
+      // Update metrics every 60 seconds (reduced frequency to improve performance)
+      const interval = setInterval(loadMetrics, 60000);
       return () => clearInterval(interval);
     }
   }, []);

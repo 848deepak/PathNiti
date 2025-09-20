@@ -3,7 +3,7 @@
  * Handles secure file uploads, downloads, and management for the application
  */
 
-import { createClient } from "@/lib/supabase/client";
+import { createServiceClient } from "@/lib/supabase/service";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import {
   validateFile,
@@ -61,13 +61,13 @@ export interface DocumentMetadata {
 }
 
 export class DocumentStorageService {
-  private supabase: ReturnType<typeof createClient>;
+  private supabase: ReturnType<typeof createServiceClient>;
 
   constructor(useServerClient = false) {
     if (useServerClient) {
       this.supabase = createServerClient();
     } else {
-      this.supabase = createClient();
+      this.supabase = createServiceClient();
     }
   }
 

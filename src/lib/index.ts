@@ -18,4 +18,4 @@ export type {
 } from "./supabase/index";
 
 // Legacy exports for backward compatibility (deprecated - use named exports above)
-export { createBrowserClient as supabase } from "./supabase/index";
+// Note: supabase client is exported from ./supabase.ts to avoid conflicts

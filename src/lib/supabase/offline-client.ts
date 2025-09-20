@@ -211,6 +211,3 @@ export function createOfflineAwareClient() {
 
   return supabase;
 }
-
-// Export the offline-aware client
-export const supabase = createOfflineAwareClient();

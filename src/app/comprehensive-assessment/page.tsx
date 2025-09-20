@@ -28,6 +28,7 @@ import {
   Users,
   BookOpen,
   MapPin,
+  Timer,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -238,6 +239,7 @@ export default function ComprehensiveAssessmentPage() {
   >({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [startTime, setStartTime] = useState<number>(Date.now());
+  const [currentTime, setCurrentTime] = useState<number>(Date.now());
   
   // Questions state
   const [questions, setQuestions] = useState<Record<string, Question[]>>({});
@@ -288,6 +290,15 @@ export default function ComprehensiveAssessmentPage() {
     fetchQuestions();
   }, [fetchQuestions]);
 
+  // Real-time timer effect - updates every 10ms for millisecond precision
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 10); // Update every 10ms for smooth millisecond display
+
+    return () => clearInterval(timer);
+  }, []);
+
   const currentQuestions = questions[currentSection] || SAMPLE_QUESTIONS[currentSection] || [];
   const currentQuestion = currentQuestions[currentQuestionIndex];
   const totalSections = Object.keys(ASSESSMENT_SECTIONS).length;
@@ -299,12 +310,12 @@ export default function ComprehensiveAssessmentPage() {
   const handleAnswer = useCallback(
     (questionId: string, answer: number) => {
       const questionStartTime = startTime;
-      const timeTaken = Math.floor((Date.now() - questionStartTime) / 1000);
+      const timeTaken = (currentTime - questionStartTime) / 1000; // Keep millisecond precision
 
       setAnswers((prev) => ({ ...prev, [questionId]: answer }));
       setTimeSpent((prev) => ({ ...prev, [questionId]: timeTaken }));
     },
-    [startTime],
+    [startTime, currentTime],
   );
 
   const handleNextQuestion = useCallback(() => {
@@ -740,9 +751,15 @@ export default function ComprehensiveAssessmentPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg">{currentQuestion.text}</CardTitle>
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-              <Clock className="h-4 w-4" />
-              {currentQuestion.timeLimit}s
+            <div className="flex items-center gap-4 text-sm text-gray-500">
+              <div className="flex items-center gap-1">
+                <Clock className="h-4 w-4" />
+                <span>Limit: {currentQuestion.timeLimit}s</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Timer className="h-4 w-4" />
+                <span>Elapsed: {((currentTime - startTime) / 1000).toFixed(1)}s</span>
+              </div>
             </div>
           </div>
         </CardHeader>

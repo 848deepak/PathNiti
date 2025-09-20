@@ -997,12 +997,7 @@ export default function CareerPathwaysPage() {
             </span>
           </Link>
           <div className="hidden md:flex items-center space-x-8">
-            <Link
-              href="/features"
-              className="text-gray-600 hover:text-primary transition-all duration-200 hover:scale-105"
-            >
-              Features
-            </Link>
+
             <Link
               href="/comprehensive-assessment"
               className="text-gray-600 hover:text-primary transition-all duration-200 hover:scale-105 font-medium"

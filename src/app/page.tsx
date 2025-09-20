@@ -135,8 +135,8 @@ export default function Home() {
                   className="text-lg px-12 py-8 border-2 hover:border-primary hover:bg-primary/5 transition-all duration-300 hover:scale-105 animate-slide-in-right"
                   asChild
                 >
-                  <Link href="/features" className="flex items-center gap-3">
-                    <span className="font-bold">Explore Features</span>
+                  <Link href="/quiz" className="flex items-center gap-3">
+                    <span className="font-bold">Take Assessment</span>
                     <ArrowRight className="h-6 w-6" />
                   </Link>
                 </Button>
@@ -295,26 +295,7 @@ export default function Home() {
               </div>
             </Link>
 
-            <Link
-              href="/features"
-              className="group p-8 rounded-2xl bg-white border border-gray-100 hover:border-purple-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 animate-scale-in cursor-pointer"
-              style={{ animationDelay: "0.35s" }}
-            >
-              <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-purple-200 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                <Users className="h-8 w-8 text-purple-600" />
-              </div>
-              <h3 className="text-2xl font-bold mb-4 text-gray-900">
-                Career Pathways
-              </h3>
-              <p className="text-gray-600 leading-relaxed mb-6">
-                Visualize your career journey from education to employment with
-                detailed roadmaps and success stories
-              </p>
-              <div className="flex items-center text-purple-600 font-medium group-hover:translate-x-2 transition-transform duration-300">
-                <span>View pathways</span>
-                <ArrowRight className="h-4 w-4 ml-2" />
-              </div>
-            </Link>
+
 
             <Link
               href="/scholarships"
@@ -618,14 +599,7 @@ export default function Home() {
             <div>
               <h3 className="font-bold text-lg mb-6 text-white">Product</h3>
               <ul className="space-y-4 text-gray-400">
-                <li>
-                  <Link
-                    href="/features"
-                    className="hover:text-primary transition-colors duration-200 hover:translate-x-1 inline-block"
-                  >
-                    Features
-                  </Link>
-                </li>
+
                 <li>
                   <Link
                     href="/pricing"

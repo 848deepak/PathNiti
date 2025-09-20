@@ -164,11 +164,7 @@ export default function SettingsPage() {
                       Contact Support
                     </a>
                   </Button>
-                  <Button variant="outline" asChild>
-                    <a href="/features">
-                      View Features
-                    </a>
-                  </Button>
+
                 </div>
               </CardContent>
             </Card>

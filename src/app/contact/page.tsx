@@ -135,12 +135,7 @@ export default function ContactPage() {
             </span>
           </Link>
           <div className="hidden md:flex items-center space-x-8">
-            <Link
-              href="/features"
-              className="text-gray-600 hover:text-primary transition-all duration-200 hover:scale-105"
-            >
-              Features
-            </Link>
+
             <Link
               href="/about"
               className="text-gray-600 hover:text-primary transition-all duration-200 hover:scale-105"
@@ -335,12 +330,7 @@ export default function ContactPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <Link
-                    href="/features"
-                    className="block text-primary hover:underline"
-                  >
-                    View Features
-                  </Link>
+
                   <Link
                     href="/about"
                     className="block text-primary hover:underline"
@@ -506,14 +496,7 @@ export default function ContactPage() {
                     Demo
                   </Link>
                 </li>
-                <li>
-                  <Link
-                    href="/features"
-                    className="hover:text-primary transition-colors"
-                  >
-                    Features
-                  </Link>
-                </li>
+
               </ul>
             </div>
 

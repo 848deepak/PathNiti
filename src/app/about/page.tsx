@@ -144,12 +144,7 @@ export default function AboutPage() {
             </span>
           </Link>
           <div className="hidden md:flex items-center space-x-8">
-            <Link
-              href="/features"
-              className="text-gray-600 hover:text-primary transition-all duration-200 hover:scale-105"
-            >
-              Features
-            </Link>
+
             <Link
               href="/about"
               className="text-primary font-semibold transition-all duration-200 hover:scale-105"
@@ -493,14 +488,7 @@ export default function AboutPage() {
                     Demo
                   </Link>
                 </li>
-                <li>
-                  <Link
-                    href="/features"
-                    className="hover:text-primary transition-colors"
-                  >
-                    Features
-                  </Link>
-                </li>
+
               </ul>
             </div>
 

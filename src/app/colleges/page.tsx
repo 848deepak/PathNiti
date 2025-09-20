@@ -609,22 +609,22 @@ export default function CollegesPage() {
                 {filteredColleges.map((college, index) => (
                   <Card
                     key={college.id}
-                    className="group hover:shadow-2xl transition-all duration-500 cursor-pointer border-0 bg-white/80 backdrop-blur-sm hover:bg-white hover:scale-105 hover:-translate-y-2"
+                    className="group hover:shadow-2xl transition-all duration-500 cursor-pointer border-0 bg-white/80 backdrop-blur-sm hover:bg-white hover:scale-105 hover:-translate-y-2 flex flex-col h-full"
                     style={{ animationDelay: `${index * 100}ms` }}
                   >
-                    <CardHeader className="pb-4">
+                    <CardHeader className="pb-4 flex-shrink-0">
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center space-x-3">
                           <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-blue-600/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                             <Building2 className="h-6 w-6 text-primary" />
                           </div>
-                          <div>
-                            <CardTitle className="text-xl font-bold text-gray-900 group-hover:text-primary transition-colors">
+                          <div className="min-w-0 flex-1">
+                            <CardTitle className="text-xl font-bold text-gray-900 group-hover:text-primary transition-colors line-clamp-2">
                               {college.name}
                             </CardTitle>
                             <CardDescription className="flex items-center mt-1">
-                              <MapPin className="h-4 w-4 mr-1 text-gray-500" />
-                              <span className="text-gray-600">
+                              <MapPin className="h-4 w-4 mr-1 text-gray-500 flex-shrink-0" />
+                              <span className="text-gray-600 truncate">
                                 {college.location.city},{" "}
                                 {college.location.state}
                               </span>
@@ -632,7 +632,7 @@ export default function CollegesPage() {
                           </div>
                         </div>
                         {college.is_verified && (
-                          <div className="flex items-center text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                          <div className="flex items-center text-green-600 bg-green-50 px-2 py-1 rounded-full flex-shrink-0">
                             <CheckCircle className="h-4 w-4 mr-1" />
                             <span className="text-xs font-medium">
                               Verified
@@ -642,23 +642,23 @@ export default function CollegesPage() {
                       </div>
                     </CardHeader>
 
-                    <CardContent className="space-y-6">
+                    <CardContent className="flex flex-col flex-grow space-y-4">
                       {/* Key Information */}
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-2 gap-4 flex-shrink-0">
                         <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl">
-                          <Calendar className="h-5 w-5 text-primary" />
-                          <div>
+                          <Calendar className="h-5 w-5 text-primary flex-shrink-0" />
+                          <div className="min-w-0">
                             <p className="text-xs text-gray-500">Established</p>
-                            <p className="font-semibold text-gray-900">
+                            <p className="font-semibold text-gray-900 truncate">
                               {college.established_year || "N/A"}
                             </p>
                           </div>
                         </div>
                         <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl">
-                          <Award className="h-5 w-5 text-green-600" />
-                          <div>
+                          <Award className="h-5 w-5 text-green-600 flex-shrink-0" />
+                          <div className="min-w-0">
                             <p className="text-xs text-gray-500">Type</p>
-                            <p className="font-semibold text-gray-900 capitalize">
+                            <p className="font-semibold text-gray-900 capitalize truncate">
                               {college.type.replace("_", " ")}
                             </p>
                           </div>
@@ -667,7 +667,7 @@ export default function CollegesPage() {
 
                       {/* Courses */}
                       {college.courses && college.courses.length > 0 && (
-                        <div>
+                        <div className="flex-shrink-0">
                           <p className="text-sm font-medium text-gray-700 mb-3">
                             Courses:
                           </p>
@@ -694,7 +694,7 @@ export default function CollegesPage() {
                       {/* Accreditation */}
                       {college.accreditation &&
                         college.accreditation.length > 0 && (
-                          <div>
+                          <div className="flex-shrink-0">
                             <p className="text-sm font-medium text-gray-700 mb-3">
                               Accreditation:
                             </p>
@@ -718,74 +718,78 @@ export default function CollegesPage() {
                           </div>
                         )}
 
-                      {/* About snippet */}
-                      {college.about && (
-                        <div>
-                          <p className="text-sm text-gray-600 line-clamp-2">
-                            {college.about}
-                          </p>
-                        </div>
-                      )}
+                      {/* About snippet - This will grow to fill available space */}
+                      <div className="flex-grow">
+                        {college.about && (
+                          <div>
+                            <p className="text-sm text-gray-600 line-clamp-3">
+                              {college.about}
+                            </p>
+                          </div>
+                        )}
+                      </div>
 
-                      {/* Action Buttons */}
-                      <div className="flex items-center justify-between pt-2">
-                        <div className="flex space-x-2">
-                          {college.website && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="hover:bg-blue-50 hover:border-blue-200"
-                              asChild
-                            >
-                              <a
-                                href={college.website}
-                                target="_blank"
-                                rel="noopener noreferrer"
+                      {/* Action Buttons - Fixed at bottom */}
+                      <div className="space-y-4 mt-auto pt-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex space-x-2">
+                            {college.website && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="hover:bg-blue-50 hover:border-blue-200"
+                                asChild
                               >
-                                <Globe className="h-4 w-4" />
-                              </a>
-                            </Button>
-                          )}
-                          {college.phone && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="hover:bg-green-50 hover:border-green-200"
-                              asChild
-                            >
-                              <a href={`tel:${college.phone}`}>
-                                <Phone className="h-4 w-4" />
-                              </a>
-                            </Button>
-                          )}
+                                <a
+                                  href={college.website}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  <Globe className="h-4 w-4" />
+                                </a>
+                              </Button>
+                            )}
+                            {college.phone && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="hover:bg-green-50 hover:border-green-200"
+                                asChild
+                              >
+                                <a href={`tel:${college.phone}`}>
+                                  <Phone className="h-4 w-4" />
+                                </a>
+                              </Button>
+                            )}
+                          </div>
+
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="hover:bg-red-50 hover:border-red-200 hover:text-red-600"
+                          >
+                            <Heart className="h-4 w-4" />
+                          </Button>
                         </div>
 
                         <Button
-                          size="sm"
-                          variant="outline"
-                          className="hover:bg-red-50 hover:border-red-200 hover:text-red-600"
+                          className="w-full h-12 text-lg font-semibold bg-gradient-to-r from-primary to-blue-600 hover:from-blue-600 hover:to-primary transition-all duration-300 group-hover:scale-105"
+                          variant="default"
+                          asChild
                         >
-                          <Heart className="h-4 w-4" />
+                          <Link
+                            href={
+                              college.slug
+                                ? `/colleges/${college.slug}`
+                                : `/colleges/${college.id}`
+                            }
+                            className="flex items-center justify-center gap-2"
+                          >
+                            <span>View Details</span>
+                            <ExternalLink className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                          </Link>
                         </Button>
                       </div>
-
-                      <Button
-                        className="w-full h-12 text-lg font-semibold bg-gradient-to-r from-primary to-blue-600 hover:from-blue-600 hover:to-primary transition-all duration-300 group-hover:scale-105"
-                        variant="default"
-                        asChild
-                      >
-                        <Link
-                          href={
-                            college.slug
-                              ? `/colleges/${college.slug}`
-                              : `/colleges/${college.id}`
-                          }
-                          className="flex items-center justify-center gap-2"
-                        >
-                          <span>View Details</span>
-                          <ExternalLink className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                        </Link>
-                      </Button>
                     </CardContent>
                   </Card>
                 ))}

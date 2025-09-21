@@ -11,7 +11,6 @@ import {
   Input,
 } from "@/components/ui";
 import NearbyColleges from "@/components/NearbyColleges";
-import { collegeProfileService } from "@/lib/services/college-profile-service";
 import type { CollegeProfileData } from "@/lib/types/college-profile";
 import {
   GraduationCap,
@@ -69,29 +68,30 @@ export default function CollegesPage() {
       setLoading(true);
       setError(null);
 
-      // Fetch colleges from database using the college profile service
-      const { data: collegeData, error: fetchError } =
-        await collegeProfileService.getAllProfiles();
+      // Fetch colleges from API route instead of direct database access
+      const response = await fetch('/api/colleges');
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-      if (fetchError) {
-        console.error("Error fetching colleges:", fetchError);
-        setError(fetchError);
+      const result = await response.json();
+
+      if (result.error) {
+        console.error("Error fetching colleges:", result.error);
+        setError(result.error);
         setColleges([]);
         return;
       }
 
-      if (!collegeData || collegeData.length === 0) {
+      if (!result.data || result.data.length === 0) {
         console.log("No colleges found in database");
         setColleges([]);
         return;
       }
 
-      // Filter only active colleges and sort by name
-      const activeColleges = collegeData
-        .filter((college) => college.is_active)
-        .sort((a, b) => a.name.localeCompare(b.name));
-
-      setColleges(activeColleges);
+      // Data is already filtered and sorted by the API
+      setColleges(result.data);
     } catch (err) {
       console.error("Unexpected error fetching colleges:", err);
       setError("Failed to load colleges. Please try again.");

@@ -20,7 +20,73 @@ export async function GET(request: NextRequest) {
       50, // max limit
     );
 
-    // Use optimized service with caching
+    // Check if service role key is available
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.warn("SUPABASE_SERVICE_ROLE_KEY not available, using fallback method");
+      
+      // Fallback to regular client for basic college listing
+      const supabase = createServerClient();
+      
+      let query = supabase
+        .from("colleges")
+        .select(`
+          id,
+          slug,
+          name,
+          type,
+          location,
+          address,
+          website,
+          phone,
+          email,
+          established_year,
+          accreditation,
+          gallery,
+          created_at
+        `)
+        .eq("is_active", true)
+        .order("name");
+
+      // Apply filters
+      if (state) {
+        query = query.eq("location->>state", state);
+      }
+      if (type) {
+        query = query.eq("type", type);
+      }
+      if (search) {
+        query = query.or(
+          `name.ilike.%${search}%,address.ilike.%${search}%`,
+        );
+      }
+
+      // Apply pagination
+      query = query.range(offset, offset + limit - 1);
+
+      const { data: colleges, error } = await query;
+
+      if (error) {
+        console.error("Error fetching colleges (fallback):", error);
+        return NextResponse.json(
+          { error: "Failed to fetch colleges" },
+          { status: 500 },
+        );
+      }
+
+      const response = NextResponse.json({
+        data: colleges || [],
+        total: colleges?.length || 0,
+        hasMore: false
+      });
+      response.headers.set(
+        "Cache-Control",
+        "public, s-maxage=180, stale-while-revalidate=360",
+      );
+
+      return response;
+    }
+
+    // Use optimized service with caching when service role key is available
     const { data: result, error } =
       await collegeProfileServiceEnhanced.getCollegesPaginated({
         state: state || undefined,
@@ -38,8 +104,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Add cache headers for better performance
-    const response = NextResponse.json(result);
+    // Return the colleges array directly for client compatibility
+    const response = NextResponse.json({
+      data: result?.colleges || [],
+      total: result?.total || 0,
+      hasMore: result?.hasMore || false
+    });
     response.headers.set(
       "Cache-Control",
       "public, s-maxage=180, stale-while-revalidate=360",

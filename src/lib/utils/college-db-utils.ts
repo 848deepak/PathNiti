@@ -4,6 +4,7 @@
  */
 
 import { createServiceClient } from "@/lib/supabase/service";
+import { createClient } from "@/lib/supabase/client";
 import { generateUniqueCollegeSlug } from "./slug-generator";
 import type {
   CollegeProfileData,
@@ -663,13 +664,15 @@ export async function updateApplicationStatus(
 
 /**
  * Get all colleges with basic info for listing
+ * This function should only be used server-side or with proper authentication
  */
 export async function getAllColleges(): Promise<{
   data: CollegeProfileData[] | null;
   error: string | null;
 }> {
   try {
-    const client = createServiceClient();
+    // Use regular client instead of service client for client-side compatibility
+    const client = createClient();
 
     const { data, error } = await client
       .from("colleges")
@@ -680,6 +683,7 @@ export async function getAllColleges(): Promise<{
         college_notices(*)
       `,
       )
+      .eq("is_active", true) // Only fetch active colleges
       .order("name");
 
     if (error) {

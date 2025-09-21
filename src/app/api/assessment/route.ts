@@ -22,6 +22,7 @@ import {
   // StudentRecommendationInsert, // Temporarily disabled
   ScholarshipRecommendation,
 } from "@/lib/types";
+import { sendAssessmentResultsEmail } from "@/lib/services/assessment-email-service";
 
 interface AssessmentRequest {
   user_id: string;
@@ -207,6 +208,70 @@ export async function POST(request: NextRequest) {
     // Update recommendations with actual college and scholarship data
     recommendations.colleges = colleges;
     recommendations.scholarships = scholarships as unknown as ScholarshipRecommendation[];
+
+    // 6.5. Send email with assessment results and recommendations
+    try {
+      console.log("=== SENDING ASSESSMENT RESULTS EMAIL ===");
+      
+      // Get user email from profile
+      const userEmail = profile.email as string;
+      const userName = profile.full_name as string || profile.first_name as string || "Student";
+      
+      if (userEmail) {
+        // Calculate overall score from recommendations
+        const overallScore = recommendations.primary_recommendations?.[0]?.confidence_score 
+          ? Math.round(recommendations.primary_recommendations[0].confidence_score * 100)
+          : 75; // Default score if not available
+        
+        const emailData = {
+          user_email: userEmail,
+          user_name: userName,
+          assessment_results: {
+            session_id: (session as any).id,
+            completed_at: new Date().toISOString(),
+            overall_score: overallScore,
+            confidence_level: recommendations.confidence_score || 0.6,
+          },
+          recommendations: {
+            primary_recommendations: (recommendations.primary_recommendations || []).map((rec: any) => ({
+              stream: rec.stream,
+              reasoning: rec.reasoning,
+              time_to_earn: rec.time_to_earn,
+              average_salary: rec.average_salary,
+              job_demand_trend: rec.job_demand_trend,
+              confidence_score: rec.confidence_score,
+              career_paths: rec.career_paths || [],
+            })),
+            secondary_recommendations: (recommendations.secondary_recommendations || []).map((rec: any) => ({
+              stream: rec.stream,
+              reasoning: rec.reasoning,
+              time_to_earn: rec.time_to_earn,
+              average_salary: rec.average_salary,
+              job_demand_trend: rec.job_demand_trend,
+              confidence_score: rec.confidence_score,
+              career_paths: rec.career_paths || [],
+            })),
+            ai_reasoning: (recommendations as any).ai_reasoning || (recommendations as any).overall_reasoning || "Based on your assessment results, we've prepared personalized career recommendations for you.",
+            confidence_score: recommendations.confidence_score || 0.6,
+          },
+          colleges: colleges || [],
+          scholarships: scholarships || [],
+        };
+
+        const emailResult = await sendAssessmentResultsEmail(emailData);
+        
+        if (emailResult.success) {
+          console.log("✅ Assessment results email sent successfully:", emailResult.emailId);
+        } else {
+          console.error("❌ Failed to send assessment results email:", emailResult.error);
+        }
+      } else {
+        console.log("⚠️ No email address found for user, skipping email notification");
+      }
+    } catch (emailError) {
+      console.error("❌ Error sending assessment results email:", emailError);
+      // Don't fail the entire request if email fails
+    }
 
     // 7. Store recommendations in database (temporarily disabled)
     // const recommendationData: StudentRecommendationInsert = {
@@ -826,6 +891,81 @@ export async function GET(request: NextRequest) {
       }
     } else {
       console.log("Using stored recommendations instead of generating new ones");
+    }
+
+    // Send email with assessment results if this is the first time accessing results
+    try {
+      console.log("=== CHECKING FOR EMAIL NOTIFICATION ===");
+      
+      // Get user profile for email
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", userId)
+        .single();
+
+      if (!profileError && profile) {
+        const userEmail = (profile as any).email as string;
+        const userName = (profile as any).full_name as string || (profile as any).first_name as string || "Student";
+        
+        // Only send email if user has email and we have valid recommendations
+        if (userEmail && recommendations && recommendations.primary_recommendations?.length > 0) {
+          console.log("=== SENDING ASSESSMENT RESULTS EMAIL (GET ENDPOINT) ===");
+          
+          // Calculate overall score from recommendations
+          const overallScore = recommendations.primary_recommendations?.[0]?.confidence_score 
+            ? Math.round(recommendations.primary_recommendations[0].confidence_score * 100)
+            : 75;
+          
+          const emailData = {
+            user_email: userEmail,
+            user_name: userName,
+            assessment_results: {
+              session_id: session.id,
+              completed_at: session.completed_at || new Date().toISOString(),
+              overall_score: overallScore,
+              confidence_level: recommendations.confidence_score || 0.6,
+            },
+            recommendations: {
+              primary_recommendations: (recommendations.primary_recommendations || []).map((rec: any) => ({
+                stream: rec.stream,
+                reasoning: rec.reasoning,
+                time_to_earn: rec.time_to_earn,
+                average_salary: rec.average_salary,
+                job_demand_trend: rec.job_demand_trend,
+                confidence_score: rec.confidence_score,
+                career_paths: rec.career_paths || [],
+              })),
+              secondary_recommendations: (recommendations.secondary_recommendations || []).map((rec: any) => ({
+                stream: rec.stream,
+                reasoning: rec.reasoning,
+                time_to_earn: rec.time_to_earn,
+                average_salary: rec.average_salary,
+                job_demand_trend: rec.job_demand_trend,
+                confidence_score: rec.confidence_score,
+                career_paths: rec.career_paths || [],
+              })),
+              ai_reasoning: (recommendations as any).ai_reasoning || (recommendations as any).overall_reasoning || "Based on your assessment results, we've prepared personalized career recommendations for you.",
+              confidence_score: recommendations.confidence_score || 0.6,
+            },
+            colleges: recommendations.colleges || [],
+            scholarships: recommendations.scholarships || [],
+          };
+
+          const emailResult = await sendAssessmentResultsEmail(emailData);
+          
+          if (emailResult.success) {
+            console.log("✅ Assessment results email sent successfully (GET):", emailResult.emailId);
+          } else {
+            console.error("❌ Failed to send assessment results email (GET):", emailResult.error);
+          }
+        } else {
+          console.log("⚠️ Skipping email notification - no email or invalid recommendations");
+        }
+      }
+    } catch (emailError) {
+      console.error("❌ Error sending assessment results email (GET):", emailError);
+      // Don't fail the entire request if email fails
     }
 
     console.log("🚀🚀🚀 === ASSESSMENT API RETURNING RESPONSE === 🚀🚀🚀");

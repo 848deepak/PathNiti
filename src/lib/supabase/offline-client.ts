@@ -4,7 +4,14 @@ import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./types";
 import { offlineAuthManager } from "../offline-auth-manager";
 
+// Singleton instance to prevent multiple GoTrueClient instances
+let offlineClientInstance: ReturnType<typeof createSupabaseClient<Database>> | null = null;
+
 export function createOfflineAwareClient() {
+  if (offlineClientInstance) {
+    return offlineClientInstance;
+  }
+
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -12,7 +19,7 @@ export function createOfflineAwareClient() {
     throw new Error("Missing Supabase environment variables");
   }
 
-  const supabase = createSupabaseClient<Database>(supabaseUrl, supabaseAnonKey, {
+  offlineClientInstance = createSupabaseClient<Database>(supabaseUrl, supabaseAnonKey, {
     auth: {
       autoRefreshToken: false, // Disable auto-refresh to prevent offline errors
       persistSession: true,
@@ -54,15 +61,15 @@ export function createOfflineAwareClient() {
   });
 
   // Wrap the auth methods to handle offline scenarios
-  const originalGetSession = supabase.auth.getSession.bind(supabase.auth);
-  const originalGetUser = supabase.auth.getUser.bind(supabase.auth);
-  const originalSignIn = supabase.auth.signInWithPassword.bind(supabase.auth);
-  const originalSignUp = supabase.auth.signUp.bind(supabase.auth);
-  const originalSignOut = supabase.auth.signOut.bind(supabase.auth);
-  const originalRefreshSession = supabase.auth.refreshSession.bind(supabase.auth);
+  const originalGetSession = offlineClientInstance.auth.getSession.bind(offlineClientInstance.auth);
+  const originalGetUser = offlineClientInstance.auth.getUser.bind(offlineClientInstance.auth);
+  const originalSignIn = offlineClientInstance.auth.signInWithPassword.bind(offlineClientInstance.auth);
+  const originalSignUp = offlineClientInstance.auth.signUp.bind(offlineClientInstance.auth);
+  const originalSignOut = offlineClientInstance.auth.signOut.bind(offlineClientInstance.auth);
+  const originalRefreshSession = offlineClientInstance.auth.refreshSession.bind(offlineClientInstance.auth);
 
   // Enhanced getSession with offline support
-  supabase.auth.getSession = async () => {
+  offlineClientInstance.auth.getSession = async () => {
     try {
       const result = await originalGetSession();
       
@@ -94,13 +101,13 @@ export function createOfflineAwareClient() {
   };
 
   // Enhanced getUser with offline support
-  supabase.auth.getUser = async () => {
+  offlineClientInstance.auth.getUser = async () => {
     try {
       const result = await originalGetUser();
       
       // Save the user to offline storage
-      if (result.data.user) {
-        const session = await supabase.auth.getSession();
+      if (result.data.user && offlineClientInstance) {
+        const session = await offlineClientInstance.auth.getSession();
         await offlineAuthManager.saveOfflineAuthState(result.data.user, session.data.session);
       }
       
@@ -126,7 +133,7 @@ export function createOfflineAwareClient() {
   };
 
   // Enhanced signIn with offline support
-  supabase.auth.signInWithPassword = async (credentials) => {
+  offlineClientInstance.auth.signInWithPassword = async (credentials) => {
     try {
       const result = await originalSignIn(credentials);
       
@@ -142,7 +149,7 @@ export function createOfflineAwareClient() {
   };
 
   // Enhanced signUp with offline support
-  supabase.auth.signUp = async (credentials) => {
+  offlineClientInstance.auth.signUp = async (credentials) => {
     try {
       const result = await originalSignUp(credentials);
       
@@ -158,7 +165,7 @@ export function createOfflineAwareClient() {
   };
 
   // Enhanced signOut with offline support
-  supabase.auth.signOut = async () => {
+  offlineClientInstance.auth.signOut = async () => {
     try {
       const result = await originalSignOut();
       await offlineAuthManager.clearOfflineAuthState();
@@ -171,7 +178,7 @@ export function createOfflineAwareClient() {
   };
 
   // Enhanced refreshSession with offline support
-  supabase.auth.refreshSession = async (refreshToken) => {
+  offlineClientInstance.auth.refreshSession = async (refreshToken) => {
     try {
       const result = await originalRefreshSession(refreshToken);
       
@@ -199,7 +206,7 @@ export function createOfflineAwareClient() {
   };
 
   // Set up auth state change listener
-  supabase.auth.onAuthStateChange(async (event, session) => {
+  offlineClientInstance.auth.onAuthStateChange(async (event, session) => {
     console.log("[OfflineClient] Auth state changed:", event);
     
     if (session) {
@@ -209,5 +216,5 @@ export function createOfflineAwareClient() {
     }
   });
 
-  return supabase;
+  return offlineClientInstance;
 }

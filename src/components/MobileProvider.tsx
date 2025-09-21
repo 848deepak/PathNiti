@@ -6,8 +6,33 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
-import { capacitorService, DeviceInfo } from '@/lib/capacitor-service';
 import { offlineStorageService, SyncResult } from '@/lib/offline-storage';
+
+// Define DeviceInfo type
+interface DeviceInfo {
+  isNative: boolean;
+  platform: string;
+  model: string;
+  osVersion: string;
+  appVersion: string;
+  bundleId: string;
+}
+
+// Conditionally import Capacitor service only when available
+let capacitorService: any = null;
+
+if (typeof window !== 'undefined' && (window as any).Capacitor) {
+  try {
+    // Dynamic import for Capacitor service
+    import('@/lib/capacitor-service').then((capacitorModule) => {
+      capacitorService = capacitorModule.capacitorService;
+    }).catch((error) => {
+      console.log('Capacitor service not available in web environment');
+    });
+  } catch (error) {
+    console.log('Capacitor service not available in web environment');
+  }
+}
 
 interface MobileContextType {
   // Device info
@@ -73,19 +98,32 @@ export function MobileProvider({ children }: MobileProviderProps) {
   useEffect(() => {
     const initializeMobile = async () => {
       try {
-        // Initialize Capacitor services
-        await capacitorService.initialize();
+        // Initialize Capacitor services if available
+        if (capacitorService) {
+          await capacitorService.initialize();
+          
+          // Get device info
+          const info = capacitorService.getDeviceInfoSync();
+          setDeviceInfo(info);
+          
+          // Check online status
+          const online = await capacitorService.isOnline();
+          setIsOnline(online);
+        } else {
+          // Fallback for web environment
+          setDeviceInfo({
+            isNative: false,
+            platform: 'web',
+            model: 'Web Browser',
+            osVersion: 'Unknown',
+            appVersion: '1.0.0',
+            bundleId: 'com.pathniti.web'
+          });
+          setIsOnline(navigator.onLine);
+        }
         
         // Initialize offline storage
         await offlineStorageService.initialize();
-        
-        // Get device info
-        const info = capacitorService.getDeviceInfoSync();
-        setDeviceInfo(info);
-        
-        // Check online status
-        const online = await capacitorService.isOnline();
-        setIsOnline(online);
         
         // Get sync status
         const status = await offlineStorageService.getSyncStatus();
@@ -104,8 +142,14 @@ export function MobileProvider({ children }: MobileProviderProps) {
   // Listen for network status changes
   useEffect(() => {
     const handleNetworkChange = async () => {
-      const online = await capacitorService.isOnline();
-      setIsOnline(online);
+      let online = false;
+      if (capacitorService) {
+        online = await capacitorService.isOnline();
+        setIsOnline(online);
+      } else {
+        online = navigator.onLine;
+        setIsOnline(online);
+      }
       
       // Auto-sync when back online
       if (online && syncStatus.pending > 0) {
@@ -145,27 +189,42 @@ export function MobileProvider({ children }: MobileProviderProps) {
 
   // Take photo
   const takePhoto = async (): Promise<string | null> => {
-    return await capacitorService.takePhoto();
+    if (capacitorService) {
+      return await capacitorService.takePhoto();
+    }
+    return null;
   };
 
   // Get current location
   const getCurrentLocation = async () => {
-    return await capacitorService.getCurrentLocation();
+    if (capacitorService) {
+      return await capacitorService.getCurrentLocation();
+    }
+    return null;
   };
 
   // Trigger haptic feedback
   const triggerHapticFeedback = async (): Promise<void> => {
-    await capacitorService.triggerHapticFeedback();
+    if (capacitorService) {
+      await capacitorService.triggerHapticFeedback();
+    }
   };
 
   // Show notification
   const showNotification = async (title: string, body: string, data?: any): Promise<void> => {
-    await capacitorService.showLocalNotification({ title, body, data });
+    if (capacitorService) {
+      await capacitorService.showLocalNotification({ title, body, data });
+    } else {
+      // Fallback to browser notification
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(title, { body, data });
+      }
+    }
   };
 
   const contextValue: MobileContextType = {
     deviceInfo,
-    isNative: capacitorService.isNative(),
+    isNative: capacitorService ? capacitorService.isNative() : false,
     isMobile: deviceInfo?.isNative || false,
     isOnline,
     syncStatus,

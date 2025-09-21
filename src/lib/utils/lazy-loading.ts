@@ -141,7 +141,7 @@ export class CollegeLazyLoader {
       const { data, error, count } = await this.fetchColleges(options);
 
       if (error) {
-        throw new Error(error.message);
+        throw new Error(typeof error === 'string' ? error : 'Unknown error');
       }
 
       const hasMore = (data?.length || 0) === this.config.pageSize;
@@ -201,7 +201,7 @@ export class CollegeLazyLoader {
       const { data, error, count } = await this.fetchColleges(searchOptions);
 
       if (error) {
-        throw new Error(error.message);
+        throw new Error(typeof error === 'string' ? error : 'Unknown error');
       }
 
       const hasMore = (data?.length || 0) === this.config.pageSize;

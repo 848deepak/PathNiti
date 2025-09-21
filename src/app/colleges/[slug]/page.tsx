@@ -32,7 +32,7 @@ import {
   CardTitle,
   Badge,
 } from "@/components/ui";
-import { collegeProfileService } from "@/lib/services/college-profile-service";
+import { collegeProfileServiceClient } from "@/lib/services/college-profile-service-client";
 import StudentApplicationForm from "@/components/StudentApplicationForm";
 import { createClient } from "@/lib/supabase/client";
 import type { CollegeProfileData } from "@/lib/types/college-profile";
@@ -87,7 +87,7 @@ export default function CollegeProfilePage({
 
         const resolvedParams = await params;
         const { data, error: fetchError } =
-          await collegeProfileService.getProfileBySlug(resolvedParams.slug);
+          await collegeProfileServiceClient.getProfileBySlug(resolvedParams.slug);
 
         if (fetchError) {
           setError(fetchError);

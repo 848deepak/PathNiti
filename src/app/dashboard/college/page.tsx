@@ -147,7 +147,7 @@ export default function CollegeDashboardPage() {
               </h1>
             </div>
             <Button variant="outline" asChild>
-              <Link href="/colleges/manage">
+              <Link href="/colleges/dashboard">
                 <Settings className="h-4 w-4 mr-2" />
                 Manage Profile
               </Link>

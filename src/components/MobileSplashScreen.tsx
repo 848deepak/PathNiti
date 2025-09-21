@@ -6,8 +6,22 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { SplashScreen } from '@capacitor/splash-screen';
 import { useMobile } from './MobileProvider';
+
+// Conditionally import Capacitor SplashScreen only when available
+let SplashScreen: any = null;
+if (typeof window !== 'undefined' && (window as any).Capacitor) {
+  try {
+    // Dynamic import for Capacitor SplashScreen
+    import('@capacitor/splash-screen').then((module) => {
+      SplashScreen = module.SplashScreen;
+    }).catch((error) => {
+      console.log('Capacitor SplashScreen not available in web environment');
+    });
+  } catch (error) {
+    console.log('Capacitor SplashScreen not available in web environment');
+  }
+}
 
 interface MobileSplashScreenProps {
   children: React.ReactNode;
@@ -24,7 +38,7 @@ export function MobileSplashScreen({ children }: MobileSplashScreenProps) {
 
   useEffect(() => {
     const hideSplashScreen = async () => {
-      if (isClient && isNative) {
+      if (isClient && isNative && SplashScreen) {
         try {
           // Hide the native splash screen
           await SplashScreen.hide();

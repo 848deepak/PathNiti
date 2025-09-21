@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { collegeProfileServiceEnhanced } from "@/lib/services/college-profile-service";
+import { collegeProfileServiceClient } from "@/lib/services/college-profile-service-client";
 
 interface PerformanceMetrics {
   cacheStats: {
@@ -59,8 +59,13 @@ export default function PerformanceMonitor() {
 
   const loadMetrics = async () => {
     try {
-      // Get cache statistics
-      const cacheStats = collegeProfileServiceEnhanced.getCacheStats();
+      // Get cache statistics (client-side service doesn't have caching)
+      const cacheStats = {
+        profileCache: { hits: 0, misses: 0, size: 0, maxSize: 0 },
+        listCache: { hits: 0, misses: 0, size: 0, maxSize: 0 },
+        courseCache: { hits: 0, misses: 0, size: 0, maxSize: 0 },
+        noticeCache: { hits: 0, misses: 0, size: 0, maxSize: 0 },
+      };
 
       // Get performance metrics
       const pageLoadTime = performance.timing
@@ -84,7 +89,7 @@ export default function PerformanceMonitor() {
   };
 
   const clearCaches = () => {
-    collegeProfileServiceEnhanced.clearAllCaches();
+    // Client-side service doesn't have caching, just reload metrics
     loadMetrics();
   };
 

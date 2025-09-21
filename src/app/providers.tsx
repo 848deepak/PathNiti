@@ -619,12 +619,24 @@ export function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!mounted) return;
 
+    // Add a fallback timeout to ensure loading is always cleared
+    const fallbackTimeout = setTimeout(() => {
+      console.warn("[AuthProvider] Fallback timeout reached, clearing loading state");
+      setLoading(false);
+    }, 15000); // 15 seconds fallback
+
     // Get initial session
     const getInitialSession = async () => {
       try {
         console.log("[AuthProvider] Getting initial session...");
         
-        // Try to get session from Supabase
+        // Add timeout to prevent hanging
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Session check timeout')), 10000)
+        );
+        
+        // Try to get session from Supabase with timeout
         let session: Session | null = null;
         let user: User | null = null;
         let error: any = null;
@@ -633,7 +645,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           const {
             data: { session: supabaseSession },
             error: sessionError,
-          } = await supabase.auth.getSession();
+          } = await Promise.race([sessionPromise, timeoutPromise]) as any;
 
           session = supabaseSession;
           user = session?.user ?? null;
@@ -641,7 +653,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         } catch (sessionError) {
           console.warn("[AuthProvider] Supabase session failed, trying offline state:", sessionError);
           
-          // If it's a network error, try to get offline state
+          // If it's a network error or timeout, try to get offline state
           if (await offlineAuthManager.handleAuthError(sessionError)) {
             const offlineState = await offlineAuthManager.getOfflineAuthState();
             if (offlineState) {
@@ -650,7 +662,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
               console.log("[AuthProvider] Using offline auth state");
             }
           } else {
-            throw sessionError;
+            // For timeout or other errors, just continue without session
+            console.warn("[AuthProvider] Session check failed, continuing without session");
+            session = null;
+            user = null;
+            error = sessionError;
           }
         }
 
@@ -754,6 +770,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         setSession(null);
         setProfile(null);
       } finally {
+        clearTimeout(fallbackTimeout);
         setLoading(false);
       }
     };

@@ -99,7 +99,7 @@ export async function GET(request: NextRequest) {
     if (error) {
       console.error("Error fetching colleges:", error);
       return NextResponse.json(
-        { error: `Failed to fetch colleges: ${error.message || 'Unknown error'}` },
+        { error: `Failed to fetch colleges: ${typeof error === 'string' ? error : 'Unknown error'}` },
         { status: 500 },
       );
     }

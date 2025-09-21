@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, Suspense } from "react";
+import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -12,7 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui";
-// import { SearchableSelect } from "@/components/ui/searchable-select"
+import { SearchableSelect } from "@/components/ui/searchable-select"
 import {
   FormErrorDisplay,
   FieldError,
@@ -42,6 +42,9 @@ import { useCollegeLazyLoader } from "@/lib/utils/lazy-loading";
 
 // Force dynamic rendering
 export const dynamic = "force-dynamic";
+
+// TODO: Authentication is currently bypassed for development
+// Re-enable authentication checks after fixing auth issues
 
 interface College {
   id: string;
@@ -77,7 +80,8 @@ function CollegeSignupPageContent() {
   );
 
   const [colleges, setColleges] = useState<College[]>([]);
-  const [collegeSearch] = useState("");
+  const [collegeSearch, setCollegeSearch] = useState("");
+  const [isRegistering, setIsRegistering] = useState(false);
   const debouncedSearch = useDebounce(collegeSearch, 300);
   const { loadColleges, searchColleges } =
     useCollegeLazyLoader({
@@ -116,7 +120,31 @@ function CollegeSignupPageContent() {
       setRecoveryActions(recovery as unknown as Array<{ action: string; timestamp: string; data: Record<string, unknown> }>);     } finally {
       setLoadingColleges(false);
     }
-  }, [loadColleges]);
+  }, [loadColleges]); // Include loadColleges dependency
+
+  // Filter colleges based on search
+  const filteredColleges = useMemo(() => {
+    if (!debouncedSearch.trim()) {
+      return colleges;
+    }
+    return colleges.filter(college => 
+      college.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      college.location?.city?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      college.location?.state?.toLowerCase().includes(debouncedSearch.toLowerCase())
+    );
+  }, [colleges, debouncedSearch]);
+
+  // Handle college selection change
+  const _handleCollegeChange = useCallback((collegeId: string) => {
+    updateField("collegeId", collegeId);
+  }, [updateField]);
+
+  // Handle new college registration
+  const _handleRegisterNewCollege = useCallback(() => {
+    setIsRegistering(true);
+    const returnUrl = `/auth/signup/college?${searchParams.toString()}`;
+    router.push(`/colleges/register?returnTo=${encodeURIComponent(returnUrl)}&source=signup`);
+  }, [router, searchParams]);
 
   const handleCollegeRegistrationReturn = useCallback(() => {
     const collegeId = searchParams.get("collegeId");
@@ -193,7 +221,7 @@ function CollegeSignupPageContent() {
 
     window.addEventListener("focus", handleWindowFocus);
     return () => window.removeEventListener("focus", handleWindowFocus);
-  }, [fetchColleges, handleCollegeRegistrationReturn]);
+  }, [fetchColleges, handleCollegeRegistrationReturn]); // Include dependencies
 
   useEffect(() => {
     // Use lazy loading for search
@@ -225,7 +253,7 @@ function CollegeSignupPageContent() {
     };
 
     performSearch();
-  }, [colleges, debouncedSearch, searchColleges]);
+  }, [debouncedSearch, colleges, searchColleges]); // Include all dependencies
 
   // Auto-save form data to session (handled by useFormValidation hook)
 
@@ -482,8 +510,6 @@ function CollegeSignupPageContent() {
                 </label>
 
                 {/* Enhanced College Selection with Search and Keyboard Navigation */}
-                {/* Temporarily commented out to fix build issue */}
-                {/*
                 <SearchableSelect
                   options={filteredColleges}
                   value={formState.collegeId?.value || ''}
@@ -502,12 +528,6 @@ function CollegeSignupPageContent() {
                   }
                   className={`w-full ${formState.collegeId?.error ? 'border-red-300' : ''}`}
                 />
-                */}
-                <div className="w-full p-3 border border-gray-300 rounded-md bg-gray-50">
-                  <p className="text-sm text-gray-600">
-                    College selection temporarily disabled for build fix
-                  </p>
-                </div>
                 <FieldError
                   error={formState.collegeId?.error}
                   warnings={formState.collegeId?.warnings}

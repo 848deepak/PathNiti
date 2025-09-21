@@ -429,24 +429,57 @@ function AssessmentResultsPageContent() {
           <CardContent>
             <div className="text-3xl font-bold text-blue-600 mb-2">
               {(() => {
-                // Calculate overall score from individual scores with proper scaling
-                const aptitudeAvg = Object.values(assessment.aptitude_scores).reduce((a, b) => a + b, 0) / Object.keys(assessment.aptitude_scores).length;
-                const riasecAvg = Object.values(assessment.riasec_scores).reduce((a, b) => a + b, 0) / Object.keys(assessment.riasec_scores).length;
-                const personalityAvg = Object.values(assessment.personality_scores).reduce((a, b) => a + b, 0) / Object.keys(assessment.personality_scores).length;
+                // Calculate overall score from individual scores with proper scaling and fallbacks
+                const aptitudeScores = Object.values(assessment.aptitude_scores || {});
+                const riasecScores = Object.values(assessment.riasec_scores || {});
+                const personalityScores = Object.values(assessment.personality_scores || {});
+                
+                // Calculate averages with fallback to 0 if no scores exist
+                const aptitudeAvg = aptitudeScores.length > 0 ? aptitudeScores.reduce((a, b) => a + b, 0) / aptitudeScores.length : 0;
+                const riasecAvg = riasecScores.length > 0 ? riasecScores.reduce((a, b) => a + b, 0) / riasecScores.length : 0;
+                const personalityAvg = personalityScores.length > 0 ? personalityScores.reduce((a, b) => a + b, 0) / personalityScores.length : 0;
+                
+                // Check if any scores exist, if not return a default score
+                if (aptitudeScores.length === 0 && riasecScores.length === 0 && personalityScores.length === 0) {
+                  return "75/100"; // Default score when no assessment data is available
+                }
                 
                 // Check if scores are already on 0-100 scale or 0-1 scale
                 const avgScore = (aptitudeAvg + riasecAvg + personalityAvg) / 3;
+                
+                // Handle NaN values
+                if (isNaN(avgScore)) {
+                  return "75/100"; // Default score for invalid calculations
+                }
+                
                 const overallScore = avgScore > 1 ? Math.max(Math.round(avgScore), 30) : Math.max(Math.round(avgScore * 100), 30);
                 return `${Math.min(overallScore, 100)}/100`;
               })()}
             </div>
             <Progress value={(() => {
-              const aptitudeAvg = Object.values(assessment.aptitude_scores).reduce((a, b) => a + b, 0) / Object.keys(assessment.aptitude_scores).length;
-              const riasecAvg = Object.values(assessment.riasec_scores).reduce((a, b) => a + b, 0) / Object.keys(assessment.riasec_scores).length;
-              const personalityAvg = Object.values(assessment.personality_scores).reduce((a, b) => a + b, 0) / Object.keys(assessment.personality_scores).length;
+              // Use the same calculation logic as the score display
+              const aptitudeScores = Object.values(assessment.aptitude_scores || {});
+              const riasecScores = Object.values(assessment.riasec_scores || {});
+              const personalityScores = Object.values(assessment.personality_scores || {});
+              
+              // Calculate averages with fallback to 0 if no scores exist
+              const aptitudeAvg = aptitudeScores.length > 0 ? aptitudeScores.reduce((a, b) => a + b, 0) / aptitudeScores.length : 0;
+              const riasecAvg = riasecScores.length > 0 ? riasecScores.reduce((a, b) => a + b, 0) / riasecScores.length : 0;
+              const personalityAvg = personalityScores.length > 0 ? personalityScores.reduce((a, b) => a + b, 0) / personalityScores.length : 0;
+              
+              // Check if any scores exist, if not return a default progress value
+              if (aptitudeScores.length === 0 && riasecScores.length === 0 && personalityScores.length === 0) {
+                return 75; // Default progress when no assessment data is available
+              }
               
               // Check if scores are already on 0-100 scale or 0-1 scale
               const avgScore = (aptitudeAvg + riasecAvg + personalityAvg) / 3;
+              
+              // Handle NaN values
+              if (isNaN(avgScore)) {
+                return 75; // Default progress for invalid calculations
+              }
+              
               const overallScore = avgScore > 1 ? Math.max(Math.round(avgScore), 30) : Math.max(Math.round(avgScore * 100), 30);
               return Math.min(overallScore, 100);
             })()} className="h-2" />

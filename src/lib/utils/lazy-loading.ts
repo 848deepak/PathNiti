@@ -3,7 +3,7 @@
  * Provides efficient data loading with caching and pagination
  */
 
-import { supabase } from "@/lib/supabase";
+// Removed direct supabase import - now using API routes
 
 export interface LazyLoadConfig {
   pageSize: number;
@@ -266,41 +266,38 @@ export class CollegeLazyLoader {
   }
 
   /**
-   * Fetch colleges from database
+   * Fetch colleges from API route instead of direct database access
    */
   private async fetchColleges(options: CollegeSearchOptions) {
-    let query = supabase
-      .from("colleges")
-      .select("id, name, location, type, is_verified", { count: "exact" })
-      .eq("is_active", true);
+    // Build query parameters
+    const params = new URLSearchParams();
+    
+    if (options.query) params.append("search", options.query);
+    if (options.state) params.append("state", options.state);
+    if (options.type) params.append("type", options.type);
+    if (options.limit) params.append("limit", options.limit.toString());
+    if (options.offset) params.append("offset", options.offset.toString());
 
-    // Apply search filters
-    if (options.query) {
-      const searchTerm = `%${options.query}%`;
-      query = query.or(
-        `name.ilike.${searchTerm},location->>city.ilike.${searchTerm},location->>state.ilike.${searchTerm}`,
-      );
+    // Call the API route
+    const response = await fetch(`/api/colleges?${params.toString()}`);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP ${response.status}: ${errorText}`);
     }
 
-    if (options.state) {
-      query = query.eq("location->>state", options.state);
+    const result = await response.json();
+    
+    if (result.error) {
+      throw new Error(result.error);
     }
 
-    if (options.city) {
-      query = query.eq("location->>city", options.city);
-    }
-
-    if (options.type) {
-      query = query.eq("type", options.type);
-    }
-
-    // Apply pagination
-    const limit = options.limit || this.config.pageSize;
-    const offset = options.offset || 0;
-
-    query = query.order("name").range(offset, offset + limit - 1);
-
-    return query;
+    // Return in the format expected by the lazy loader
+    return {
+      data: result.data || [],
+      error: null,
+      count: result.total || 0
+    };
   }
 
   /**

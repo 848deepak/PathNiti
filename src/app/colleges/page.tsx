@@ -72,10 +72,13 @@ export default function CollegesPage() {
       const response = await fetch('/api/colleges');
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error("HTTP error response:", errorText);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
       }
 
       const result = await response.json();
+      console.log("API response:", result);
 
       if (result.error) {
         console.error("Error fetching colleges:", result.error);

@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
       }
 
       // Apply pagination
-      query = query.range(offset, offset + limit - 1);
+      query = query.range(offset || 0, (offset || 0) + (limit || 50) - 1);
 
       const { data: colleges, error } = await query;
 
@@ -106,9 +106,9 @@ export async function GET(request: NextRequest) {
 
     // Return the colleges array directly for client compatibility
     const response = NextResponse.json({
-      data: result?.colleges || [],
-      total: result?.total || 0,
-      hasMore: result?.hasMore || false
+      data: Array.isArray(result) ? result : (result?.colleges || []),
+      total: Array.isArray(result) ? result.length : (result?.total || 0),
+      hasMore: Array.isArray(result) ? false : (result?.hasMore || false)
     });
     response.headers.set(
       "Cache-Control",

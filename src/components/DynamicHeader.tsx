@@ -22,6 +22,8 @@ import {
 } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { useScrollPosition } from "@/hooks/useOptimizedScroll";
+import { LanguageSelector } from "@/components/LanguageSelector";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface DynamicHeaderProps {
   showNavigation?: boolean;
@@ -35,6 +37,7 @@ export function DynamicHeader({
   className = "",
 }: DynamicHeaderProps) {
   const { user, profile, signOut } = useAuth();
+  const { t } = useTranslation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -140,7 +143,7 @@ export function DynamicHeader({
                   className="px-3 py-2 text-gray-600 hover:text-primary hover:bg-gray-100/60 rounded-lg transition-all duration-200 flex items-center gap-2 font-medium relative group"
                 >
                   <Home className="w-4 h-4" />
-                  Home
+{t('navigation.home')}
                   <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></div>
                 </Link>
                 <Link
@@ -148,7 +151,7 @@ export function DynamicHeader({
                   className="px-3 py-2 text-gray-600 hover:text-primary hover:bg-gray-100/60 rounded-lg transition-all duration-200 flex items-center gap-2 font-medium relative group"
                 >
                   <BookOpen className="w-4 h-4" />
-                  Assessment
+{t('navigation.assessment')}
                   <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></div>
                 </Link>
                 <Link
@@ -156,7 +159,7 @@ export function DynamicHeader({
                   className="px-3 py-2 text-gray-600 hover:text-primary hover:bg-gray-100/60 rounded-lg transition-all duration-200 flex items-center gap-2 font-medium relative group"
                 >
                   <GraduationCap className="w-4 h-4" />
-                  Colleges
+{t('navigation.colleges')}
                   <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></div>
                 </Link>
                 <Link
@@ -164,7 +167,7 @@ export function DynamicHeader({
                   className="px-3 py-2 text-gray-600 hover:text-primary hover:bg-gray-100/60 rounded-lg transition-all duration-200 flex items-center gap-2 font-medium relative group"
                 >
                   <MapPin className="w-4 h-4" />
-                  Scholarships
+{t('navigation.scholarships')}
                   <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></div>
                 </Link>
                 <Link
@@ -172,7 +175,7 @@ export function DynamicHeader({
                   className="px-3 py-2 text-gray-600 hover:text-primary hover:bg-gray-100/60 rounded-lg transition-all duration-200 flex items-center gap-2 font-medium relative group"
                 >
                   <MessageCircle className="w-4 h-4" />
-                  AI Chat
+{t('navigation.ai_chat')}
                   <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></div>
                 </Link>
               </nav>
@@ -182,6 +185,9 @@ export function DynamicHeader({
           {/* Right side actions */}
           {showUserActions && (
             <div className="flex items-center space-x-3">
+              {/* Language Selector */}
+              <LanguageSelector variant="compact" className="hidden sm:flex" />
+
               {/* Search Button */}
               <Button
                 variant="ghost"
@@ -189,7 +195,7 @@ export function DynamicHeader({
                 className="hidden sm:flex items-center gap-2 text-gray-600 hover:text-gray-900"
               >
                 <Search className="w-4 h-4" />
-                <span className="hidden lg:inline">Search</span>
+                <span className="hidden lg:inline">{t('common.search')}</span>
               </Button>
 
               {user ? (
@@ -212,7 +218,7 @@ export function DynamicHeader({
                       <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-lg shadow-lg border z-50">
                         <div className="p-4 border-b">
                           <div className="flex items-center justify-between">
-                            <h3 className="text-lg font-semibold">Notifications</h3>
+                            <h3 className="text-lg font-semibold">{t('navigation.notifications')}</h3>
                             <div className="flex items-center space-x-2">
                               {unreadCount > 0 && (
                                 <Button size="sm" variant="outline" onClick={markAllAsRead}>
@@ -325,7 +331,7 @@ export function DynamicHeader({
                           onClick={() => setShowUserDropdown(false)}
                         >
                           <User className="w-4 h-4" />
-                          Dashboard
+{t('navigation.dashboard')}
                         </Link>
 
                         <Link
@@ -334,7 +340,7 @@ export function DynamicHeader({
                           onClick={() => setShowUserDropdown(false)}
                         >
                           <Settings className="w-4 h-4" />
-                          Settings
+{t('navigation.settings')}
                         </Link>
 
                         <hr className="my-2" />
@@ -344,7 +350,7 @@ export function DynamicHeader({
                           className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors w-full text-left"
                         >
                           <LogOut className="w-4 h-4" />
-                          Sign Out
+{t('navigation.sign_out')}
                         </button>
                       </div>
                     )}
@@ -357,7 +363,7 @@ export function DynamicHeader({
                       href="/auth/login"
                       className="flex items-center gap-2 font-medium"
                     >
-                      Login
+{t('navigation.login')}
                     </Link>
                   </Button>
                   <Button
@@ -369,7 +375,7 @@ export function DynamicHeader({
                       href="/auth/signup"
                       className="flex items-center gap-2 font-medium"
                     >
-                      Get Started
+{t('navigation.get_started')}
                     </Link>
                   </Button>
                 </div>
@@ -400,7 +406,7 @@ export function DynamicHeader({
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <Home className="w-5 h-5" />
-                Home
+{t('navigation.home')}
               </Link>
               <Link
                 href="/comprehensive-assessment"
@@ -408,7 +414,7 @@ export function DynamicHeader({
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <BookOpen className="w-5 h-5" />
-                Assessment
+{t('navigation.assessment')}
               </Link>
               <Link
                 href="/colleges"
@@ -416,7 +422,7 @@ export function DynamicHeader({
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <GraduationCap className="w-5 h-5" />
-                Colleges
+{t('navigation.colleges')}
               </Link>
               <Link
                 href="/scholarships"
@@ -424,7 +430,7 @@ export function DynamicHeader({
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <MapPin className="w-5 h-5" />
-                Scholarships
+{t('navigation.scholarships')}
               </Link>
               <Link
                 href="/chat"
@@ -432,8 +438,13 @@ export function DynamicHeader({
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <MessageCircle className="w-5 h-5" />
-                AI Chat
+{t('navigation.ai_chat')}
               </Link>
+
+              {/* Language Selector for Mobile */}
+              <div className="pt-4 mt-4 border-t border-gray-200/50">
+                <LanguageSelector variant="button" className="px-4" />
+              </div>
 
               {/* Mobile user actions */}
               {user ? (
@@ -444,14 +455,14 @@ export function DynamicHeader({
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     <User className="w-5 h-5" />
-                    Dashboard
+{t('navigation.dashboard')}
                   </Link>
                   <button
                     onClick={handleSignOut}
                     className="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 flex items-center gap-3 font-medium"
                   >
                     <LogOut className="w-5 h-5" />
-                    Sign Out
+{t('navigation.sign_out')}
                   </button>
                 </div>
               ) : (
@@ -461,14 +472,14 @@ export function DynamicHeader({
                     className="block px-4 py-3 text-center text-gray-600 hover:text-primary hover:bg-gray-50 rounded-lg transition-all duration-200 font-medium"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Login
+{t('navigation.login')}
                   </Link>
                   <Link
                     href="/auth/signup"
                     className="block px-4 py-3 text-center bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 font-medium shadow-md"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Get Started
+{t('navigation.get_started')}
                   </Link>
                 </div>
               )}

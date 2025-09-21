@@ -19,10 +19,14 @@ import { useAuth } from "./providers";
 import { useState, useEffect } from "react";
 import { DynamicHeader } from "@/components/DynamicHeader";
 import { InstallAppButton } from "@/components/InstallAppButton";
+import { useTranslation } from "@/hooks/useTranslation";
+import { TextToSpeech } from "@/components/TextToSpeech";
+import { GlobalTTS } from "@/components/GlobalTTS";
 
 export default function Home() {
   const [mounted, setMounted] = useState(false);
   const { user, profile } = useAuth();
+  const { t } = useTranslation();
 
   useEffect(() => {
     setMounted(true);
@@ -49,38 +53,45 @@ export default function Home() {
           <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 mb-8 shadow-lg">
             <Star className="h-4 w-4 text-yellow-500 fill-current" />
             <span className="text-sm font-medium text-gray-700">
-              Trusted by 10,000+ students across India
+              {t('home.trusted_by')}
             </span>
           </div>
 
           {user ? (
             <>
-              <h1 className="text-6xl md:text-7xl font-bold text-gray-900 mb-8 leading-tight">
-                Welcome back!{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-blue-600 to-purple-600">
-                  Ready to explore?
-                </span>
-              </h1>
+              <div className="flex items-center justify-center gap-4 mb-8">
+                <h1 className="text-6xl md:text-7xl font-bold text-gray-900 leading-tight">
+                  {t('home.welcome_back')}{" "}
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-blue-600 to-purple-600">
+                    {t('home.ready_to_explore')}
+                  </span>
+                </h1>
+                <TextToSpeech 
+                  text={`${t('home.welcome_back')} ${t('home.ready_to_explore')}`}
+                  variant="inline"
+                  size="lg"
+                />
+              </div>
 
               <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
-                Continue your career journey with PathNiti. Access your
-                personalized dashboard, explore colleges, track deadlines, and
-                discover new opportunities.
+                {t('home.continue_journey')}
               </p>
             </>
           ) : (
             <>
-              <h1 className="text-6xl md:text-7xl font-bold text-gray-900 mb-8 leading-tight">
-                Your Path. Your Future.{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-blue-600 to-purple-600">
-                  Simplified.
-                </span>
-              </h1>
+              <div className="flex items-center justify-center gap-4 mb-8">
+                <h1 className="text-6xl md:text-7xl font-bold text-gray-900 leading-tight">
+                  {t('home.title')}
+                </h1>
+                <TextToSpeech 
+                  text={t('home.title')}
+                  variant="inline"
+                  size="lg"
+                />
+              </div>
 
               <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
-                One-Stop Personalized Career & Education Advisor for Indian
-                Students. Discover your potential, explore government colleges,
-                and make informed decisions about your future.
+                {t('home.subtitle')}
               </p>
             </>
           )}
@@ -97,7 +108,7 @@ export default function Home() {
                     href={`/dashboard/${profile?.role || "student"}`}
                     className="flex items-center gap-3 relative z-10"
                   >
-                    <span className="font-bold text-lg">Go to Dashboard</span>
+                    <span className="font-bold text-lg">{t('home.go_to_dashboard')}</span>
                     <ArrowRight className="h-6 w-6 group-hover:translate-x-2 transition-transform duration-300" />
                   </Link>
                 </Button>
@@ -108,7 +119,7 @@ export default function Home() {
                   asChild
                 >
                   <Link href="/quiz" className="flex items-center gap-3">
-                    <span className="font-bold">Take Assessment</span>
+                    <span className="font-bold">{t('home.take_assessment')}</span>
                     <ArrowRight className="h-6 w-6" />
                   </Link>
                 </Button>
@@ -125,7 +136,7 @@ export default function Home() {
                     className="flex items-center gap-3 relative z-10"
                   >
                     <span className="font-bold text-lg">
-                      Start Your Journey
+{t('home.start_journey')}
                     </span>
                     <ArrowRight className="h-6 w-6 group-hover:translate-x-2 transition-transform duration-300" />
                   </Link>
@@ -137,7 +148,7 @@ export default function Home() {
                   asChild
                 >
                   <Link href="/quiz" className="flex items-center gap-3">
-                    <span className="font-bold">Take Assessment</span>
+                    <span className="font-bold">{t('home.take_assessment')}</span>
                     <ArrowRight className="h-6 w-6" />
                   </Link>
                 </Button>
@@ -149,15 +160,15 @@ export default function Home() {
           <div className="mt-16 flex flex-wrap justify-center items-center gap-8 text-sm text-gray-500">
             <div className="flex items-center gap-2">
               <CheckCircle className="h-4 w-4 text-green-500" />
-              <span>Free to use</span>
+              <span>{t('home.free_to_use')}</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="h-4 w-4 text-green-500" />
-              <span>Government verified data</span>
+              <span>{t('home.government_verified')}</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="h-4 w-4 text-green-500" />
-              <span>AI-powered recommendations</span>
+              <span>{t('home.ai_powered')}</span>
             </div>
           </div>
         </div>
@@ -170,19 +181,17 @@ export default function Home() {
             <div className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-4 py-2 mb-6">
               <Sparkles className="h-4 w-4 text-primary" />
               <span className="text-sm font-medium text-primary">
-                Comprehensive Platform
+                {t('features.comprehensive_platform')}
               </span>
             </div>
             <h2 className="text-5xl font-bold text-gray-900 mb-6">
-              Everything You Need for Your{" "}
+              {t('features.everything_you_need')}{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 via-blue-600 to-purple-600">
-                Career Journey
+                {t('features.career_journey')}
               </span>
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              From aptitude assessment to college selection, we guide you
-              through every step with AI-powered insights and
-              government-verified data
+              {t('features.ai_insights')}
             </p>
           </div>
 
@@ -195,14 +204,13 @@ export default function Home() {
                 <Brain className="h-8 w-8 text-primary" />
               </div>
               <h3 className="text-2xl font-bold mb-4 text-gray-900">
-                Aptitude Assessment
+                {t('features.aptitude_assessment')}
               </h3>
               <p className="text-gray-600 leading-relaxed mb-6">
-                Comprehensive quiz to identify your strengths, interests, and
-                suitable career paths with detailed analysis
+                {t('features.aptitude_description')}
               </p>
               <div className="flex items-center text-primary font-medium group-hover:translate-x-2 transition-transform duration-300">
-                <span>Start Assessment</span>
+                <span>{t('features.start_assessment')}</span>
                 <ArrowRight className="h-4 w-4 ml-2" />
               </div>
             </Link>
@@ -216,14 +224,13 @@ export default function Home() {
                 <MapPin className="h-8 w-8 text-green-600" />
               </div>
               <h3 className="text-2xl font-bold mb-4 text-gray-900">
-                Government Colleges
+                {t('features.government_colleges')}
               </h3>
               <p className="text-gray-600 leading-relaxed mb-6">
-                Discover nearby government colleges with detailed information
-                about programs, admissions, and facilities
+                {t('features.colleges_description')}
               </p>
               <div className="flex items-center text-green-600 font-medium group-hover:translate-x-2 transition-transform duration-300">
-                <span>Explore colleges</span>
+                <span>{t('features.explore_colleges')}</span>
                 <ArrowRight className="h-4 w-4 ml-2" />
               </div>
             </Link>
@@ -242,14 +249,13 @@ export default function Home() {
                 </div>
               </div>
               <h3 className="text-2xl font-bold mb-4 text-green-900">
-                Find Nearby Colleges
+                {t('features.find_nearby_colleges')}
               </h3>
               <p className="text-green-700 leading-relaxed mb-6">
-                Use Google Maps to find colleges near your location with
-                real-time data, ratings, and interactive maps
+                {t('features.nearby_description')}
               </p>
               <div className="flex items-center text-green-600 font-medium group-hover:translate-x-2 transition-transform duration-300">
-                <span>Find nearby colleges</span>
+                <span>{t('features.find_nearby')}</span>
                 <ArrowRight className="h-4 w-4 ml-2" />
               </div>
             </Link>
@@ -263,14 +269,13 @@ export default function Home() {
                 <Calendar className="h-8 w-8 text-blue-600" />
               </div>
               <h3 className="text-2xl font-bold mb-4 text-gray-900">
-                Timeline Tracker
+                {t('features.timeline_tracker')}
               </h3>
               <p className="text-gray-600 leading-relaxed mb-6">
-                Never miss important deadlines for admissions, scholarships, and
-                entrance exams with smart reminders
+                {t('features.timeline_description')}
               </p>
               <div className="flex items-center text-blue-600 font-medium group-hover:translate-x-2 transition-transform duration-300">
-                <span>Track deadlines</span>
+                <span>{t('features.track_deadlines')}</span>
                 <ArrowRight className="h-4 w-4 ml-2" />
               </div>
             </Link>
@@ -284,14 +289,13 @@ export default function Home() {
                 <BookOpen className="h-8 w-8 text-purple-600" />
               </div>
               <h3 className="text-2xl font-bold mb-4 text-gray-900">
-                Career Pathways
+                {t('features.career_pathways')}
               </h3>
               <p className="text-gray-600 leading-relaxed mb-6">
-                Explore detailed career paths with education requirements,
-                skills needed, and growth opportunities
+                {t('features.career_description')}
               </p>
               <div className="flex items-center text-purple-600 font-medium group-hover:translate-x-2 transition-transform duration-300">
-                <span>Explore careers</span>
+                <span>{t('features.explore_careers')}</span>
                 <ArrowRight className="h-4 w-4 ml-2" />
               </div>
             </Link>
@@ -307,14 +311,13 @@ export default function Home() {
                 <BookOpen className="h-8 w-8 text-orange-600" />
               </div>
               <h3 className="text-2xl font-bold mb-4 text-gray-900">
-                Scholarships
+                {t('features.scholarships')}
               </h3>
               <p className="text-gray-600 leading-relaxed mb-6">
-                Find and apply for government scholarships and financial aid
-                opportunities with eligibility matching
+                {t('features.scholarships_description')}
               </p>
               <div className="flex items-center text-orange-600 font-medium group-hover:translate-x-2 transition-transform duration-300">
-                <span>Find scholarships</span>
+                <span>{t('features.find_scholarships')}</span>
                 <ArrowRight className="h-4 w-4 ml-2" />
               </div>
             </Link>
@@ -328,14 +331,13 @@ export default function Home() {
                 <GraduationCap className="h-8 w-8 text-red-600" />
               </div>
               <h3 className="text-2xl font-bold mb-4 text-gray-900">
-                AI Recommendations
+                {t('features.ai_recommendations')}
               </h3>
               <p className="text-gray-600 leading-relaxed mb-6">
-                Get personalized recommendations based on your profile,
-                preferences, and market trends
+                {t('features.ai_description')}
               </p>
               <div className="flex items-center text-red-600 font-medium group-hover:translate-x-2 transition-transform duration-300">
-                <span>Get recommendations</span>
+                <span>{t('features.get_recommendations')}</span>
                 <ArrowRight className="h-4 w-4 ml-2" />
               </div>
             </Link>
@@ -507,20 +509,19 @@ export default function Home() {
             <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 mb-8">
               <Star className="h-4 w-4 text-yellow-300 fill-current" />
               <span className="text-sm font-medium">
-                Join 10,000+ successful students
+                {t('cta.join_students')}
               </span>
             </div>
 
             <h2 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
-              Ready to Shape Your{" "}
+              {t('cta.ready_to_shape')}{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-orange-300">
-                Future?
+                {t('cta.future')}
               </span>
             </h2>
 
             <p className="text-xl md:text-2xl mb-12 max-w-3xl mx-auto opacity-90 leading-relaxed">
-              Join thousands of students who have already discovered their path
-              with PathNiti. Start your journey today and unlock your potential.
+              {t('cta.join_description')}
             </p>
 
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
@@ -535,7 +536,7 @@ export default function Home() {
                 >
                   <Sparkles className="h-7 w-7 text-blue-600 group-hover:rotate-12 transition-transform duration-300" />
                   <span className="font-bold text-xl text-blue-800">
-                    Get Started Free
+                    {t('cta.get_started_free')}
                   </span>
                 </Link>
               </Button>
@@ -553,19 +554,19 @@ export default function Home() {
                 <div className="text-3xl font-bold text-yellow-300 mb-2">
                   10,000+
                 </div>
-                <div className="text-white/80">Active Students</div>
+                <div className="text-white/80">{t('cta.active_students')}</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-yellow-300 mb-2">
                   500+
                 </div>
-                <div className="text-white/80">Government Colleges</div>
+                <div className="text-white/80">{t('cta.government_colleges_count')}</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-yellow-300 mb-2">
                   95%
                 </div>
-                <div className="text-white/80">Success Rate</div>
+                <div className="text-white/80">{t('cta.success_rate')}</div>
               </div>
             </div>
           </div>
@@ -587,8 +588,7 @@ export default function Home() {
                 </span>
               </Link>
               <p className="text-gray-400 leading-relaxed mb-6">
-                Empowering students with personalized career guidance and
-                education resources. Your future starts here.
+                {t('footer.tagline')}
               </p>
               <div className="flex space-x-4">
                 <div className="w-10 h-10 bg-gray-700 rounded-lg flex items-center justify-center hover:bg-primary transition-colors cursor-pointer">
@@ -604,7 +604,7 @@ export default function Home() {
             </div>
 
             <div>
-              <h3 className="font-bold text-lg mb-6 text-white">Product</h3>
+              <h3 className="font-bold text-lg mb-6 text-white">{t('footer.product')}</h3>
               <ul className="space-y-4 text-gray-400">
 
                 <li>
@@ -612,7 +612,7 @@ export default function Home() {
                     href="/pricing"
                     className="hover:text-primary transition-colors duration-200 hover:translate-x-1 inline-block"
                   >
-                    Pricing
+{t('footer.pricing')}
                   </Link>
                 </li>
                 <li>
@@ -620,7 +620,7 @@ export default function Home() {
                     href="/demo"
                     className="hover:text-primary transition-colors duration-200 hover:translate-x-1 inline-block"
                   >
-                    Demo
+{t('footer.demo')}
                   </Link>
                 </li>
                 <li>
@@ -628,21 +628,21 @@ export default function Home() {
                     href="/quiz"
                     className="hover:text-primary transition-colors duration-200 hover:translate-x-1 inline-block"
                   >
-                    Aptitude Test
+{t('footer.aptitude_test')}
                   </Link>
                 </li>
               </ul>
             </div>
 
             <div>
-              <h3 className="font-bold text-lg mb-6 text-white">Support</h3>
+              <h3 className="font-bold text-lg mb-6 text-white">{t('footer.support')}</h3>
               <ul className="space-y-4 text-gray-400">
                 <li>
                   <Link
                     href="/help"
                     className="hover:text-primary transition-colors duration-200 hover:translate-x-1 inline-block"
                   >
-                    Help Center
+{t('footer.help_center')}
                   </Link>
                 </li>
                 <li>
@@ -650,7 +650,7 @@ export default function Home() {
                     href="/contact"
                     className="hover:text-primary transition-colors duration-200 hover:translate-x-1 inline-block"
                   >
-                    Contact Us
+{t('footer.contact_us')}
                   </Link>
                 </li>
                 <li>
@@ -658,7 +658,7 @@ export default function Home() {
                     href="/faq"
                     className="hover:text-primary transition-colors duration-200 hover:translate-x-1 inline-block"
                   >
-                    FAQ
+{t('footer.faq')}
                   </Link>
                 </li>
                 <li>
@@ -666,21 +666,21 @@ export default function Home() {
                     href="/community"
                     className="hover:text-primary transition-colors duration-200 hover:translate-x-1 inline-block"
                   >
-                    Community
+{t('footer.community')}
                   </Link>
                 </li>
               </ul>
             </div>
 
             <div>
-              <h3 className="font-bold text-lg mb-6 text-white">Company</h3>
+              <h3 className="font-bold text-lg mb-6 text-white">{t('footer.company')}</h3>
               <ul className="space-y-4 text-gray-400">
                 <li>
                   <Link
                     href="/about"
                     className="hover:text-primary transition-colors duration-200 hover:translate-x-1 inline-block"
                   >
-                    About
+{t('footer.about')}
                   </Link>
                 </li>
                 <li>
@@ -688,7 +688,7 @@ export default function Home() {
                     href="/blog"
                     className="hover:text-primary transition-colors duration-200 hover:translate-x-1 inline-block"
                   >
-                    Blog
+{t('footer.blog')}
                   </Link>
                 </li>
                 <li>
@@ -696,7 +696,7 @@ export default function Home() {
                     href="/careers"
                     className="hover:text-primary transition-colors duration-200 hover:translate-x-1 inline-block"
                   >
-                    Careers
+{t('footer.careers')}
                   </Link>
                 </li>
                 <li>
@@ -704,7 +704,7 @@ export default function Home() {
                     href="/privacy"
                     className="hover:text-primary transition-colors duration-200 hover:translate-x-1 inline-block"
                   >
-                    Privacy
+{t('footer.privacy')}
                   </Link>
                 </li>
               </ul>
@@ -714,33 +714,35 @@ export default function Home() {
           <div className="border-t border-gray-700 mt-12 pt-8">
             <div className="flex flex-col md:flex-row justify-between items-center">
               <p className="text-gray-400 mb-4 md:mb-0">
-                &copy; 2025 PathNiti. All rights reserved. Made with ❤️ for
-                Indian students.
+                {t('footer.copyright')}
               </p>
               <div className="flex space-x-6 text-sm text-gray-400">
                 <Link
                   href="/terms"
                   className="hover:text-primary transition-colors"
                 >
-                  Terms of Service
+{t('footer.terms_of_service')}
                 </Link>
                 <Link
                   href="/privacy"
                   className="hover:text-primary transition-colors"
                 >
-                  Privacy Policy
+{t('footer.privacy_policy')}
                 </Link>
                 <Link
                   href="/cookies"
                   className="hover:text-primary transition-colors"
                 >
-                  Cookie Policy
+{t('footer.cookie_policy')}
                 </Link>
               </div>
             </div>
           </div>
         </div>
       </footer>
+      
+      {/* Global TTS Component */}
+      <GlobalTTS position="top-right" variant="button" />
       
     </div>
   );

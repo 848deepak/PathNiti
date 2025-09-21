@@ -25,6 +25,7 @@ import {
   authPerformanceMonitor,
   logAuthPerformanceSummary,
 } from "@/lib/auth-performance";
+import "@/lib/i18n"; // Initialize i18n
 
 // Validate that supabase client is properly imported
 if (!supabase) {

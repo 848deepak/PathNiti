@@ -617,14 +617,6 @@ export default function Home() {
                 </li>
                 <li>
                   <Link
-                    href="/demo"
-                    className="hover:text-primary transition-colors duration-200 hover:translate-x-1 inline-block"
-                  >
-{t('footer.demo')}
-                  </Link>
-                </li>
-                <li>
-                  <Link
                     href="/quiz"
                     className="hover:text-primary transition-colors duration-200 hover:translate-x-1 inline-block"
                   >
@@ -693,7 +685,7 @@ export default function Home() {
                 </li>
                 <li>
                   <Link
-                    href="/careers"
+                    href="/career-pathways"
                     className="hover:text-primary transition-colors duration-200 hover:translate-x-1 inline-block"
                   >
 {t('footer.careers')}

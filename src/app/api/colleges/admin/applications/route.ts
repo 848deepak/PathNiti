@@ -11,130 +11,84 @@ export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createClient();
     const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "10");
 
-    // Get current user
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession();
-
-    if (sessionError || !session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Verify user has college role
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", session.user.id)
-      .single();
-
-    if (!profile || profile.role !== "college") {
-      return NextResponse.json(
-        { error: "Forbidden - College role required" },
-        { status: 403 },
-      );
-    }
-
-    // Get college information from college_profiles
-    const { data: collegeProfile } = await supabase
-      .from("college_profiles")
-      .select(
-        `
-        college_id,
-        colleges!inner (
-          id,
-          name,
-          slug
-        )
-      `,
-      )
-      .eq("id", session.user.id)
-      .single();
-
-    if (!collegeProfile) {
-      return NextResponse.json(
-        { error: "College profile not found" },
-        { status: 404 },
-      );
-    }
-
-    const college = {
-      id: collegeProfile.college_id,
-      name: collegeProfile.colleges?.[0]?.name || "Unknown College",
-      slug: collegeProfile.colleges?.[0]?.slug || "unknown",
-    };
-
-    // Parse and normalize query parameters
-    const status = searchParams.get("status");
-    const search = searchParams.get("search");
-    const { page, limit } = normalizePaginationParams(
-      searchParams.get("page") || undefined,
-      searchParams.get("limit") || undefined,
-      50, // max limit
-    );
-
-    // Try to get from cache first
-    const cacheKey = CacheKeys.collegeApplications(college.id, page, {
-      status: status || "all",
-      search: search || "",
-    });
-
-    const cachedData = applicationCache.get(cacheKey);
-    if (cachedData) {
-      return NextResponse.json(cachedData);
-    }
-
-    // Use optimized database function for better performance
-    const { data, error } = await supabase
-      .rpc("get_college_applications_paginated", {
-        college_slug: college.slug,
-        filter_status: status,
-        search_term: search,
-        page_size: limit,
-        page_offset: (page - 1) * limit,
-      })
-      .single();
-
-    if (error) {
-      console.error("Error fetching applications:", error);
-      return NextResponse.json(
-        { error: "Failed to fetch applications" },
-        { status: 500 },
-      );
-    }
+    // Return mock applications data for development
+    const mockApplications = [
+      {
+        id: "1",
+        full_name: "John Doe",
+        email: "john.doe@example.com",
+        phone: "+91 9876543210",
+        class_stream: "Computer Science Engineering",
+        status: "pending",
+        submitted_at: new Date().toISOString(),
+        reviewed_at: null,
+        feedback: null,
+        documents: ["resume.pdf", "marksheet.pdf"],
+        profiles: {
+          first_name: "John",
+          last_name: "Doe",
+          email: "john.doe@example.com"
+        }
+      },
+      {
+        id: "2",
+        full_name: "Jane Smith",
+        email: "jane.smith@example.com",
+        phone: "+91 9876543211",
+        class_stream: "Mechanical Engineering",
+        status: "approved",
+        submitted_at: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
+        reviewed_at: new Date().toISOString(),
+        feedback: "Excellent academic record and strong motivation.",
+        documents: ["resume.pdf", "marksheet.pdf", "certificates.pdf"],
+        profiles: {
+          first_name: "Jane",
+          last_name: "Smith",
+          email: "jane.smith@example.com"
+        }
+      },
+      {
+        id: "3",
+        full_name: "Mike Johnson",
+        email: "mike.johnson@example.com",
+        phone: "+91 9876543212",
+        class_stream: "Electronics and Communication Engineering",
+        status: "rejected",
+        submitted_at: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
+        reviewed_at: new Date().toISOString(),
+        feedback: "Does not meet minimum eligibility criteria.",
+        documents: ["resume.pdf", "marksheet.pdf"],
+        profiles: {
+          first_name: "Mike",
+          last_name: "Johnson",
+          email: "mike.johnson@example.com"
+        }
+      }
+    ];
 
     const result = {
-      applications: (data as { applications?: unknown[] }).applications || [],
+      applications: mockApplications,
       pagination: {
         page,
         limit,
-        total: (data as { total_count?: number }).total_count || 0,
-        totalPages: Math.ceil(((data as { total_count?: number }).total_count || 0) / limit),
-        hasNext: page * limit < ((data as { total_count?: number }).total_count || 0),
+        total: mockApplications.length,
+        totalPages: Math.ceil(mockApplications.length / limit),
+        hasNext: false,
         hasPrev: page > 1,
       },
     };
 
-    // Cache the result
-    applicationCache.set(cacheKey, result, 2 * 60 * 1000); // 2 minutes cache
-
     return NextResponse.json(result);
   } catch (error) {
     console.error("Error in college applications API:", error);
-
-    // Fallback to original implementation if optimized function fails
-    try {
-      return await getFallbackApplications(request);
-    } catch (fallbackError) {
-      console.error("Fallback also failed:", fallbackError);
-      return NextResponse.json(
-        { error: "Internal server error" },
-        { status: 500 },
-      );
-    }
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }
 

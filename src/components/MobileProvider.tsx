@@ -21,17 +21,38 @@ interface DeviceInfo {
 // Conditionally import Capacitor service only when available
 let capacitorService: any = null;
 
-if (typeof window !== 'undefined' && (window as any).Capacitor) {
+// Initialize capacitor service safely
+const initializeCapacitorService = async () => {
+  if (typeof window === 'undefined') return;
+  
   try {
-    // Dynamic import for Capacitor service
-    import('@/lib/capacitor-service').then((capacitorModule) => {
+    // Check if Capacitor is available
+    if ((window as any).Capacitor) {
+      const capacitorModule = await import('@/lib/capacitor-service');
       capacitorService = capacitorModule.capacitorService;
-    }).catch((error) => {
-      console.log('Capacitor service not available in web environment');
-    });
+      console.log('Capacitor service loaded successfully');
+    } else {
+      // Use web-safe fallback
+      const webModule = await import('@/lib/capacitor-service-web');
+      capacitorService = webModule.capacitorService;
+      console.log('Web-safe capacitor service loaded');
+    }
   } catch (error) {
-    console.log('Capacitor service not available in web environment');
+    console.log('Capacitor service not available, using web fallback:', error);
+    try {
+      const webModule = await import('@/lib/capacitor-service-web');
+      capacitorService = webModule.capacitorService;
+      console.log('Web-safe capacitor service loaded as fallback');
+    } catch (fallbackError) {
+      console.error('Failed to load any capacitor service:', fallbackError);
+      capacitorService = null;
+    }
   }
+};
+
+// Initialize immediately if in browser
+if (typeof window !== 'undefined') {
+  initializeCapacitorService();
 }
 
 interface MobileContextType {

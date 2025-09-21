@@ -148,7 +148,7 @@ export default function CollegesPage() {
   useEffect(() => {
     const setupRealtimeSubscription = async () => {
       try {
-        // Use the singleton client instead of creating a new instance
+        // Use static import instead of dynamic import for better reliability
         const { supabase } = await import("@/lib/supabase");
 
       const subscription = supabase

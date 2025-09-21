@@ -10,17 +10,27 @@ import { useMobile } from './MobileProvider';
 
 // Conditionally import Capacitor SplashScreen only when available
 let SplashScreen: any = null;
-if (typeof window !== 'undefined' && (window as any).Capacitor) {
+
+// Initialize SplashScreen safely
+const initializeSplashScreen = async () => {
+  if (typeof window === 'undefined') return;
+  
   try {
-    // Dynamic import for Capacitor SplashScreen
-    import('@capacitor/splash-screen').then((module) => {
-      SplashScreen = module.SplashScreen;
-    }).catch((error) => {
-      console.log('Capacitor SplashScreen not available in web environment');
-    });
+    // Check if Capacitor is available
+    if ((window as any).Capacitor) {
+      const splashModule = await import('@capacitor/splash-screen');
+      SplashScreen = splashModule.SplashScreen;
+      console.log('Capacitor SplashScreen loaded successfully');
+    }
   } catch (error) {
-    console.log('Capacitor SplashScreen not available in web environment');
+    console.log('Capacitor SplashScreen not available in web environment:', error);
+    SplashScreen = null;
   }
+};
+
+// Initialize immediately if in browser
+if (typeof window !== 'undefined') {
+  initializeSplashScreen();
 }
 
 interface MobileSplashScreenProps {

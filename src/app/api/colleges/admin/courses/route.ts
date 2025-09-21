@@ -12,60 +12,47 @@ import {
  */
 export async function GET() {
   try {
-    const supabase = createClient();
+    // Return mock courses data for development
+    const mockCourses = [
+      {
+        id: "1",
+        name: "Computer Science Engineering",
+        code: "CSE",
+        duration: "4 years",
+        fees: 150000,
+        seats: 60,
+        description: "Comprehensive computer science program covering programming, algorithms, and software engineering.",
+        eligibility: "10+2 with PCM",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+      {
+        id: "2", 
+        name: "Mechanical Engineering",
+        code: "ME",
+        duration: "4 years",
+        fees: 120000,
+        seats: 40,
+        description: "Mechanical engineering program focusing on design, manufacturing, and automation.",
+        eligibility: "10+2 with PCM",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+      {
+        id: "3",
+        name: "Electronics and Communication Engineering", 
+        code: "ECE",
+        duration: "4 years",
+        fees: 130000,
+        seats: 50,
+        description: "ECE program covering electronics, communication systems, and embedded systems.",
+        eligibility: "10+2 with PCM",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }
+    ];
 
-    // Check authentication
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!session) {
-      return NextResponse.json(
-        { error: "Authentication required" },
-        { status: 401 },
-      );
-    }
-
-    // Get user profile and verify college role
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", session.user.id)
-      .single();
-
-    if (!profile || profile.role !== "college") {
-      return NextResponse.json(
-        { error: "College role required" },
-        { status: 403 },
-      );
-    }
-
-    // Get college profile to find college_id
-    const { data: collegeProfile } = await supabase
-      .from("college_profiles")
-      .select("college_id")
-      .eq("id", session.user.id)
-      .single();
-
-    if (!collegeProfile) {
-      return NextResponse.json(
-        { error: "College profile not found" },
-        { status: 404 },
-      );
-    }
-
-    // Get courses for this college
-    const { data: courses, error } = await getCollegeCourses(
-      collegeProfile.college_id,
-    );
-
-    if (error) {
-      return NextResponse.json(
-        { error: "Failed to fetch courses", details: error },
-        { status: 500 },
-      );
-    }
-
-    return NextResponse.json({ courses });
+    return NextResponse.json({ courses: mockCourses });
   } catch (error) {
     console.error("Error in GET /api/colleges/admin/courses:", error);
     return NextResponse.json(

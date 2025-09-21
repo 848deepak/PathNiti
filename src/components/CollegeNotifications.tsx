@@ -39,7 +39,7 @@ export function CollegeNotifications({ userId }: CollegeNotificationsProps) {
       setLoading(true);
       setError(null);
 
-      const response = await fetch("/api/colleges/notifications");
+      const response = await fetch("/api/colleges/notifications/");
 
       if (!response.ok) {
         throw new Error("Failed to fetch notifications");
@@ -75,7 +75,7 @@ export function CollegeNotifications({ userId }: CollegeNotificationsProps) {
       setMarkingAsRead(notificationId);
 
       const response = await fetch(
-        `/api/colleges/notifications/${notificationId}/read`,
+        `/api/colleges/notifications/${notificationId}/read/`,
         {
           method: "PUT",
         },

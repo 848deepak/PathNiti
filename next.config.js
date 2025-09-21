@@ -101,6 +101,12 @@ const nextConfig = {
               priority: 20,
               chunks: 'all',
             },
+            capacitor: {
+              test: /[\\/]node_modules[\\/]@capacitor[\\/]/,
+              name: 'capacitor',
+              priority: 15,
+              chunks: 'async',
+            },
           },
         },
       };
@@ -110,6 +116,29 @@ const nextConfig = {
         ...config.output,
         chunkLoadingGlobal: 'webpackChunk_N_E',
         globalObject: 'self',
+        // Improve chunk loading reliability
+        chunkLoadTimeout: 30000,
+      };
+
+      // Improve dynamic import handling for Capacitor modules
+      config.resolve = {
+        ...config.resolve,
+        fallback: {
+          ...config.resolve.fallback,
+          // Add fallbacks for Capacitor modules when not available
+          '@capacitor/core': false,
+          '@capacitor/app': false,
+          '@capacitor/status-bar': false,
+          '@capacitor/splash-screen': false,
+          '@capacitor/push-notifications': false,
+          '@capacitor/local-notifications': false,
+          '@capacitor/geolocation': false,
+          '@capacitor/camera': false,
+          '@capacitor/network': false,
+          '@capacitor/device': false,
+          '@capacitor/preferences': false,
+          '@capacitor/haptics': false,
+        },
       };
     }
 

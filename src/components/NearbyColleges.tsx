@@ -175,7 +175,7 @@ export default function NearbyColleges({
   };
 
   const getPhotoUrl = (photoReference: string) => {
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_JS_API_KEY;
     return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${photoReference}&key=${apiKey}`;
   };
 

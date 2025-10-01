@@ -79,6 +79,24 @@ export interface ScholarshipRecommendation {
   match_score: number;
 }
 
+export interface CareerRecommendation {
+  career: string;
+  reasoning: string;
+  education_required: string;
+  average_salary: string;
+  job_growth: string;
+  skills_needed: string[];
+  confidence_score: number;
+}
+
+export interface AssessmentScores {
+  aptitude: AptitudeScores;
+  riasec: RIASECScores;
+  personality: PersonalityScores;
+  subject_performance: SubjectPerformance;
+  practical_constraints: PracticalConstraints;
+}
+
 export interface BackupOption {
   course: string;
   why_considered: string;

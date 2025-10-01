@@ -52,9 +52,9 @@ export class LocationService {
    * Get location from address using Google Geocoding API
    */
   static async getLocationFromAddress(address: string): Promise<Location> {
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    const apiKey = process.env.GOOGLE_MAPS_BACKEND_API_KEY;
     if (!apiKey) {
-      throw new Error("Google Maps API key not configured");
+      throw new Error("Google Maps backend API key not configured");
     }
 
     const encodedAddress = encodeURIComponent(address);
@@ -88,9 +88,9 @@ export class LocationService {
     lat: number,
     lng: number,
   ): Promise<string> {
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    const apiKey = process.env.GOOGLE_MAPS_BACKEND_API_KEY;
     if (!apiKey) {
-      throw new Error("Google Maps API key not configured");
+      throw new Error("Google Maps backend API key not configured");
     }
 
     const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`;

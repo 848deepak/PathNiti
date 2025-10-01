@@ -319,10 +319,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    const apiKey = process.env.GOOGLE_MAPS_BACKEND_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
-        { error: "Google Maps API key not configured" },
+        { error: "Google Maps backend API key not configured" },
         { status: 500 },
       );
     }

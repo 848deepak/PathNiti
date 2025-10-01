@@ -170,7 +170,7 @@ export async function POST(request: NextRequest) {
       rating?: number;
       user_ratings_total?: number;
     }> = [];
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    const apiKey = process.env.GOOGLE_MAPS_BACKEND_API_KEY;
 
     if (apiKey && location.city) {
       try {
